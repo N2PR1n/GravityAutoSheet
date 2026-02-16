@@ -53,6 +53,7 @@ else:
     GOOGLE_CREDENTIALS_PATH = credentials_filename
 
 GOOGLE_SHEET_ID = os.getenv('GOOGLE_SHEET_ID')
+GOOGLE_SHEET_NAME = os.getenv('GOOGLE_SHEET_NAME')
 GOOGLE_DRIVE_FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID')
 
 import certifi
@@ -77,7 +78,7 @@ handler = WebhookHandler(LINE_CHANNEL_SECRET)
 image_service = ImageService()
 drive_service = DriveService(GOOGLE_CREDENTIALS_PATH)
 openai_service = OpenAIService(OPENAI_API_KEY)
-sheet_service = SheetService(GOOGLE_CREDENTIALS_PATH, GOOGLE_SHEET_ID)
+sheet_service = SheetService(GOOGLE_CREDENTIALS_PATH, GOOGLE_SHEET_ID, GOOGLE_SHEET_NAME)
 accounting_service = AccountingService(sheet_service, drive_service)
 
 # User State for Multi-Image Handling
@@ -263,28 +264,36 @@ async def process_images_after_delay(user_id):
         
         # 6. Save to Sheets
         print("Saving to Sheets...")
-        await loop.run_in_executor(None, sheet_service.append_data, data, next_run_no)
+        success = await loop.run_in_executor(None, sheet_service.append_data, data, next_run_no)
         
-        # 6. Notify Success
-        tracking_info = f"\nTracking: {data.get('tracking_number')}" if data.get('tracking_number') and data.get('tracking_number') != '-' else ""
-        
-        summary = (
-            f"✅ บันทึกแล้ว! (No. {next_run_no})\n"
-            f"ชื่อ: {data.get('receiver_name', '-')}\n"
-            f"ที่อยู่: {data.get('location', '-')}\n"
-            f"ร้าน: {data.get('shop_name', '-')}\n"
-            f"ยอด: {data.get('price', '-')}\n"
-            f"เหรียญ: {data.get('coins', '-')}\n"
-            f"Platform: {data.get('platform', '-')}\n"
-            f"Order: {data.get('order_id', '-')}"
-            f"{tracking_info}"
-        )
-        messaging_api.push_message(
-             PushMessageRequest(
-                 to=user_id,
-                 messages=[TextMessage(text=summary)]
+        if not success:
+             messaging_api.push_message(
+                 PushMessageRequest(
+                     to=user_id,
+                     messages=[TextMessage(text=f"❌ บันทึกไม่สำเร็จ! (Sheet Error)\nโปรดตรวจสอบว่า Share Sheet ให้กับ Email Bot หรือยัง?\n(linebotgravity@gravitybotproject.iam.gserviceaccount.com)")]
+                 )
              )
-         )
+        else:
+            # 6. Notify Success
+            tracking_info = f"\nTracking: {data.get('tracking_number')}" if data.get('tracking_number') and data.get('tracking_number') != '-' else ""
+            
+            summary = (
+                f"✅ บันทึกแล้ว! (No. {next_run_no})\n"
+                f"ชื่อ: {data.get('receiver_name', '-')}\n"
+                f"ที่อยู่: {data.get('location', '-')}\n"
+                f"ร้าน: {data.get('shop_name', '-')}\n"
+                f"ยอด: {data.get('price', '-')}\n"
+                f"เหรียญ: {data.get('coins', '-')}\n"
+                f"Platform: {data.get('platform', '-')}\n"
+                f"Order: {data.get('order_id', '-')}"
+                f"{tracking_info}"
+            )
+            messaging_api.push_message(
+                 PushMessageRequest(
+                     to=user_id,
+                     messages=[TextMessage(text=summary)]
+                 )
+             )
 
     except Exception as e:
         print(f"Error processing: {e}")

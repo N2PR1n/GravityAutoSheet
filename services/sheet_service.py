@@ -2,15 +2,25 @@ import gspread
 from google.oauth2 import service_account
 
 class SheetService:
-    def __init__(self, credentials_path, sheet_id):
+    def __init__(self, credentials_path, sheet_id, sheet_name=None):
         self.scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
         try:
             self.creds = service_account.Credentials.from_service_account_file(
                 credentials_path, scopes=self.scopes)
             self.client = gspread.authorize(self.creds)
-            self.sheet = self.client.open_by_key(sheet_id).sheet1 # Default to first sheet
-            # self.sheet = self.client.open_by_key(sheet_id).worksheet("TestDogBot")
-            print(f"DEBUG: Connected to Sheet '{self.sheet.title}'")
+            
+            if sheet_name:
+                try:
+                    self.sheet = self.client.open_by_key(sheet_id).worksheet(sheet_name)
+                    print(f"DEBUG: Connected to Sheet (Tab): '{self.sheet.title}'")
+                except gspread.exceptions.WorksheetNotFound:
+                    print(f"Warning: Worksheet '{sheet_name}' not found. Falling back to default.")
+                    self.sheet = self.client.open_by_key(sheet_id).sheet1
+            else:
+                self.sheet = self.client.open_by_key(sheet_id).sheet1 # Default to first sheet
+            
+            print(f"DEBUG: Active Sheet Title: '{self.sheet.title}'")
+
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -67,7 +77,7 @@ class SheetService:
         """
         if not self.sheet:
             print("Sheet service not connected.")
-            return
+            return False
 
         # Helper to format float string
         def fmt_float(val):
@@ -112,6 +122,11 @@ class SheetService:
         row[13] = ""           # N: Delivery Date
 
         # IMPORTANT: Use value_input_option='USER_ENTERED' to parse formulas
-        result = self.sheet.append_row(row, value_input_option='USER_ENTERED')
-        print(f"DEBUG: Data appended result: {result}")
-        print(f"DEBUG: Check row number: {result.get('updates', {}).get('updatedRange', 'Unknown')}")
+        try:
+            result = self.sheet.append_row(row, value_input_option='USER_ENTERED')
+            print(f"DEBUG: Data appended result: {result}")
+            print(f"DEBUG: Check row number: {result.get('updates', {}).get('updatedRange', 'Unknown')}")
+            return True
+        except Exception as e:
+            print(f"Error appending data to sheet: {e}")
+            return False
