@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+line-bot-sdk
+openai
+gspread
+google-auth
+google-api-python-client
+oauth2client
+Pillow
+python-dotenv
+requests
+python-multipart
+google-auth-oauthlib
+pandas
+openpyxl
+certifi
