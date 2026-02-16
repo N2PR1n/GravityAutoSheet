@@ -8,8 +8,8 @@ class SheetService:
             self.creds = service_account.Credentials.from_service_account_file(
                 credentials_path, scopes=self.scopes)
             self.client = gspread.authorize(self.creds)
-            # self.sheet = self.client.open_by_key(sheet_id).sheet1 # Default to first sheet
-            self.sheet = self.client.open_by_key(sheet_id).worksheet("TestDogBot")
+            self.sheet = self.client.open_by_key(sheet_id).sheet1 # Default to first sheet
+            # self.sheet = self.client.open_by_key(sheet_id).worksheet("TestDogBot")
             print(f"DEBUG: Connected to Sheet '{self.sheet.title}'")
         except Exception as e:
             import traceback
