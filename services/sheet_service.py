@@ -38,6 +38,24 @@ class SheetService:
             print(f"Error fetching data: {e}")
             return []
 
+    def get_next_run_no(self):
+        """Calculates the next Run No. based on Column D (index 4)."""
+        if not self.sheet: return 1
+        try:
+            # Column D is index 4
+            col_values = self.sheet.col_values(4) 
+            run_nos = []
+            for val in col_values:
+                # Filter for numeric values (skip header/text)
+                if str(val).isdigit():
+                    run_nos.append(int(val))
+            
+            if not run_nos: return 1
+            return max(run_nos) + 1
+        except Exception as e:
+            print(f"Error getting next run no: {e}")
+            return 1
+
     def append_data(self, data_dict, run_no=None):
         """
         Appends a row to the sheet based on the dictionary.
