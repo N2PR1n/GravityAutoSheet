@@ -19,4 +19,4 @@ pandas
 gspread
 google-auth
 python-dotenv
-st-aggrid
+
