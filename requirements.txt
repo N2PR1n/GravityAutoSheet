@@ -1,22 +1,29 @@
+# Core API & Server
 fastapi
 uvicorn
+python-multipart
+requests
+python-dotenv
+
+# LINE & AI
 line-bot-sdk
 openai
+
+# Google Services (Sheets & Drive)
 gspread
 google-auth
-google-api-python-client
-oauth2client
-Pillow
-python-dotenv
-requests
-python-multipart
 google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+
+# Data Processing
 pandas
 openpyxl
-certifi
+
+# Image Processing
+Pillow
+
+# Web App (Dashboard)
 streamlit
-pandas
-gspread
-google-auth
-python-dotenv
+watchdog
 
