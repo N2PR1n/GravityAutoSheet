@@ -14,3 +14,9 @@ google-auth-oauthlib
 pandas
 openpyxl
 certifi
+streamlit
+pandas
+gspread
+google-auth
+python-dotenv
+st-aggrid
