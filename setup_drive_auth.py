@@ -1,19 +1,24 @@
-from services.auth_service import get_drive_credentials
+import os
+import sys
 
-def main():
-    print("--- Google Drive OAuth Setup ---")
-    print("This script will open a browser window to login to your Google Account.")
-    print("Please make sure 'client_secret.json' is in this folder.")
-    print("--------------------------------")
-    
-    creds = get_drive_credentials()
-    
-    if creds:
-        print("\n✅ Authentication Successful!")
-        print("token.json has been created.")
-        print("You can now restart the main bot.")
-    else:
-        print("\n❌ Authentication Failed.")
+# Add parent dir
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-if __name__ == '__main__':
-    main()
+from services.auth_service import get_drive_service
+
+def setup_auth():
+    print("--- Setup Drive Authentication ---")
+    print("This script will open a browser window to login to Google.")
+    print("Please login with the account that owns the Drive Folder.")
+    print("----------------------------------")
+    
+    try:
+        service = get_drive_service()
+        if service:
+            print("\n✅ Authentication Successful!")
+            print("Token saved to 'token.json'. You are good to go.")
+    except Exception as e:
+        print(f"\n❌ Authentication Failed: {e}")
+
+if __name__ == "__main__":
+    setup_auth()

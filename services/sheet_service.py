@@ -1,5 +1,13 @@
 import gspread
 from google.oauth2 import service_account
+import socket
+import requests.packages.urllib3.util.connection as urllib3_cn
+
+# Force IPv4 to prevent macOS IPv6 hangs
+def allowed_gai_family():
+    return socket.AF_INET
+
+urllib3_cn.allowed_gai_family = allowed_gai_family
 
 class SheetService:
     def __init__(self, credentials_path, sheet_id, sheet_name=None):
@@ -125,8 +133,37 @@ class SheetService:
         try:
             result = self.sheet.append_row(row, value_input_option='USER_ENTERED')
             print(f"DEBUG: Data appended result: {result}")
-            print(f"DEBUG: Check row number: {result.get('updates', {}).get('updatedRange', 'Unknown')}")
             return True
         except Exception as e:
             print(f"Error appending data to sheet: {e}")
+            return False
+
+    def update_order_status(self, order_id, status="Checked"):
+        """Updates the status of an order."""
+        if not self.sheet: return False
+        try:
+            # Find the cell with the order_id
+            cell = self.sheet.find(str(order_id))
+            if not cell:
+                print(f"Order ID {order_id} not found.")
+                return False
+            
+            # Find Status Column
+            headers = self.sheet.row_values(1)
+            try:
+                # Try english first, then thai
+                if "Status" in headers:
+                    status_col = headers.index("Status") + 1
+                elif "สถานะ" in headers:
+                    status_col = headers.index("สถานะ") + 1
+                else:
+                    return False
+            except:
+                return False
+            
+            # Update
+            self.sheet.update_cell(cell.row, status_col, status)
+            return True
+        except Exception as e:
+            print(f"Error updating status: {e}")
             return False

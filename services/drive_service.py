@@ -1,21 +1,13 @@
-from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
-from services.auth_service import get_drive_credentials
+from services.auth_service import get_drive_service
 import os
 
 class DriveService:
-    def __init__(self, credentials_path=None): # credentials_path is no longer used but kept for compatibility
+    def __init__(self, credentials_path=None):
+        # credentials_path ignored for Drive (uses User OAuth via token.json)
         try:
-            # Use the new OAuth Flow (User Credentials)
-            self.creds = get_drive_credentials()
-            
-            if self.creds:
-                self.service = build('drive', 'v3', credentials=self.creds)
-                print("DEBUG: Drive Service Initialized with OAuth!")
-            else:
-                print("Warning: Could not get Drive credentials.")
-                self.service = None
-                
+            self.service = get_drive_service()
+            print("DEBUG: Drive Service Initialized with User OAuth!")
         except Exception as e:
             print(f"Warning: DriveService init failed: {e}")
             self.service = None
@@ -32,26 +24,61 @@ class DriveService:
 
         media = MediaFileUpload(file_path, mimetype='image/jpeg')
         
-        file = self.service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id, webViewLink, webContentLink'
-        ).execute()
+        try:
+            file = self.service.files().create(
+                body=file_metadata,
+                media_body=media,
+                fields='id, webViewLink, webContentLink'
+            ).execute()
+            self.make_public(file['id'])
 
-        # Make file public (or readable by anyone with link) so Gemini/User can access?
-        # Actually Gemini sends bytes directly usually, but we need link for Sheet.
-        self.make_public(file['id'])
-
-        return file
+            return file
+        except Exception as e:
+            print(f"Upload Error: {e}")
+            return None
 
     def make_public(self, file_id):
         if not self.service: return
-        user_permission = {
-            'type': 'anyone',
-            'role': 'reader',
-        }
-        self.service.permissions().create(
-            fileId=file_id,
-            body=user_permission,
-            fields='id',
-        ).execute()
+        try:
+            user_permission = {
+                'type': 'anyone',
+                'role': 'reader',
+            }
+            self.service.permissions().create(
+                fileId=file_id,
+                body=user_permission,
+                fields='id',
+            ).execute()
+        except Exception as e:
+            print(f"Permission Error: {e}")
+
+    def find_files_by_name(self, name_query, folder_id=None):
+        """Search for files in Drive. Optional: Restrict to folder."""
+        if not self.service: return []
+        
+        try:
+            # Prioritize exact match for stability
+            # If folder_id is provided, limit scope
+            query_parts = [f"name = '{name_query}'", "trashed = false"]
+            
+            if folder_id:
+                query_parts.append(f"'{folder_id}' in parents")
+            
+            query = " and ".join(query_parts)
+            
+            results = self.service.files().list(
+                q=query,
+                pageSize=1,
+                fields="files(id, name, webViewLink, thumbnailLink)"
+            ).execute()
+            
+            files = results.get('files', [])
+            if files: return files
+
+            # Fallback: Contains (only if no folder strictness or if exact failed?)
+            # For now, let's stick to exact match which is safer for "1.jpg"
+            return []
+        except Exception as e:
+            print(f"Search Error: {e}")
+            return []
+

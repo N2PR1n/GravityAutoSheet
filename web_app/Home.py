@@ -1,321 +1,399 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+import sys
+import os
 import time
 import re
-import math
-from sheet_utils import connect_to_sheet, download_image_from_drive
+from streamlit_webrtc import webrtc_streamer, WebRtcMode
+import cv2
+import numpy as np
+from pyzbar.pyzbar import decode
+import av
+import queue
 
+# --- SETUP PATH & IMPORTS ---
+# Add parent directory to path to import services
+current_dir = os.path.dirname(os.path.abspath(__file__))
+parent_dir = os.path.abspath(os.path.join(current_dir, '..'))
+if parent_dir not in sys.path:
+    sys.path.append(parent_dir)
+
+from services.sheet_service import SheetService
+from services.drive_service import DriveService
+from dotenv import load_dotenv
+
+# --- CONFIG & INIT ---
 st.set_page_config(
     page_title="Gravity Stock Manager",
     page_icon="📦",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
-# st.error("DEBUG: Home.py is running! If you see this, the file is correct.")
 
-# Custom CSS for Premium Look (Mobile & Desktop)
+load_dotenv()
+
+# Custom CSS
 st.markdown("""
 <style>
-    /* Global Font & Theme */
     @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap');
-    
-    html, body, [class*="css"]  {
-        font-family: 'Prompt', sans-serif;
-    }
-
-    /* Main Container Padding */
-    .block-container {
-        padding-top: 2rem;
-        padding-bottom: 5rem;
-    }
-
-    /* Card Design */
+    html, body, [class*="css"]  { font-family: 'Prompt', sans-serif; }
+    .block-container { padding-top: 2rem; padding-bottom: 5rem; }
     .order-card {
-        background-color: #1E1E1E; /* Dark Mode Bg */
-        color: #E0E0E0;
-        padding: 20px;
-        border-radius: 16px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-        margin-bottom: 16px;
-        border: 1px solid #333;
-        transition: transform 0.2s;
+        background-color: #1E1E1E; border: 1px solid #333;
+        border-radius: 12px; padding: 15px; margin-bottom: 15px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
-    
-    .order-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-        border-color: #4CAF50;
-    }
-
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-        border-bottom: 1px solid #333;
-        padding-bottom: 8px;
-    }
-
-    .run-no {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #4CAF50; /* Green Accent */
-    }
-
+    .order-card:hover { border-color: #4CAF50; transform: translateY(-2px); }
     .status-badge {
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 0.8rem;
-        font-weight: 500;
+        padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;
     }
-    .status-checked {
-        background-color: rgba(76, 175, 80, 0.2);
-        color: #81C784;
-        border: 1px solid #4CAF50;
-    }
-    .status-pending {
-        background-color: rgba(255, 193, 7, 0.2);
-        color: #FFD54F;
-        border: 1px solid #FFC107;
-    }
-
-    .card-body p {
-        margin: 4px 0;
-        font-size: 0.95rem;
-        color: #B0B0B0;
-    }
-    .card-body b {
-        color: #FFFFFF;
-    }
-
-    /* Button Styling */
-    .stButton button {
-        width: 100%;
-        border-radius: 8px;
-        font-weight: 600;
-        height: 44px;
-    }
-    
-    /* Search Bar */
-    .stTextInput input {
-        border-radius: 10px;
-    }
-
+    .status-checked { background: rgba(76, 175, 80, 0.2); color: #81C784; border: 1px solid #4CAF50; }
+    .status-pending { background: rgba(255, 193, 7, 0.2); color: #FFD54F; border: 1px solid #FFC107; } 
+    .status-uncheck { background: rgba(255, 235, 59, 0.15); color: #FFF176; border: 1px solid #FDD835; }
 </style>
 """, unsafe_allow_html=True)
 
 st.title("📦 Gravity Stock Manager")
 
-# Reset button to clear cache if needed
-if st.button("🔄 Refresh Data"):
-    st.cache_data.clear()
-    st.rerun()
+# --- SERVICE INITIALIZATION ---
+@st.cache_resource
+def get_services():
+    # Load Credentials Path
+    creds_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    sheet_id = os.getenv('GOOGLE_SHEET_ID')
+    sheet_name = os.getenv('GOOGLE_SHEET_NAME')
+    
+    # Resolve Path
+    if creds_path and not os.path.isabs(creds_path):
+        creds_path = os.path.join(parent_dir, creds_path)
+        
+    if not creds_path or not os.path.exists(creds_path):
+        st.error(f"❌ Credentials not found at: {creds_path}")
+        return None, None
 
-# st.write("DEBUG: 0. Calling connect_to_sheet()...")
-with st.spinner("⏳ Connecting to Google Sheets (Please wait 10-20s)..."):
-    sheet = connect_to_sheet()
-# st.write(f"DEBUG: 5. Service Returned: {sheet}")
+    try:
+        sheet_service = SheetService(creds_path, sheet_id, sheet_name)
+        drive_service = DriveService(creds_path)
+        return sheet_service, drive_service
+    except Exception as e:
+        st.error(f"❌ Service Init Failed: {e}")
+        return None, None
 
-import re
-import math
+sheet_service, drive_service = get_services()
 
-# Helper to clean headers
-def clean_headers(df):
-    df.columns = df.columns.str.strip()
+if not sheet_service:
+    st.stop()
+
+# --- DATA LOADER ---
+@st.cache_data(ttl=5) # Short TTL for realtime feel
+def load_orders():
+    data = sheet_service.get_all_data()
+    if not data: return pd.DataFrame()
+    
+    df = pd.DataFrame(data)
+    
+    col_map = {
+        'Run No': 'Run No', 'run_no': 'Run No', 'ลำดับ': 'Run No',
+        'Name': 'Name', 'receiver_name': 'Name', 'ชื่อลูกค้า': 'Name', 'ชื่อหน้ากล่อง': 'Name',
+        'Item': 'Item', 'item_name': 'Item', 'ชื่อของ': 'Item', 'รายการสินค้า': 'Item',
+        'Price': 'Price', 'price': 'Price', 'ยอดรวม': 'Price', 'ราคาของ': 'Price',
+        'Status': 'Status', 'status': 'Status', 'สถานะ': 'Status',
+        'Order ID': 'Order ID', 'order_id': 'Order ID', 'เลขออเดอร์': 'Order ID',
+        'Image Link': 'Image Link', 'image_link': 'Image Link', 'Link รูป': 'Image Link',
+        'Tracking Number': 'Tracking', 'tracking_number': 'Tracking', 'เลขพัสดุ': 'Tracking',
+        'Platform': 'Platform', 'platform': 'Platform',
+        'Coins': 'Coins', 'coins': 'Coins', 'เหรียญ': 'Coins',
+        'Date': 'Date', 'date': 'Date', 'วันที่ bought': 'Date', 'วันที่': 'Date'
+    }
+    
+    renamed = {}
+    for col in df.columns:
+        for k, v in col_map.items():
+            if k in col: # Partial match
+                renamed[col] = v
+                break
+    
+    if renamed:
+        df.rename(columns=renamed, inplace=True)
+    
     return df
 
-# Cached Data Loading (TTL = 5 minutes, or manual refresh)
-@st.cache_data(ttl=300, show_spinner=False)
-def load_data(_sheet):
-    # Fetch raw formulas to extract HYPERLINKs
-    try:
-        raw_data = _sheet.get_all_values(value_render_option='FORMULA')
-        if len(raw_data) < 2:
-            return pd.DataFrame()
-        
-        headers = raw_data[0]
-        df = pd.DataFrame(raw_data[1:], columns=headers)
-        df = clean_headers(df)
-        return df
-    except Exception as e:
-        st.error(f"Data Load Error: {e}")
-        return pd.DataFrame()
-
-if sheet:
-    try:
-        # Load Data
-        df = load_data(sheet)
-        
-        if df.empty:
-            st.warning("No data found or empty sheet.")
+# --- UI DIALOGS ---
+@st.dialog("Confirm Uncheck")
+def dialog_confirm_uncheck(order_id, run_no):
+    st.write(f"Are you sure you want to uncheck Order **#{run_no}**?")
+    if st.button("Yes, Uncheck", type="primary"):
+        if order_id and sheet_service.update_order_status(order_id, "Pending"):
+            st.success("Unchecked!")
+            st.cache_data.clear()
+            st.rerun()
         else:
-            # Helper to extract and CONVERT URL from =HYPERLINK("url", "label")
-            def extract_image_url(cell_value):
-                if not isinstance(cell_value, str): return ""
-                
-                url = ""
-                # Regex for =HYPERLINK("URL", "Label")
-                match = re.search(r'=HYPERLINK\s*\(\s*["\']([^"\']+)["\']', cell_value, re.IGNORECASE)
-                if match:
-                    url = match.group(1)
-                elif cell_value.startswith('http'):
-                    url = cell_value
-                
-                # Convert Drive View Link -> Direct Image Link
-                # Pattern: https://drive.google.com/file/d/{FILE_ID}/view...
-                if "drive.google.com" in url and "/d/" in url:
-                    file_id_match = re.search(r'/d/([a-zA-Z0-9_-]+)', url)
-                    if file_id_match:
-                        file_id = file_id_match.group(1)
-                        # Use thumbnail link for speed and better embedding success
-                        return f"https://lh3.googleusercontent.com/d/{file_id}=w1000"
-                        # Alternative: f"https://drive.google.com/uc?export=view&id={file_id}"
-                
-                return url
+            st.error("Failed to update.")
 
-            df['Clean_Image_Link'] = df['Image Link'].apply(extract_image_url) if 'Image Link' in df.columns else ""
+@st.dialog("📷 Scan Barcode (Realtime)")
+def dialog_scanner():
+    mode = st.radio("Mode:", ["Realtime (Fast)", "Native (Stable)"], horizontal=True, label_visibility="collapsed")
+    
+    if mode == "Native (Stable)":
+        st.write("Click 'Take Photo' to scan.")
+        img_file = st.camera_input("Scanner", label_visibility="collapsed")
+        if img_file:
+            bytes_data = img_file.getvalue()
+            file_bytes = np.asarray(bytearray(bytes_data), dtype=np.uint8)
+            original_img = cv2.imdecode(file_bytes, 1)
+            
+            # --- Preprocessing Pipeline ---
+            attempts = []
+            
+            # 1. Original
+            attempts.append(original_img)
+            
+            # 2. Grayscale
+            gray = cv2.cvtColor(original_img, cv2.COLOR_BGR2GRAY)
+            attempts.append(gray)
+            
+            # 3. Thresholding (Binary)
+            _, thresh = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY)
+            attempts.append(thresh)
+            
+            # 4. Adaptive Thresholding (good for shadows)
+            adaptive = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
+            attempts.append(adaptive)
+            
+            # 5. Zoom/Crop Center (often helps if barcode is small)
+            h, w = gray.shape
+            center_h, center_w = h // 2, w // 2
+            crop_h, crop_w = h // 2, w // 2
+            start_y = max(0, center_h - crop_h // 2)
+            start_x = max(0, center_w - crop_w // 2)
+            cropped = gray[start_y:start_y+crop_h, start_x:start_x+crop_w]
+            attempts.append(cropped)
 
-            # --- SEARCH & FILTER ---
-            search_query = st.text_input("🔍 Search Order", placeholder="Type Order ID, Name, or Run No...").strip()
+            found_code = None
             
-            filtered_df = pd.DataFrame()
+            for i, img_attempt in enumerate(attempts):
+                codes = decode(img_attempt)
+                if codes:
+                    found_code = codes[0].data.decode("utf-8")
+                    break
             
-            if search_query:
-                mask = (
-                    df.astype(str).apply(lambda x: x.str.contains(search_query, case=False, na=False)).any(axis=1)
-                )
-                filtered_df = df[mask]
-                filtered_df = filtered_df.iloc[::-1] # Newest first
+            if found_code:
+                st.session_state.search_val = found_code
+                st.success(f"✅ Found: {found_code}")
+                time.sleep(0.5)
+                st.rerun()
             else:
-                # Default: Newest First
-                filtered_df = df.iloc[::-1] 
-            
-            # --- PAGINATION ---
-            TOTAL_ITEMS = len(filtered_df)
-            ITEMS_PER_PAGE = 20
-            TOTAL_PAGES = math.ceil(TOTAL_ITEMS / ITEMS_PER_PAGE)
-            
-            if TOTAL_PAGES > 1:
-                # Center the Pagination
-                c1, c2, c3 = st.columns([2, 3, 2])
-                with c2:
-                    current_page = st.number_input(
-                        "Page", min_value=1, max_value=TOTAL_PAGES, value=1, step=1
-                    )
-                st.caption(f"Showing page {current_page} of {TOTAL_PAGES} ({TOTAL_ITEMS} total orders)")
-            else:
-                current_page = 1
-                if TOTAL_ITEMS > 0:
-                    st.caption(f"Showing all {TOTAL_ITEMS} orders")
-            
-            start_idx = (current_page - 1) * ITEMS_PER_PAGE
-            end_idx = start_idx + ITEMS_PER_PAGE
-            
-            # Slice the dataframe for current page
-            page_df = filtered_df.iloc[start_idx:end_idx]
+                st.warning("❌ No barcode found. Try moving closer or better lighting.")
+                with st.expander("Debug View"):
+                    st.image(original_img, caption="Original", channels="BGR")
+                    st.image(adaptive, caption="Adaptive Threshold")
 
-            # --- DISPLAY CARDS ---
-            st.markdown("---")
+    else:
+        st.write("Point your camera at a barcode.")
+    
+        # Shared queue for results
+        if 'result_queue' not in st.session_state:
+            st.session_state.result_queue = queue.Queue()
             
-            if not page_df.empty:
-                for index, row in page_df.iterrows():
-                    # Extract Data (Handle missing columns gracefully)
-                    run_no = row.get('Run No.', 'N/A')
-                    name = row.get('ชื่อหน้ากล่อง', row.get('receiver_name', '-'))
-                    item = row.get('ชื่อของ', 'N/A')
-                    price = row.get('ราคาของ', '0') # Column I
-                    # If 'ราคาของ' is empty, try 'ราคาสุดท้าย' or just show what we have
+        result_queue = st.session_state.result_queue
+    
+        def video_frame_callback(frame):
+            img = frame.to_ndarray(format="bgr24")
+            
+            codes = decode(img)
+            if codes:
+                for code in codes:
+                    data = code.data.decode("utf-8")
                     
-                    coins = row.get('เหรียญ', '0')
-                    order_id = row.get('เลขออเดอร์', '-')
-                    tracking = row.get('เลขพัสดุ', '-')
-                    platform = row.get('Platform', '-')
-                    status = str(row.get('สถานะ', '')).strip()
-                    image_link = row.get('Clean_Image_Link', '')
+                    # Draw Box
+                    try:
+                        (x, y, w, h) = code.rect
+                        cv2.rectangle(img, (x, y), (x + w, y + h), (0, 255, 0), 3)
+                        cv2.putText(img, data, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                    except: pass
+                    
+                    # Queue result
+                    try:
+                        result_queue.put_nowait(data)
+                    except:
+                        pass
+            
+            return av.VideoFrame.from_ndarray(img, format="bgr24")
+    
+        # Use a simpler configuration to avoid 'is_alive' threading race conditions
+        # async_processing=False prevents some threading issues but might be slower behavior
+        try:
+            webrtc_streamer(
+                key="barcode-scanner-v4", 
+                mode=WebRtcMode.SENDRECV,
+                rtc_configuration={
+                    "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+                },
+                video_frame_callback=video_frame_callback,
+                media_stream_constraints={"video": True, "audio": False},
+                async_processing=False, # CHANGED: Set to False to fix threading crash
+            )
+        except Exception as e:
+            st.error(f"Scanner Error: {e}")
+            st.info("Try refreshing the page if the camera doesn't start.")
+    
+        # Check for result
+        try:
+            if not result_queue.empty():
+                data = result_queue.get_nowait()
+                st.session_state.search_val = data
+                st.success(f"✅ Found: {data}")
+                time.sleep(1)
+                st.rerun()
+        except:
+            pass
 
-                    # Determine Badge
-                    status_class = "status-checked" if "checked" in status.lower() else "status-pending"
-                    status_text = "✅ Checked" if "checked" in status.lower() else "⏳ Pending"
-                    
-                    # Layout
-                    with st.container():
-                        st.markdown(f"""<div class="order-card">""", unsafe_allow_html=True)
-                        
-                        col_img, col_detail = st.columns([1, 2])
-                        
-                        with col_img:
-                            # Image Handling: Server-Side Fetch
-                            # 1. Extract File ID from Clean_Image_Link
-                            # Link is: https://lh3.googleusercontent.com/d/{file_id}=w1000 OR https://drive.google.com/file/d/{file_id}...
-                            # We used regex before to get 'Clean_Image_Link'. 
-                            # If we used the lh3 format in previous step, we can extract ID easily.
-                            
-                            file_id = None
-                            if image_link:
-                                # Try simple extraction if it contains /d/
-                                match = re.search(r'/d/([a-zA-Z0-9_-]+)', image_link)
-                                if match:
-                                    file_id = match.group(1)
-                            
-                            image_bytes = None
-                            if file_id:
-                                # Fetch bytes (Cached)
-                                image_bytes = download_image_from_drive(file_id)
-                            
-                            if image_bytes:
-                                st.image(image_bytes, use_container_width=True)
+
+# --- HELPERS ---
+def process_drive_image(link):
+    """Converts Drive Viewer Link to Direct Image URL."""
+    if not isinstance(link, str): return None
+    link = link.strip()
+    if not link: return None
+    
+    # 1. Clean Link
+    match = re.search(r'"(http[^"]+)"', link)
+    url = match.group(1) if match else link
+    
+    if not url.startswith('http'): return None
+
+    # 2. Extract File ID
+    file_id = None
+    match_id = re.search(r'/d/([a-zA-Z0-9_-]+)', url)
+    if not match_id:
+        match_id = re.search(r'id=([a-zA-Z0-9_-]+)', url)
+        
+    if match_id:
+        file_id = match_id.group(1)
+            
+    if file_id:
+        # Return lh3 link which acts as a direct image proxy
+        return f"https://lh3.googleusercontent.com/d/{file_id}=s1000"
+
+    return url
+
+# --- MAIN UI ---
+if 'search_val' not in st.session_state:
+    st.session_state.search_val = ""
+
+# Top Bar
+c1, c2 = st.columns([5, 1])
+with c1:
+    # Realtime search: st.text_input updates on blur usually. 
+    # Streamlit doesn't support true key-up event without custom component, 
+    # but regular text_input is fast enough for most.
+    search_query = st.text_input("🔍 Search (Order ID, Run No, Name, Tracking)", value=st.session_state.search_val, placeholder="Start typing...", label_visibility="collapsed")
+    # Auto-rerun on clear (Streamlit handles text_input state well)
+    if search_query != st.session_state.search_val:
+         st.session_state.search_val = search_query
+         st.rerun()
+
+with c2:
+    if st.button("📷 Scan", use_container_width=True):
+        dialog_scanner()
+
+# Load Data
+df = load_orders()
+
+if not df.empty:
+    # Filter (Robust substring search)
+    if search_query:
+        # Create a combined string for searching across multiple interesting columns
+        search_cols = ['Order ID', 'Run No', 'Name', 'Tracking', 'Item']
+        existing_cols = [c for c in search_cols if c in df.columns]
+        
+        mask = df[existing_cols].astype(str).apply(lambda x: x.str.contains(search_query, case=False, na=False)).any(axis=1)
+        filtered_df = df[mask]
+    else:
+        filtered_df = df.head(10) # Show latest 10 by default
+        
+    st.write(f"Found {len(filtered_df)} orders")
+    
+    # Cards
+    for idx, row in filtered_df.iterrows():
+        status = row.get('Status', 'Pending')
+        status = str(status).strip() if status else 'Pending'
+        is_checked = status.lower() == 'checked'
+        
+        status_style = "status-checked" if is_checked else "status-uncheck" # User requested yellow for uncheck
+        # Label: If pending, show 'Pending' (Yellow)
+        status_label = status
+        
+        with st.container():
+            col_img, col_detail = st.columns([1, 2])
+            
+            # --- IMAGE COLUMN ---
+            with col_img:
+                img_link = row.get('Image Link', '')
+                direct_url = process_drive_image(str(img_link))
+                
+                if direct_url:
+                    st.image(direct_url, use_container_width=True)
+                else: 
+                    # Fallback: Try to find by Order ID in Drive
+                    order_id_str = str(row.get('Order ID', '')).strip()
+                    if order_id_str and drive_service:
+                        found_files = drive_service.find_files_by_name(order_id_str)
+                        if found_files:
+                            # Use the first match
+                            f = found_files[0]
+                            new_url = process_drive_image(f.get('webViewLink'))
+                            if new_url:
+                                st.image(new_url, use_container_width=True)
+                                st.caption("📷 Recovered from Drive")
                             else:
-                                # Component for No Image
-                                st.markdown("""
-                                <div style="background-color: #2D2D2D; height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 8px; color: #666; border: 2px dashed #444;">
-                                    <span style="font-size: 2rem;">📷</span>
-                                    <span style="font-size: 0.8rem;">No Image</span>
-                                </div>
-                                """, unsafe_allow_html=True)
-                        
-                        with col_detail:
-                            st.markdown(f"""
-                            <div class="card-header" style="margin-top: 0; padding-top: 0;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <span class="run-no">#{run_no}</span>
-                                    <span style="font-size: 0.8rem; color: #888; background: #333; padding: 2px 8px; border-radius: 4px;">{platform}</span>
-                                </div>
-                                <span class="status-badge {status_class}">{status_text}</span>
-                            </div>
-                            <div class="card-body">
-                                <p><b>Name:</b> {name}</p>
-                                <p><b>Item:</b> {item}</p>
-                                <div style="display: flex; gap: 15px; margin: 4px 0;">
-                                    <p><b>💰 Price:</b> <span style="color: #4CAF50;">{price}</span></p>
-                                    <p><b>🪙 Coins:</b> <span style="color: #FFC107;">{coins}</span></p>
-                                </div>
-                                <p style="font-size: 0.85rem; color: #777; margin-top: 8px;">Order ID: {order_id}</p>
-                                <p style="font-size: 0.85rem; color: #777;">Tracking: {tracking}</p>
-                            </div>
-                            """, unsafe_allow_html=True)
-                            
-                            # Action Button
-                            if 'checked' not in status.lower():
-                                if st.button(f"✅ Mark as Checked", key=f"btn_{index}", use_container_width=True):
-                                    try:
-                                        cell = sheet.find(str(order_id))
-                                        if cell:
-                                            sheet.update_cell(cell.row, 15, "Checked") 
-                                            st.toast(f"Updated #{run_no}!", icon="🎉")
-                                            time.sleep(1)
-                                            st.rerun()
-                                        else:
-                                            st.error("Order ID not found.")
-                                    except Exception as ex:
-                                        st.error(f"Failed: {ex}")
+                                st.info("No Preview")
+                        else:
+                             st.info("No Image Found")
+                    else:
+                        st.info("No Image Info")
 
-                        st.markdown("</div>", unsafe_allow_html=True) # End Card
-
-            else:
-                st.info("No orders found.")
+            # --- DETAIL COLUMN ---
+            with col_detail:
+                st.markdown(f"""
+                <div class="order-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #444; padding-bottom:10px; margin-bottom:10px;">
+                        <span style="font-size:1.4rem; font-weight:bold; color:#4CAF50;">#{row.get('Run No', '-')}</span>
+                        <span class="status-badge {status_style}">{status_label}</span>
+                    </div>
+                    <div style="color:#eee; font-size:1rem;">
+                        <div style="margin-bottom:4px;"><b>👤 Name:</b> {row.get('Name', '-')}</div>
+                        <div style="margin-bottom:4px;"><b>📦 Item:</b> {row.get('Item', '-')}</div>
+                        <div style="margin-bottom:4px;"><b>💰 Price:</b> {row.get('Price', '-')} | <b>🪙 Coins:</b> {row.get('Coins', '0')}</div>
+                        <div style="margin-bottom:4px;"><b>🏗️ Platform:</b> {row.get('Platform', '-')} | <b>📅 Date:</b> {row.get('Date', '-')}</div>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top:8px;">
+                            Order ID: {row.get('Order ID', '-')} <br>
+                            Tracking: {row.get('Tracking', '-')}
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
                 
-    except Exception as e:
-        st.error(f"⚡ Error processing data: {e}")
-        st.write("Debug info:", e)
+                # --- ACTIONS ---
+                # Check / Uncheck
+                
+                # If Checked -> Show Uncheck Button
+                if is_checked:
+                    if st.button("❌ Uncheck", key=f"unchk_{idx}", type="secondary", use_container_width=True):
+                         dialog_confirm_uncheck(row.get('Order ID'), row.get('Run No'))
+                         
+                # If Pending -> Show Check Button
+                else:
+                    if st.button(f"✅ Check", key=f"chk_{idx}", type="primary", use_container_width=True):
+                         order_id = row.get('Order ID')
+                         if order_id:
+                             if sheet_service.update_order_status(order_id, "Checked"):
+                                 st.success(f"Updated {order_id}!")
+                                 time.sleep(0.5)
+                                 st.cache_data.clear()
+                                 st.rerun()
+                             else:
+                                 st.error("Update failed")
+
 else:
-    st.warning("⚠️ No connection to Google Sheets.")
+    st.info("No data found or Sheet is empty.")

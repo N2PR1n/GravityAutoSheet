@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravity Stock Manager</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-surface border-bottom border-secondary mb-4">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1 d-flex align-items-center">
+                📦 <span class="ms-2 fw-bold">Check Box Dashboard</span>
+            </span>
+            <span class="badge bg-success" id="connection-status">Online</span>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid">
+        <!-- Search & Scan Bar -->
+        <div class="row mb-3 g-2">
+            <div class="col-12 col-md">
+                <input type="text" id="search-input"
+                    class="form-control form-control-lg bg-surface text-light border-secondary"
+                    placeholder="🔍 Search Order ID, Name, Tracking...">
+            </div>
+            <div class="col-12 col-md-auto">
+                <button class="btn btn-primary btn-lg w-100" data-bs-toggle="modal" data-bs-target="#scannerModal">
+                    📷 Scan Barcode
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters & Stats -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-secondary active" onclick="setFilter('all')"
+                    id="btn-filter-all">All</button>
+                <button type="button" class="btn btn-outline-warning" onclick="setFilter('pending')"
+                    id="btn-filter-pending">Pending</button>
+                <button type="button" class="btn btn-outline-success" onclick="setFilter('checked')"
+                    id="btn-filter-checked">Checked</button>
+            </div>
+
+            <div>
+                <span class="text-muted me-2">Found <span id="order-count">0</span> orders</span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="fetchOrders()">🔄 Refresh</button>
+            </div>
+        </div>
+
+        <!-- Order List -->
+        <div id="order-list" class="row g-3">
+            <!-- Cards will be injected here -->
+            <div class="col-12 text-center py-5 text-muted">
+                <div class="spinner-border text-primary" role="status"></div>
+                <div class="mt-2">Loading Orders...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scanner Modal -->
+    <div class="modal fade" id="scannerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-surface border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">📷 Scan Barcode</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="reader" style="width: 100%;"></div>
+                </div>
+                <div class="modal-footer border-secondary justify-content-center">
+                    <span class="text-muted small">Point camera at a barcode</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-body p-0 text-center">
+                    <img src="" id="full-image" class="img-fluid rounded shadow-lg">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive"
+            aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toast-msg">Action Successful</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <!-- App Logic -->
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>

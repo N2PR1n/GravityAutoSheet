@@ -1,29 +1,12 @@
-# Core API & Server
-fastapi
-uvicorn
-python-multipart
-requests
+flask
+gunicorn
+pandas
 python-dotenv
-
-# LINE & AI
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
 line-bot-sdk
 openai
-
-# Google Services (Sheets & Drive)
-gspread
-google-auth
-google-auth-oauthlib
-google-auth-httplib2
-google-api-python-client
-
-# Data Processing
-pandas
-openpyxl
-
-# Image Processing
 Pillow
-
-# Web App (Dashboard)
-streamlit
-watchdog
-
+requests
+certifi
