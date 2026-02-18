@@ -169,8 +169,10 @@ function renderOrders(orders) {
                 </div>
             </div>
         `;
-        listEl.innerHTML += card;
-    });
+        return card;
+    }).join('');
+
+    listEl.innerHTML = html;
 }
 
 function filterOrders(query) {
