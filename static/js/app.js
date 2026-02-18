@@ -8,6 +8,7 @@ let currentFilterStatus = 'all'; // 'all', 'pending', 'checked'
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchOrders();
+    fetchSheets(); // Add this
     initScanner();
 
     // Search Listener
@@ -380,4 +381,60 @@ function onScanSuccess(decodedText, decodedResult) {
 
 function onScanError(errorMessage) {
     // parse error, ignore loop
+}
+
+// --- Sheet Logic ---
+async function fetchSheets() {
+    try {
+        const response = await fetch('/api/sheets');
+        const data = await response.json();
+
+        if (data.sheets) {
+            const listEl = document.getElementById('sheet-list-dropdown');
+            const currentEl = document.getElementById('current-sheet-name');
+
+            // Set Current
+            if (data.current) {
+                currentEl.innerText = data.current;
+            }
+
+            // Populate List
+            // Keep header
+            listEl.innerHTML = `<li><h6 class="dropdown-header small text-uppercase fw-bold text-muted">Select Month</h6></li>`;
+
+            data.sheets.forEach(sheet => {
+                const isActive = sheet === data.current ? 'active text-primary bg-primary-subtle rounded' : '';
+                const li = document.createElement('li');
+                li.innerHTML = `<button class="dropdown-item ${isActive} py-2 mb-1 rounded" onclick="switchSheet('${sheet}')">${sheet}</button>`;
+                listEl.appendChild(li);
+            });
+        }
+    } catch (e) {
+        console.error("Error fetching sheets:", e);
+    }
+}
+
+async function switchSheet(sheetName) {
+    try {
+        document.getElementById('current-sheet-name').innerHTML = '<div class="spinner-border spinner-border-sm" role="status"></div>';
+
+        const response = await fetch('/api/set_sheet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sheet_name: sheetName })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast(`Switched to ${sheetName}`);
+            await fetchSheets(); // Refresh UI
+            await fetchOrders(); // Reload Data
+        } else {
+            showToast('Failed to switch sheet');
+            fetchSheets(); // Reset UI
+        }
+    } catch (e) {
+        console.error("Error switching sheet:", e);
+        showToast('Error switching sheet');
+    }
 }
