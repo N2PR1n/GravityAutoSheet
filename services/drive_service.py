@@ -99,3 +99,21 @@ class DriveService:
             print(f"Search Error: {e}")
             return []
 
+    def get_file_content(self, file_id):
+        """Downloads file content as bytes."""
+        if not self.service: return None
+        try:
+            # Use googleapiclient.http.MediaIoBaseDownload
+            request = self.service.files().get_media(fileId=file_id)
+            from io import BytesIO
+            fh = BytesIO()
+            from googleapiclient.http import MediaIoBaseDownload
+            downloader = MediaIoBaseDownload(fh, request)
+            done = False
+            while done is False:
+                status, done = downloader.next_chunk()
+            return fh.getvalue()
+        except Exception as e:
+            print(f"Error downloading file content: {e}")
+            return None
+
