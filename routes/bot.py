@@ -98,6 +98,9 @@ def handle_text_message(event):
 
     if text in ["export", "ขอไฟล์เบิกเงิน", "ทำบัญชี"]:
         try:
+            # Lazy Load Services
+            _, _, _, _, accounting_service = get_services()
+            
             # Notify processing
             messaging_api.reply_message(
                 ReplyMessageRequest(
@@ -168,6 +171,9 @@ def process_images_thread(user_id):
     
     image_ids = state['images']
     reply_token = state['reply_token']
+
+    # Lazy Load Services
+    image_service, drive_service, openai_service, sheet_service, _ = get_services()
 
     try:
         # Notify Start
