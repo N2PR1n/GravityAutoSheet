@@ -84,6 +84,27 @@ body {
     border: 1px solid #FFC107;
 }
 
+.status-checked {
+    background: rgba(3, 169, 244, 0.15);
+    /* Light Blue */
+    color: #4FC3F7;
+    border: 1px solid #03A9F4;
+}
+
+.status-saved {
+    background: rgba(255, 152, 0, 0.15);
+    /* Orange */
+    color: #FFB74D;
+    border: 1px solid #FF9800;
+}
+
+.status-cancelled {
+    background: rgba(244, 67, 54, 0.15);
+    /* Red */
+    color: #E57373;
+    border: 1px solid #F44336;
+}
+
 /* Image */
 .order-img {
     width: 100%;

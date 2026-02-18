@@ -69,10 +69,15 @@ async function updateStatus(orderId, action) {
 function setFilter(status) {
     currentFilterStatus = status;
 
-    // Update Buttons
-    document.getElementById('btn-filter-all').className = `btn btn-outline-secondary ${status === 'all' ? 'active' : ''}`;
-    document.getElementById('btn-filter-pending').className = `btn btn-outline-warning ${status === 'pending' ? 'active' : ''}`;
-    document.getElementById('btn-filter-checked').className = `btn btn-outline-success ${status === 'checked' ? 'active' : ''}`;
+    // Reset all buttons
+    ['all', 'pending', 'checked', 'saved', 'cancelled'].forEach(s => {
+        const btn = document.getElementById(`btn-filter-${s}`);
+        if (btn) btn.classList.remove('active');
+    });
+
+    // Set Active
+    const activeBtn = document.getElementById(`btn-filter-${status}`);
+    if (activeBtn) activeBtn.classList.add('active');
 
     applyFilters();
 }
@@ -93,13 +98,31 @@ function renderOrders(orders) {
         return;
     }
 
-    orders.forEach(order => {
-        const isChecked = (order['Status'] || '').toLowerCase() === 'checked';
-        const statusClass = isChecked ? 'status-checked' : 'status-pending';
-        const statusLabel = order['Status'] || 'Pending';
+    const html = orders.map(order => {
+        const rawStatus = (order['Status'] || 'Pending').toLowerCase().trim();
+        let statusClass = 'status-pending';
+        let statusLabel = order['Status'] || 'Pending';
+
+        // Normalize Status
+        if (rawStatus === 'checked') {
+            statusClass = 'status-checked';
+            statusLabel = 'Checked'; // Blue
+        } else if (rawStatus === 'saved') {
+            statusClass = 'status-saved';
+            statusLabel = 'Saved'; // Orange
+        } else if (rawStatus.includes('cancel') || rawStatus === 'cancelled' || rawStatus === 'cancleed') {
+            statusClass = 'status-cancelled';
+            statusLabel = 'Cancelled'; // Red
+            if (rawStatus === 'cancleed') statusLabel = 'Cancelled';
+        } else {
+            statusClass = 'status-pending'; // Yellow default
+            statusLabel = 'Pending';
+        }
+
+        const isChecked = rawStatus === 'checked';
         const btnLogin = isChecked
             ? `<button class="btn btn-outline-danger w-100" onclick="updateStatus('${order['Order ID']}', 'uncheck')">❌ Uncheck</button>`
-            : `<button class="btn btn-success w-100" onclick="updateStatus('${order['Order ID']}', 'check')">✅ Check</button>`;
+            : `<button class="btn btn-info w-100 text-white" onclick="updateStatus('${order['Order ID']}', 'check')">✅ Check</button>`;
 
         // Image Handling
         let imgHtml = '';
@@ -202,9 +225,17 @@ function filterOrders(query) {
 
         // 2. Status Filter
         if (currentFilterStatus === 'all') return true;
-        const status = (o['Status'] || '').toLowerCase();
-        if (currentFilterStatus === 'checked') return status === 'checked';
-        if (currentFilterStatus === 'pending') return status !== 'checked'; // Assume anything not checked is pending
+
+        const rawStatus = (o['Status'] || 'pending').toLowerCase().trim();
+
+        if (currentFilterStatus === 'checked') return rawStatus === 'checked';
+        if (currentFilterStatus === 'saved') return rawStatus === 'saved';
+        if (currentFilterStatus === 'cancelled') return rawStatus.includes('cancel');
+
+        if (currentFilterStatus === 'pending') {
+            // Pending means NOT Checked, NOT Saved, NOT Cancelled
+            return rawStatus !== 'checked' && rawStatus !== 'saved' && !rawStatus.includes('cancel');
+        }
 
         return true;
     });

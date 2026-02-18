@@ -52,8 +52,13 @@
                     id="btn-filter-all">All</button>
                 <button type="button" class="btn btn-outline-warning" onclick="setFilter('pending')"
                     id="btn-filter-pending">Pending</button>
-                <button type="button" class="btn btn-outline-success" onclick="setFilter('checked')"
+                <button type="button" class="btn btn-outline-info" onclick="setFilter('checked')"
                     id="btn-filter-checked">Checked</button>
+                <button type="button" class="btn btn-outline-warning border-warning text-warning-emphasis"
+                    onclick="setFilter('saved')" id="btn-filter-saved"
+                    style="--bs-btn-color: #fd7e14; --bs-btn-border-color: #fd7e14; --bs-btn-hover-bg: #fd7e14; --bs-btn-hover-border-color: #fd7e14;">Saved</button>
+                <button type="button" class="btn btn-outline-danger" onclick="setFilter('cancelled')"
+                    id="btn-filter-cancelled">Cancelled</button>
             </div>
 
             <div>
