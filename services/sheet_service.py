@@ -10,11 +10,18 @@ def allowed_gai_family():
 urllib3_cn.allowed_gai_family = allowed_gai_family
 
 class SheetService:
-    def __init__(self, credentials_path, sheet_id, sheet_name=None):
+    def __init__(self, credentials_source, sheet_id, sheet_name=None):
         self.scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
         try:
-            self.creds = service_account.Credentials.from_service_account_file(
-                credentials_path, scopes=self.scopes)
+            if isinstance(credentials_source, dict):
+                # Load from Dict
+                self.creds = service_account.Credentials.from_service_account_info(
+                    credentials_source, scopes=self.scopes)
+            else:
+                # Load from File Path
+                self.creds = service_account.Credentials.from_service_account_file(
+                    credentials_source, scopes=self.scopes)
+            
             self.client = gspread.authorize(self.creds)
             
             if sheet_name:

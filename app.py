@@ -25,75 +25,54 @@ app.register_blueprint(bot_bp)
 sheet_service = None
 drive_service = None
 
+import json
+
+# ... (rest of imports)
+
+# ...
+
 def get_services():
     global sheet_service, drive_service
     
     if sheet_service and drive_service:
         return sheet_service, drive_service
 
-    creds_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    creds_source = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
     sheet_id = os.getenv('GOOGLE_SHEET_ID')
     sheet_name = os.getenv('GOOGLE_SHEET_NAME')
     
-    # Resolve Path
-    if creds_path and not os.path.isabs(creds_path):
-        creds_path = os.path.abspath(os.path.join(current_dir, creds_path))
-        
-    print(f"DEBUG: Loading credentials from {creds_path}")
+    # Check if creds_source is a file path or JSON string
+    if creds_source:
+        if creds_source.strip().startswith('{'):
+            try:
+                print("DEBUG: Detected JSON string for credentials.")
+                creds_source = json.loads(creds_source)
+            except json.JSONDecodeError as e:
+                print(f"❌ Error parsing GOOGLE_APPLICATION_CREDENTIALS as JSON: {e}")
+                return None, None
+        else:
+            # Assume File Path
+            if not os.path.isabs(creds_source):
+                creds_source = os.path.abspath(os.path.join(current_dir, creds_source))
+            
+            print(f"DEBUG: Loading credentials from file: {creds_source}")
+            if not os.path.exists(creds_source):
+                print(f"❌ Credentials file not found at: {creds_source}")
+                return None, None
 
-    if not creds_path or not os.path.exists(creds_path):
-        print(f"❌ Credentials not found at: {creds_path}")
+    if not creds_source:
+        print("❌ GOOGLE_APPLICATION_CREDENTIALS not set.")
         return None, None
 
     try:
-        sheet_service = SheetService(creds_path, sheet_id, sheet_name)
-        drive_service = DriveService(creds_path)
+        sheet_service = SheetService(creds_source, sheet_id, sheet_name)
+        drive_service = DriveService(creds_source) # Drive might ignore it but passing anyway
         return sheet_service, drive_service
     except Exception as e:
         print(f"❌ Service Init Failed: {e}")
         return None, None
 
-# Initialize on startup
-get_services()
-
-# --- HELPERS ---
-def process_drive_image(link):
-    """Converts Drive Viewer Link to Direct Image URL."""
-    if not isinstance(link, str): return None
-    link = link.strip()
-    if not link: return None
-    
-    # Check if it's already a direct link or something else
-    if "lh3.googleusercontent.com" in link:
-        return link
-
-    # Extract ID
-    # 1. Cleaner Regex
-    match = re.search(r'"(http[^"]+)"', link)
-    url = match.group(1) if match else link
-    
-    if not url.startswith('http'): return None
-
-    # 2. Extract File ID
-    file_id = None
-    match_id = re.search(r'/d/([a-zA-Z0-9_-]+)', url)
-    if not match_id:
-        match_id = re.search(r'id=([a-zA-Z0-9_-]+)', url)
-        
-    if match_id:
-        file_id = match_id.group(1)
-            
-    if file_id:
-        # Return lh3 link which acts as a direct image proxy
-        return f"https://lh3.googleusercontent.com/d/{file_id}=s1000"
-
-    return url
-
-# --- ROUTES ---
-
-@app.route('/')
-def index():
-    return render_template('index.html')
+# ...
 
 @app.route('/api/orders')
 def get_orders():
@@ -114,12 +93,12 @@ def get_orders():
             'Item': 'Item', 'item_name': 'Item', 'ชื่อของ': 'Item', 'รายการสินค้า': 'Item',
             'Price': 'Price', 'price': 'Price', 'ยอดรวม': 'Price', 'ราคาของ': 'Price',
             'Status': 'Status', 'status': 'Status', 'สถานะ': 'Status',
-            'Order ID': 'Order ID', 'order_id': 'Order ID', 'เลขออเดอร์': 'Order ID',
+            'Order ID': 'Order ID', 'order_id': 'Order ID', 'เลขออเดอร์': 'Order ID', 'เลขอเดอร์': 'Order ID',
             'Image Link': 'Image Link', 'image_link': 'Image Link', 'Link รูป': 'Image Link',
             'Tracking Number': 'Tracking', 'tracking_number': 'Tracking', 'เลขพัสดุ': 'Tracking',
             'Platform': 'Platform', 'platform': 'Platform',
             'Coins': 'Coins', 'coins': 'Coins', 'เหรียญ': 'Coins',
-            'Date': 'Date', 'date': 'Date', 'วันที่ bought': 'Date', 'วันที่': 'Date',
+            'Date': 'Date', 'date': 'Date', 'วันที่ bought': 'Date', 'วันที่': 'Date', 'วันที่ซื้อ': 'Date',
             'Location': 'Location', 'location': 'Location', 'ที่อยู่': 'Location', 'ส่งที่ไหน': 'Location'
         }
         
