@@ -95,6 +95,7 @@ def index_v2():
 
 @app.route('/api/orders')
 def get_orders():
+    sheet_service, _ = get_services()
     if not sheet_service:
         return jsonify({'error': 'Services not initialized'}), 500
 
@@ -147,6 +148,7 @@ def get_orders():
 
 @app.route('/api/orders/check', methods=['POST'])
 def check_order():
+    sheet_service, _ = get_services()
     if not sheet_service: return jsonify({'error': 'Service unavailable'}), 500
     
     data = request.json
@@ -163,6 +165,7 @@ def check_order():
 
 @app.route('/api/orders/uncheck', methods=['POST'])
 def uncheck_order():
+    sheet_service, _ = get_services()
     if not sheet_service: return jsonify({'error': 'Service unavailable'}), 500
     
     data = request.json
@@ -179,6 +182,7 @@ def uncheck_order():
 
 @app.route('/api/find_image/<order_target>')
 def find_image(order_target):
+    _, drive_service = get_services()
     if not drive_service: return jsonify({'error': 'Service unavailable'}), 500
     
     # User provided folder ID
@@ -207,6 +211,7 @@ def find_image(order_target):
 
 @app.route('/api/sheets', methods=['GET'])
 def get_sheets():
+    sheet_service, _ = get_services()
     if not sheet_service: return jsonify({'error': 'Service unavailable'}), 500
     try:
         sheets = sheet_service.get_worksheets()
@@ -217,6 +222,7 @@ def get_sheets():
 
 @app.route('/api/set_sheet', methods=['POST'])
 def set_sheet():
+    sheet_service, _ = get_services()
     if not sheet_service: return jsonify({'error': 'Service unavailable'}), 500
     data = request.json
     sheet_name = data.get('sheet_name')
