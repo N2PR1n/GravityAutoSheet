@@ -1,13 +1,28 @@
-from googleapiclient.http import MediaFileUpload
-from services.auth_service import get_drive_service
-import os
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 
 class DriveService:
-    def __init__(self, credentials_path=None):
-        # credentials_path ignored for Drive (uses User OAuth via token.json)
+    def __init__(self, credentials_source=None):
+        self.service = None
+        self.scopes = ['https://www.googleapis.com/auth/drive']
+        
+        if not credentials_source:
+            print("Warning: No credentials source provided to DriveService.")
+            return
+
         try:
-            self.service = get_drive_service()
-            print("DEBUG: Drive Service Initialized with User OAuth!")
+            creds = None
+            if isinstance(credentials_source, dict):
+                # Load from Dict
+                creds = service_account.Credentials.from_service_account_info(
+                    credentials_source, scopes=self.scopes)
+            else:
+                # Load from File Path
+                creds = service_account.Credentials.from_service_account_file(
+                    credentials_source, scopes=self.scopes)
+            
+            self.service = build('drive', 'v3', credentials=creds)
+            print("DEBUG: Drive Service Initialized with Service Account!")
         except Exception as e:
             print(f"Warning: DriveService init failed: {e}")
             self.service = None
