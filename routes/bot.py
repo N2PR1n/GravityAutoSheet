@@ -59,13 +59,31 @@ api_client = ApiClient(configuration)
 messaging_api = MessagingApi(api_client)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
-# Services
-image_service = ImageService()
-creds = get_credentials()
-drive_service = DriveService(creds)
-openai_service = OpenAIService(OPENAI_API_KEY)
-sheet_service = SheetService(creds, GOOGLE_SHEET_ID, GOOGLE_SHEET_NAME)
-accounting_service = AccountingService(sheet_service, drive_service)
+# Services (Lazy Loaded Global Vars)
+_image_service = None
+_drive_service = None
+_openai_service = None
+_sheet_service = None
+_accounting_service = None
+
+def get_services():
+    global _image_service, _drive_service, _openai_service, _sheet_service, _accounting_service
+    
+    # Check if loaded (check key services)
+    if _sheet_service and _drive_service and _openai_service:
+        return _image_service, _drive_service, _openai_service, _sheet_service, _accounting_service
+
+    # Load Creds
+    creds = get_credentials()
+    
+    # Init Services
+    if not _image_service: _image_service = ImageService()
+    if not _drive_service: _drive_service = DriveService(creds)
+    if not _openai_service: _openai_service = OpenAIService(OPENAI_API_KEY)
+    if not _sheet_service: _sheet_service = SheetService(creds, GOOGLE_SHEET_ID, GOOGLE_SHEET_NAME)
+    if not _accounting_service: _accounting_service = AccountingService(_sheet_service, _drive_service)
+    
+    return _image_service, _drive_service, _openai_service, _sheet_service, _accounting_service
 
 # State for Image Batching
 # user_id: {'images': [], 'timer': threading.Timer, 'reply_token': str}
