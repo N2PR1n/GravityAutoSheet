@@ -108,10 +108,11 @@ def get_orders():
         
         # Normalize Columns
         col_map = {
-            'Run No': 'Run No', 'run_no': 'Run No', 'ลำดับ': 'Run No',
+            'Run No': 'Run No', 'run_no': 'Run No', 'ลำดับ': 'Run No', 'Run No.': 'Run No',
             'Name': 'Name', 'receiver_name': 'Name', 'ชื่อลูกค้า': 'Name', 'ชื่อหน้ากล่อง': 'Name',
             'Item': 'Item', 'item_name': 'Item', 'ชื่อของ': 'Item', 'รายการสินค้า': 'Item',
             'Price': 'Price', 'price': 'Price', 'ยอดรวม': 'Price', 'ราคาของ': 'Price',
+            'Shop': 'Shop', 'shop': 'Shop', 'shop_name': 'Shop', 'ชื่อร้าน': 'Shop',
             'Status': 'Status', 'status': 'Status', 'สถานะ': 'Status',
             'Order ID': 'Order ID', 'order_id': 'Order ID', 'เลขออเดอร์': 'Order ID', 'เลขอเดอร์': 'Order ID',
             'Image Link': 'Image Link', 'image_link': 'Image Link', 'Link รูป': 'Image Link',
