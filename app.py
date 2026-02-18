@@ -130,6 +130,10 @@ def get_orders():
         
         # Extended Logic: Fetch Formulas for Image Links
         image_formulas = sheet_service.get_image_links()
+        print(f"DEBUG: Fetched {len(image_formulas)} formulas.", flush=True)
+        if len(image_formulas) > 1:
+            print(f"DEBUG: Sample Formula (Row 2): {image_formulas[1]}", flush=True)
+
         # formulas[0] is header. records[0] is row 2.
         # So records[i] -> formulas[i+1]
         
@@ -139,10 +143,13 @@ def get_orders():
             if formula_idx < len(image_formulas):
                 raw_formula = image_formulas[formula_idx]
                 # Extract URL from =HYPERLINK("url", "label")
-                # Simple regex for "http..."
-                match_url = re.search(r'"(https?://[^"]+)"', raw_formula)
+                # Handle both " and ' quotes
+                match_url = re.search(r'["\'](https?://[^"\']+)["\']', raw_formula)
                 if match_url:
                     record['Image Link'] = match_url.group(1)
+                    if i == 0: print(f"DEBUG: Extracted URL for Row 1: {match_url.group(1)}", flush=True)
+                elif i == 0:
+                     print(f"DEBUG: Regex failed for Row 1 formula: {raw_formula}", flush=True)
         
         df = pd.DataFrame(data)
         
