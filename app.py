@@ -4,6 +4,7 @@ import sys
 import pandas as pd
 from dotenv import load_dotenv
 import re
+import json
 
 load_dotenv() # Load first!
 
@@ -18,14 +19,22 @@ from routes.bot import bot_bp
 
 # --- CONFIG & INIT ---
 app = Flask(__name__)
-app.register_blueprint(bot_bp)
-# load_dotenv() # Moved to top
+try:
+    app.register_blueprint(bot_bp)
+except Exception as e:
+    print(f"❌ Error registering blueprint: {e}")
 
 # Service Instances
 sheet_service = None
 drive_service = None
 
-import json
+def get_services():
+    global sheet_service, drive_service
+    
+    if sheet_service and drive_service:
+        return sheet_service, drive_service
+
+    creds_source = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 
 # ... (rest of imports)
 

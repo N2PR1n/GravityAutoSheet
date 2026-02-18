@@ -29,16 +29,29 @@ from services.accounting_service import AccountingService
 bot_bp = Blueprint('bot', __name__)
 
 # Config
+import json
+
+# Config
 LINE_CHANNEL_ACCESS_TOKEN = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
 LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-GOOGLE_CREDENTIALS_PATH = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+GOOGLE_CREDENTIALS_SOURCE = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
 GOOGLE_SHEET_ID = os.getenv('GOOGLE_SHEET_ID')
 GOOGLE_SHEET_NAME = os.getenv('GOOGLE_SHEET_NAME')
 GOOGLE_DRIVE_FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID')
 
 # Ensure certs
 os.environ['SSL_CERT_FILE'] = certifi.where()
+
+# Helper to load creds
+def get_credentials():
+    source = GOOGLE_CREDENTIALS_SOURCE
+    if source and source.strip().startswith('{'):
+        try:
+            return json.loads(source)
+        except:
+            print("Failed to parse JSON credentials in bot.py")
+    return source
 
 # LINE SDK
 configuration = Configuration(access_token=LINE_CHANNEL_ACCESS_TOKEN)
@@ -48,9 +61,10 @@ handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
 # Services
 image_service = ImageService()
-drive_service = DriveService(GOOGLE_CREDENTIALS_PATH)
+creds = get_credentials()
+drive_service = DriveService(creds)
 openai_service = OpenAIService(OPENAI_API_KEY)
-sheet_service = SheetService(GOOGLE_CREDENTIALS_PATH, GOOGLE_SHEET_ID, GOOGLE_SHEET_NAME)
+sheet_service = SheetService(creds, GOOGLE_SHEET_ID, GOOGLE_SHEET_NAME)
 accounting_service = AccountingService(sheet_service, drive_service)
 
 # State for Image Batching
