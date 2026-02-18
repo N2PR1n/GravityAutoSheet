@@ -107,7 +107,7 @@ function renderOrders(orders) {
         if (rawStatus === 'checked') {
             statusClass = 'status-checked';
             statusLabel = 'Checked'; // Blue
-        } else if (rawStatus === 'saved') {
+        } else if (rawStatus === 'saved' || rawStatus === 'save') {
             statusClass = 'status-saved';
             statusLabel = 'Saved'; // Orange
         } else if (rawStatus.includes('cancel') || rawStatus === 'cancelled' || rawStatus === 'cancleed') {
@@ -159,7 +159,7 @@ function renderOrders(orders) {
 
         const card = `
             <div class="col-12 col-md-6 col-lg-4">
-                <div class="order-card h-100">
+                <div class="order-card h-100 card-${statusClass.replace('status-', '')}">
                     <div class="card-header-custom d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
                            <span class="run-no me-2">${order['Run No'] || '-'}</span>
