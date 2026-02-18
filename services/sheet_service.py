@@ -28,12 +28,34 @@ class SheetService:
                 self.sheet = self.client.open_by_key(sheet_id).sheet1 # Default to first sheet
             
             print(f"DEBUG: Active Sheet Title: '{self.sheet.title}'")
-
         except Exception as e:
             import traceback
             traceback.print_exc()
             print(f"Warning: SheetService init failed: {e}")
             self.sheet = None
+
+    def get_worksheets(self):
+        """Returns a list of all worksheet titles."""
+        if not self.client: return []
+        try:
+            # Re-open spreadsheet to ensure fresh list
+            spreadsheet = self.client.open_by_key(self.sheet.spreadsheet.id)
+            return [ws.title for ws in spreadsheet.worksheets()]
+        except Exception as e:
+            print(f"Error getting worksheets: {e}")
+            return []
+
+    def set_worksheet(self, sheet_name):
+        """Switches the active worksheet."""
+        if not self.client: return False
+        try:
+            spreadsheet = self.client.open_by_key(self.sheet.spreadsheet.id)
+            self.sheet = spreadsheet.worksheet(sheet_name)
+            print(f"DEBUG: Switched to Sheet: '{self.sheet.title}'")
+            return True
+        except Exception as e:
+            print(f"Error switching worksheet: {e}")
+            return False
 
     def check_duplicate(self, order_id):
         """Checks if order_id already exists in Column L (Index 12)."""

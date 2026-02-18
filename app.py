@@ -207,6 +207,29 @@ def find_image(order_target):
         print(f"❌ Find Image Error: {e}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/sheets', methods=['GET'])
+def get_sheets():
+    if not sheet_service: return jsonify({'error': 'Service unavailable'}), 500
+    try:
+        sheets = sheet_service.get_worksheets()
+        current = sheet_service.sheet.title if sheet_service.sheet else ""
+        return jsonify({'sheets': sheets, 'current': current})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/set_sheet', methods=['POST'])
+def set_sheet():
+    if not sheet_service: return jsonify({'error': 'Service unavailable'}), 500
+    data = request.json
+    sheet_name = data.get('sheet_name')
+    if not sheet_name: return jsonify({'error': 'Sheet name required'}), 400
+    
+    success = sheet_service.set_worksheet(sheet_name)
+    if success:
+        return jsonify({'success': True})
+    else:
+        return jsonify({'error': 'Failed to switch sheet'}), 500
+
 if __name__ == '__main__':
     # Use 0.0.0.0 to allow access from local network
     app.run(host='0.0.0.0', port=5001, debug=True)

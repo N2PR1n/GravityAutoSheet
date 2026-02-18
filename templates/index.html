@@ -21,7 +21,23 @@
             <span class="navbar-brand mb-0 h1 d-flex align-items-center">
                 📦 <span class="ms-2">Check Box Manager</span>
             </span>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 align-items-center">
+                <!-- Sheet Switcher -->
+                <div class="dropdown me-2">
+                    <button
+                        class="btn btn-sm btn-light dropdown-toggle shadow-sm border-0 d-flex align-items-center gap-2"
+                        type="button" id="sheetDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        📅 <span id="current-sheet-name">Loading...</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 p-2" id="sheet-list-dropdown"
+                        style="min-width: 200px;">
+                        <li>
+                            <h6 class="dropdown-header small text-uppercase fw-bold text-muted">Select Month</h6>
+                        </li>
+                        <!-- Sheets injected here -->
+                    </ul>
+                </div>
+
                 <span
                     class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-2 d-flex align-items-center gap-1">
                     <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
