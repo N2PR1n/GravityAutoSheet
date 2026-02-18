@@ -85,6 +85,30 @@ def get_services():
 
 # --- ROUTES ---
 
+def process_drive_image(link):
+    if not link: return ""
+    # Extract ID from: 
+    # 1. https://drive.google.com/open?id=...
+    # 2. https://drive.google.com/file/d/.../view
+    
+    file_id = None
+    # Pattern 1: id=...
+    match_id = re.search(r'id=([a-zA-Z0-9_-]+)', link)
+    if match_id:
+        file_id = match_id.group(1)
+    
+    # Pattern 2: /d/...
+    if not file_id:
+        match_d = re.search(r'/d/([a-zA-Z0-9_-]+)', link)
+        if match_d:
+            file_id = match_d.group(1)
+            
+    if file_id:
+        # Return direct download/view link
+        return f"https://drive.google.com/uc?export=view&id={file_id}"
+        
+    return link
+
 @app.route('/')
 def index():
     return render_template('index.html')
