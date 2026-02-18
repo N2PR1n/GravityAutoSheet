@@ -128,6 +128,22 @@ def get_orders():
         if not data:
             return jsonify([])
         
+        # Extended Logic: Fetch Formulas for Image Links
+        image_formulas = sheet_service.get_image_links()
+        # formulas[0] is header. records[0] is row 2.
+        # So records[i] -> formulas[i+1]
+        
+        for i, record in enumerate(data):
+            # Safe index check
+            formula_idx = i + 1
+            if formula_idx < len(image_formulas):
+                raw_formula = image_formulas[formula_idx]
+                # Extract URL from =HYPERLINK("url", "label")
+                # Simple regex for "http..."
+                match_url = re.search(r'"(https?://[^"]+)"', raw_formula)
+                if match_url:
+                    record['Image Link'] = match_url.group(1)
+        
         df = pd.DataFrame(data)
         
         # Normalize Columns

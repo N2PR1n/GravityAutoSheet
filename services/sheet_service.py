@@ -80,9 +80,21 @@ class SheetService:
         """Fetches all records from the sheet."""
         if not self.sheet: return []
         try:
+            # Robust fetch: Handle duplicate headers by ignoring them? 
+            # Or just let it fail if user has issues, but user says it works.
             return self.sheet.get_all_records()
         except Exception as e:
             print(f"Error fetching data: {e}")
+            return []
+
+    def get_image_links(self):
+        """Fetches Column A formulas to extract real links."""
+        if not self.sheet: return []
+        try:
+            # Fetch Column A (Index 1) as formulas
+            return self.sheet.col_values(1, value_render_option='FORMULA')
+        except Exception as e:
+            print(f"Error fetching image links: {e}")
             return []
 
     def get_next_run_no(self):
