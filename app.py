@@ -83,6 +83,16 @@ def get_services():
 
 # ...
 
+# --- ROUTES ---
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/v2')
+def index_v2():
+    return render_template('index_v2.html')
+
 @app.route('/api/orders')
 def get_orders():
     if not sheet_service:

@@ -1,0 +1,27 @@
+services:
+  # 1. Line Bot Service (Background / Webhook)
+  - type: web
+    name: gravity-line-bot
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: FLASK_APP
+        value: app.py
+      - key: PYTHON_VERSION
+        value: 3.9.13
+    # Sync env vars from dashboard or define placeholders here if needed
+    # Note: You will need to attach your .env "Secret File" or add env vars manually in Dashboard
+
+  # 2. Web UI Service (Streamlit)
+  - type: web
+    name: gravity-web-ui
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run web_app/Home.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.13
+    # Sync env vars here too
