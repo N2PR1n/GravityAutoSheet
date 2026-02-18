@@ -104,10 +104,28 @@ def process_drive_image(link):
             file_id = match_d.group(1)
             
     if file_id:
-        # Return direct download/view link
-        return f"https://drive.google.com/uc?export=view&id={file_id}"
+        # RETURN PROXY URL
+        # This bypasses 403 Forbidden and Referrer issues
+        return f"/api/proxy_image/{file_id}"
         
     return link
+
+@app.route('/api/proxy_image/<file_id>')
+def proxy_image(file_id):
+    _, drive_service = get_services()
+    if not drive_service: return jsonify({'error': 'Service unavailable'}), 500
+    
+    try:
+        content = drive_service.get_file_content(file_id)
+        if content:
+            from flask import send_file
+            from io import BytesIO
+            return send_file(BytesIO(content), mimetype='image/jpeg') # Assume JPEG for now
+        else:
+             return "Image not found", 404
+    except Exception as e:
+        print(f"Proxy Error: {e}")
+        return str(e), 500
 
 @app.route('/')
 def index():
