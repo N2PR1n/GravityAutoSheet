@@ -10,7 +10,7 @@ services:
       - key: FLASK_APP
         value: app.py
       - key: PYTHON_VERSION
-        value: 3.9.13
+        value: 3.10.12
     # Sync env vars from dashboard or define placeholders here if needed
     # Note: You will need to attach your .env "Secret File" or add env vars manually in Dashboard
 
