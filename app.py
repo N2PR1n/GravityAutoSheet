@@ -161,7 +161,7 @@ def get_orders():
             # Safe index check
             formula_idx = i + 1
             if formula_idx < len(image_formulas):
-                raw_formula = image_formulas[formula_idx]
+                raw_formula = str(image_formulas[formula_idx])
                 # Extract URL from =HYPERLINK("url", "label")
                 # Handle both " and ' quotes
                 match_url = re.search(r'["\'](https?://[^"\']+)["\']', raw_formula)
