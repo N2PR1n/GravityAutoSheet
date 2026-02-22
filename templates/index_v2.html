@@ -21,15 +21,15 @@
             <span class="navbar-brand mb-0 h1 d-flex align-items-center">
                 📦 <span class="ms-2">Check Box Manager</span>
             </span>
-            <div class="d-flex gap-2 align-items-center">
+            <div class="navbar-actions">
                 <!-- Sheet Switcher -->
-                <div class="dropdown me-2">
+                <div class="dropdown">
                     <button
                         class="btn btn-sm btn-light dropdown-toggle shadow-sm border-0 d-flex align-items-center gap-2 rounded-pill px-3"
                         type="button" id="sheetDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         📅 <span id="current-sheet-name">Loading...</span>
                     </button>
-                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2 dropdown-menu-scrollable"
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 dropdown-menu-scrollable"
                         id="sheet-list-dropdown">
                         <li>
                             <h6 class="dropdown-header small text-uppercase fw-bold text-muted">Select Month / Sheet
@@ -44,7 +44,7 @@
                     <span class="spinner-grow spinner-grow-sm" role="status" aria-hidden="true"></span>
                     Online
                 </span>
-                <button class="btn btn-light rounded-circle shadow-sm ms-2" data-bs-toggle="modal"
+                <button class="btn btn-light rounded-circle shadow-sm" data-bs-toggle="modal"
                     data-bs-target="#settingsModal">
                     ⚙️
                 </button>

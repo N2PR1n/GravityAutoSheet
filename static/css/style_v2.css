@@ -228,32 +228,68 @@ h6 {
 }
 /* Scrollable Dropdown */
 .dropdown-menu-scrollable {
-    max-height: 400px;
-    overflow-y: auto;
-    min-width: 260px !important;
+    max-height: 350px !important;
+    overflow-y: auto !important;
+    min-width: 280px !important;
     border-radius: 12px !important;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+    padding: 8px !important;
 }
 
 .dropdown-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
     transition: var(--transition);
 }
 
 .pin-btn {
     cursor: pointer;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 1.1rem;
-    transition: var(--transition);
     border: none;
     background: transparent;
-    opacity: 0.3;
+    font-size: 1.2rem;
+    line-height: 1;
+    padding: 4px;
+    margin-left: 10px;
+    transition: var(--transition);
+    border-radius: 4px;
 }
 
-.pin-btn:hover, .pin-btn.active {
-    opacity: 1 !important;
-    background: #fff3cd !important;
+.pin-btn.unpinned {
+    color: #cbd5e0;
+    opacity: 0.6;
+}
+
+.pin-btn.pinned {
+    color: #e53e3e; /* Red-600 */
+    opacity: 1;
+    filter: drop-shadow(0 0 2px rgba(229, 62, 62, 0.2));
+}
+
+.pin-btn:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+/* Fix Navbar elements */
+.navbar-custom .container {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.navbar-brand {
+    flex-shrink: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 1rem;
+}
+
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
 }

@@ -412,16 +412,16 @@ async function fetchSheets(isFirstLoad = false) {
 
             data.sheets.forEach(sheet => {
                 const isActive = sheet === data.current;
-                const activeClass = isActive ? 'active text-primary bg-primary-subtle rounded' : '';
+                const activeClass = isActive ? 'active text-primary bg-primary-subtle' : '';
                 const isPinned = sheet === pinnedSheet;
 
                 const li = document.createElement('li');
-                li.className = "px-2 mb-1";
+                li.className = "mb-1";
                 li.innerHTML = `
-                    <div class="dropdown-item ${activeClass} py-2 rounded d-flex justify-content-between align-items-center">
-                        <span class="flex-grow-1 cursor-pointer" onclick="switchSheet('${sheet}')">${sheet}</span>
-                        <button class="pin-btn ${isPinned ? 'active' : ''}" onclick="togglePin(event, '${sheet}')" title="${isPinned ? 'Unpin' : 'Pin this sheet'}">
-                            ${isPinned ? '📌' : '📍'}
+                    <div class="dropdown-item ${activeClass} d-flex justify-content-between align-items-center">
+                        <span class="flex-grow-1 cursor-pointer fw-medium" onclick="switchSheet('${sheet}')" style="font-size: 0.95rem;">${sheet}</span>
+                        <button class="pin-btn ${isPinned ? 'pinned' : 'unpinned'}" onclick="togglePin(event, '${sheet}')" title="${isPinned ? 'Unpin' : 'Pin this sheet'}">
+                            ●
                         </button>
                     </div>
                 `;
