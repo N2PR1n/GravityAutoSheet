@@ -8,8 +8,8 @@ let currentFilterStatus = 'all'; // 'all', 'pending', 'checked'
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchOrders();
-    fetchSheets();
-    fetchConfig(); // Add this
+    fetchSheets(true);
+    fetchConfig();
     initScanner();
 
     // Search Listener
@@ -385,7 +385,7 @@ function onScanError(errorMessage) {
 }
 
 // --- Sheet Logic ---
-async function fetchSheets() {
+async function fetchSheets(isFirstLoad = false) {
     try {
         const response = await fetch('/api/sheets');
         const data = await response.json();
@@ -393,26 +393,59 @@ async function fetchSheets() {
         if (data.sheets) {
             const listEl = document.getElementById('sheet-list-dropdown');
             const currentEl = document.getElementById('current-sheet-name');
+            const pinnedSheet = localStorage.getItem('pinnedSheet');
 
             // Set Current
             if (data.current) {
                 currentEl.innerText = data.current;
             }
 
+            // Auto-switch if pinned and first load
+            if (isFirstLoad && pinnedSheet && data.sheets.includes(pinnedSheet) && data.current !== pinnedSheet) {
+                console.log("Auto-switching to pinned sheet:", pinnedSheet);
+                switchSheet(pinnedSheet);
+                return;
+            }
+
             // Populate List
-            // Keep header
-            listEl.innerHTML = `<li><h6 class="dropdown-header small text-uppercase fw-bold text-muted">Select Month</h6></li>`;
+            listEl.innerHTML = `<li><h6 class="dropdown-header small text-uppercase fw-bold text-muted">Select Month / Sheet</h6></li>`;
 
             data.sheets.forEach(sheet => {
-                const isActive = sheet === data.current ? 'active text-primary bg-primary-subtle rounded' : '';
+                const isActive = sheet === data.current;
+                const activeClass = isActive ? 'active text-primary bg-primary-subtle rounded' : '';
+                const isPinned = sheet === pinnedSheet;
+
                 const li = document.createElement('li');
-                li.innerHTML = `<button class="dropdown-item ${isActive} py-2 mb-1 rounded" onclick="switchSheet('${sheet}')">${sheet}</button>`;
+                li.className = "px-2 mb-1";
+                li.innerHTML = `
+                    <div class="dropdown-item ${activeClass} py-2 rounded d-flex justify-content-between align-items-center">
+                        <span class="flex-grow-1 cursor-pointer" onclick="switchSheet('${sheet}')">${sheet}</span>
+                        <button class="pin-btn ${isPinned ? 'active' : ''}" onclick="togglePin(event, '${sheet}')" title="${isPinned ? 'Unpin' : 'Pin this sheet'}">
+                            ${isPinned ? '📌' : '📍'}
+                        </button>
+                    </div>
+                `;
                 listEl.appendChild(li);
             });
         }
     } catch (e) {
         console.error("Error fetching sheets:", e);
     }
+}
+
+function togglePin(event, sheetName) {
+    event.stopPropagation();
+    const currentPinned = localStorage.getItem('pinnedSheet');
+
+    if (currentPinned === sheetName) {
+        localStorage.removeItem('pinnedSheet');
+        showToast(`Unpinned ${sheetName}`);
+    } else {
+        localStorage.setItem('pinnedSheet', sheetName);
+        showToast(`Pinned ${sheetName}`);
+    }
+
+    fetchSheets(); // Re-render dropdown
 }
 
 async function switchSheet(sheetName) {

@@ -226,3 +226,34 @@ h6 {
 .fade-in-up {
     animation: fadeIn 0.5s ease-out forwards;
 }
+/* Scrollable Dropdown */
+.dropdown-menu-scrollable {
+    max-height: 400px;
+    overflow-y: auto;
+    min-width: 260px !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15) !important;
+}
+
+.dropdown-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition);
+}
+
+.pin-btn {
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    transition: var(--transition);
+    border: none;
+    background: transparent;
+    opacity: 0.3;
+}
+
+.pin-btn:hover, .pin-btn.active {
+    opacity: 1 !important;
+    background: #fff3cd !important;
+}
