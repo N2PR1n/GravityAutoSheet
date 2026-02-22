@@ -8,7 +8,8 @@ let currentFilterStatus = 'all'; // 'all', 'pending', 'checked'
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', () => {
     fetchOrders();
-    fetchSheets(); // Add this
+    fetchSheets();
+    fetchConfig(); // Add this
     initScanner();
 
     // Search Listener
@@ -436,5 +437,45 @@ async function switchSheet(sheetName) {
     } catch (e) {
         console.error("Error switching sheet:", e);
         showToast('Error switching sheet');
+    }
+}
+
+// --- Config Logic ---
+async function fetchConfig() {
+    try {
+        const response = await fetch('/api/config');
+        const data = await response.json();
+        if (data.GOOGLE_DRIVE_FOLDER_ID) {
+            document.getElementById('folder-id-input').value = data.GOOGLE_DRIVE_FOLDER_ID;
+        }
+    } catch (e) {
+        console.error("Error fetching config:", e);
+    }
+}
+
+async function saveConfig() {
+    const folderId = document.getElementById('folder-id-input').value.trim();
+    if (!folderId) {
+        alert("Please enter a valid Folder ID.");
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ folder_id: folderId })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showToast("Settings saved successfully!");
+            bootstrap.Modal.getInstance(document.getElementById('settingsModal')).hide();
+        } else {
+            showToast("Failed to save settings.");
+        }
+    } catch (e) {
+        console.error("Error saving config:", e);
+        showToast("Error saving settings.");
     }
 }

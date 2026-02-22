@@ -24,6 +24,7 @@ from services.drive_service import DriveService
 from services.openai_service import OpenAIService
 from services.sheet_service import SheetService
 from services.accounting_service import AccountingService
+from services.config_service import ConfigService
 
 # Blueprint Setup
 bot_bp = Blueprint('bot', __name__)
@@ -59,12 +60,8 @@ api_client = ApiClient(configuration)
 messaging_api = MessagingApi(api_client)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
-# Services (Lazy Loaded Global Vars)
-_image_service = None
-_drive_service = None
-_openai_service = None
-_sheet_service = None
 _accounting_service = None
+_config_service = ConfigService()
 
 def get_services():
     global _image_service, _drive_service, _openai_service, _sheet_service, _accounting_service
@@ -130,7 +127,8 @@ def handle_text_message(event):
             # Run export in background thread
             def run_export():
                 try:
-                    link = accounting_service.export_report(GOOGLE_DRIVE_FOLDER_ID)
+                    folder_id = _config_service.get("GOOGLE_DRIVE_FOLDER_ID", GOOGLE_DRIVE_FOLDER_ID)
+                    link = accounting_service.export_report(folder_id)
                     if link:
                         msg = f"✅ สร้างไฟล์เสร็จแล้วครับ!\nโหลดได้ที่นี่: {link}"
                     else:
@@ -248,7 +246,8 @@ def process_images_thread(user_id):
         
         drive_link = ""
         try:
-            drive_file = drive_service.upload_file(final_image_path, GOOGLE_DRIVE_FOLDER_ID, target_filename)
+            folder_id = _config_service.get("GOOGLE_DRIVE_FOLDER_ID", GOOGLE_DRIVE_FOLDER_ID)
+            drive_file = drive_service.upload_file(final_image_path, folder_id, target_filename)
             if drive_file:
                 drive_link = drive_file.get('webViewLink', '')
         except Exception as e:

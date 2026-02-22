@@ -15,6 +15,7 @@ if current_dir not in sys.path:
 
 from services.sheet_service import SheetService
 from services.drive_service import DriveService
+from services.config_service import ConfigService
 from routes.bot import bot_bp
 
 # --- CONFIG & INIT ---
@@ -27,6 +28,7 @@ except Exception as e:
 # Service Instances
 sheet_service = None
 drive_service = None
+config_service = ConfigService()
 
 def get_services():
     global sheet_service, drive_service
@@ -251,8 +253,8 @@ def find_image(order_target):
     _, drive_service = get_services()
     if not drive_service: return jsonify({'error': 'Service unavailable'}), 500
     
-    # User provided folder ID
-    FOLDER_ID = "1KdLuDJIyHiyDy6-M-dzU2LyLLOES4x4l"
+    # Use folder ID from config
+    FOLDER_ID = config_service.get("GOOGLE_DRIVE_FOLDER_ID", "1KdLuDJIyHiyDy6-M-dzU2LyLLOES4x4l")
     
     try:
         # Search by exact name "1.jpg", "2.jpg" etc. 
@@ -299,6 +301,21 @@ def set_sheet():
         return jsonify({'success': True})
     else:
         return jsonify({'error': 'Failed to switch sheet'}), 500
+
+@app.route('/api/config', methods=['GET'])
+def get_config():
+    return jsonify({
+        'GOOGLE_DRIVE_FOLDER_ID': config_service.get('GOOGLE_DRIVE_FOLDER_ID')
+    })
+
+@app.route('/api/config', methods=['POST'])
+def update_config():
+    data = request.json
+    folder_id = data.get('folder_id')
+    if folder_id:
+        config_service.set('GOOGLE_DRIVE_FOLDER_ID', folder_id)
+        return jsonify({'success': True})
+    return jsonify({'error': 'Invalid data'}), 400
 
 if __name__ == '__main__':
     # Use 0.0.0.0 to allow access from local network
