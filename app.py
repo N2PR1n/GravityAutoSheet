@@ -25,10 +25,17 @@ try:
 except Exception as e:
     print(f"❌ Error registering blueprint: {e}")
 
-# Service Instances
+# Services (Global - Lazy Init)
 sheet_service = None
 drive_service = None
-config_service = ConfigService()
+_config_service_instance = None
+
+def get_config_service():
+    global _config_service_instance
+    if _config_service_instance is None:
+        from services.config_service import ConfigService
+        _config_service_instance = ConfigService()
+    return _config_service_instance
 
 def get_services():
     global sheet_service, drive_service
@@ -36,18 +43,9 @@ def get_services():
     if sheet_service and drive_service:
         return sheet_service, drive_service
 
-    creds_source = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-
-# ... (rest of imports)
-
-# ...
-
-def get_services():
-    global sheet_service, drive_service
+    # Init Config
+    get_config_service()
     
-    if sheet_service and drive_service:
-        return sheet_service, drive_service
-
     creds_source = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
     sheet_id = os.getenv('GOOGLE_SHEET_ID')
     sheet_name = os.getenv('GOOGLE_SHEET_NAME')
@@ -131,7 +129,12 @@ def proxy_image(file_id):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    print("DEBUG: Index request received")
+    return render_template('index_v2.html')
+
+@app.route('/health')
+def health():
+    return "OK", 200
 
 @app.route('/v2')
 def index_v2():
@@ -254,7 +257,8 @@ def find_image(order_target):
     if not drive_service: return jsonify({'error': 'Service unavailable'}), 500
     
     # Use folder ID from config
-    FOLDER_ID = config_service.get("GOOGLE_DRIVE_FOLDER_ID", "1KdLuDJIyHiyDy6-M-dzU2LyLLOES4x4l")
+    cfg = get_config_service()
+    FOLDER_ID = cfg.get("GOOGLE_DRIVE_FOLDER_ID", "1KdLuDJIyHiyDy6-M-dzU2LyLLOES4x4l")
     
     try:
         # Search by exact name "1.jpg", "2.jpg" etc. 
@@ -304,16 +308,18 @@ def set_sheet():
 
 @app.route('/api/config', methods=['GET'])
 def get_config():
+    cfg = get_config_service()
     return jsonify({
-        'GOOGLE_DRIVE_FOLDER_ID': config_service.get('GOOGLE_DRIVE_FOLDER_ID')
+        'GOOGLE_DRIVE_FOLDER_ID': cfg.get('GOOGLE_DRIVE_FOLDER_ID')
     })
 
 @app.route('/api/config', methods=['POST'])
 def update_config():
+    cfg = get_config_service()
     data = request.json
     folder_id = data.get('folder_id')
     if folder_id:
-        config_service.set('GOOGLE_DRIVE_FOLDER_ID', folder_id)
+        cfg.set('GOOGLE_DRIVE_FOLDER_ID', folder_id)
         return jsonify({'success': True})
     return jsonify({'error': 'Invalid data'}), 400
 
