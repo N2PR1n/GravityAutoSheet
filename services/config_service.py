@@ -30,9 +30,11 @@ class ConfigService:
             print(f"Error saving config: {e}")
 
     def get(self, key, default=None):
+        self.config = self._load_config() # Reload from disk
         return self.config.get(key, default)
 
     def set(self, key, value):
+        self.config = self._load_config() # Sync before writing
         self.config[key] = value
         self._save_config(self.config)
         return True

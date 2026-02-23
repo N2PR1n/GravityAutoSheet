@@ -258,7 +258,7 @@ def find_image(order_target):
     
     # Use folder ID from config
     cfg = get_config_service()
-    FOLDER_ID = cfg.get("GOOGLE_DRIVE_FOLDER_ID", "1KdLuDJIyHiyDy6-M-dzU2LyLLOES4x4l")
+    FOLDER_ID = cfg.get("GOOGLE_DRIVE_FOLDER_ID", os.getenv("GOOGLE_DRIVE_FOLDER_ID"))
     
     try:
         # Search by exact name "1.jpg", "2.jpg" etc. 
@@ -312,7 +312,8 @@ def set_sheet():
 def get_config():
     cfg = get_config_service()
     return jsonify({
-        'GOOGLE_DRIVE_FOLDER_ID': cfg.get('GOOGLE_DRIVE_FOLDER_ID')
+        'GOOGLE_DRIVE_FOLDER_ID': cfg.get('GOOGLE_DRIVE_FOLDER_ID', os.getenv("GOOGLE_DRIVE_FOLDER_ID")),
+        'ACTIVE_SHEET_NAME': cfg.get('ACTIVE_SHEET_NAME', os.getenv("GOOGLE_SHEET_NAME"))
     })
 
 @app.route('/api/config', methods=['POST'])
