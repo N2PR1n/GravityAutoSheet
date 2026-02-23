@@ -60,6 +60,10 @@ api_client = ApiClient(configuration)
 messaging_api = MessagingApi(api_client)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
+_image_service = None
+_drive_service = None
+_openai_service = None
+_sheet_service = None
 _accounting_service = None
 _config_service = ConfigService()
 
@@ -77,7 +81,12 @@ def get_services():
     if not _image_service: _image_service = ImageService()
     if not _drive_service: _drive_service = DriveService(creds)
     if not _openai_service: _openai_service = OpenAIService(OPENAI_API_KEY)
-    if not _sheet_service: _sheet_service = SheetService(creds, GOOGLE_SHEET_ID, GOOGLE_SHEET_NAME)
+    
+    if not _sheet_service:
+        sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+        print(f"DEBUG: Bot connecting to Sheet: {sheet_name}")
+        _sheet_service = SheetService(creds, GOOGLE_SHEET_ID, sheet_name)
+        
     if not _accounting_service: _accounting_service = AccountingService(_sheet_service, _drive_service)
     
     return _image_service, _drive_service, _openai_service, _sheet_service, _accounting_service

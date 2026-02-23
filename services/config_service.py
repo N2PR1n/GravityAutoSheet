@@ -5,7 +5,8 @@ class ConfigService:
     def __init__(self, config_file='config.json'):
         self.config_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', config_file))
         self.default_config = {
-            "GOOGLE_DRIVE_FOLDER_ID": os.getenv("GOOGLE_DRIVE_FOLDER_ID", "")
+            "GOOGLE_DRIVE_FOLDER_ID": os.getenv("GOOGLE_DRIVE_FOLDER_ID", ""),
+            "ACTIVE_SHEET_NAME": os.getenv("GOOGLE_SHEET_NAME", "Sheet1")
         }
         self.config = self._load_config()
 

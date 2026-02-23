@@ -44,11 +44,11 @@ def get_services():
         return sheet_service, drive_service
 
     # Init Config
-    get_config_service()
+    cfg = get_config_service()
     
     creds_source = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
     sheet_id = os.getenv('GOOGLE_SHEET_ID')
-    sheet_name = os.getenv('GOOGLE_SHEET_NAME')
+    sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv('GOOGLE_SHEET_NAME'))
     
     # Check if creds_source is a file path or JSON string
     if creds_source:
@@ -302,6 +302,8 @@ def set_sheet():
     
     success = sheet_service.set_worksheet(sheet_name)
     if success:
+        cfg = get_config_service()
+        cfg.set('ACTIVE_SHEET_NAME', sheet_name)
         return jsonify({'success': True})
     else:
         return jsonify({'error': 'Failed to switch sheet'}), 500
