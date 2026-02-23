@@ -77,14 +77,45 @@ class SheetService:
             return False
 
     def get_all_data(self):
-        """Fetches all records from the sheet."""
+        """Fetches all records from the sheet, handling duplicate or empty headers."""
         if not self.sheet: return []
         try:
-            # Robust fetch: Handle duplicate headers by ignoring them? 
-            # Or just let it fail if user has issues, but user says it works.
-            return self.sheet.get_all_records()
+            # Use get_values() to get raw data
+            rows = self.sheet.get_values()
+            if not rows:
+                return []
+            
+            headers = rows[0]
+            data_rows = rows[1:]
+            
+            # Sanitize headers to handle duplicates and empties
+            clean_headers = []
+            header_counts = {}
+            for i, h in enumerate(headers):
+                h = str(h).strip()
+                if not h:
+                    h = f"unnamed_{i}"
+                
+                if h in header_counts:
+                    header_counts[h] += 1
+                    clean_headers.append(f"{h}_{header_counts[h]}")
+                else:
+                    header_counts[h] = 0
+                    clean_headers.append(h)
+            
+            # Convert to list of dicts
+            records = []
+            for row in data_rows:
+                # Pad row with empty strings if it's shorter than headers
+                row_extended = row + [""] * (len(clean_headers) - len(row))
+                record = dict(zip(clean_headers, row_extended))
+                records.append(record)
+                
+            return records
         except Exception as e:
             print(f"Error fetching data: {e}")
+            import traceback
+            traceback.print_exc()
             return []
 
     def get_image_links(self):
