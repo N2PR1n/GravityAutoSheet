@@ -122,9 +122,16 @@ function renderOrders(orders) {
         }
 
         const isChecked = rawStatus === 'checked';
-        const btnLogin = isChecked
-            ? `<button class="btn btn-outline-danger w-100" onclick="updateStatus('${order['Order ID']}', 'uncheck')">❌ Uncheck</button>`
-            : `<button class="btn btn-info w-100 text-white" onclick="updateStatus('${order['Order ID']}', 'check')">✅ Check</button>`;
+        const isPending = statusLabel.toLowerCase() === 'pending';
+
+        let btnHtml = '';
+        if (isChecked) {
+            btnHtml = `<button class="btn btn-outline-danger w-100" onclick="updateStatus('${order['Order ID']}', 'uncheck')">❌ Uncheck</button>`;
+        } else if (isPending) {
+            btnHtml = `<button class="btn btn-info w-100 text-white" onclick="updateStatus('${order['Order ID']}', 'check')">✅ Check</button>`;
+        }
+
+        const btnLogin = btnHtml;
 
         // Image Handling
         let imgHtml = '';
