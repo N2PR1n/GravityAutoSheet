@@ -178,7 +178,7 @@ function renderOrders(orders) {
                             <div class="detail-row"><b>👤 Name:</b> ${order['Name'] || '-'}</div>
                             <div class="detail-row"><b>📍 Loc:</b> ${order['Location'] || '-'}</div>
                             <div class="detail-row"><b>📦 Item:</b> ${order['Item'] || '-'}</div>
-                            <div class="detail-row text-truncate"><b>💰 Price:</b> ${order['Price']} | 🪙 ${order['Coins']}</div>
+                            <div class="detail-row text-truncate"><b>💰 Price:</b> <b style="color: #ff4500; font-size: 1.05em;">${order['Price']}</b> | <b style="color: #daa520;">🪙 ${order['Coins']}</b></div>
                             <div class="detail-row"><small class="text-muted">Date: ${order['Date']}</small></div>
                             
                             <div class="mt-2 pt-2 border-top border-secondary">
