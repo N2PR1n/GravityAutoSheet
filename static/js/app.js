@@ -4,6 +4,7 @@ let html5QrcodeScanner = null;
 let recoveryQueue = [];
 let isRecovering = false;
 let currentFilterStatus = 'all'; // 'all', 'pending', 'checked'
+let selectedPlatforms = []; // List of selected platforms to filter by
 
 // --- INIT ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -208,7 +209,7 @@ function renderOrders(orders) {
 }
 
 function filterOrders(query) {
-    if (!query && currentFilterStatus === 'all') {
+    if (!query && currentFilterStatus === 'all' && selectedPlatforms.length === 0) {
         renderOrders(allOrders);
         document.getElementById('order-count').innerText = allOrders.length;
         return;
@@ -243,7 +244,14 @@ function filterOrders(query) {
 
         if (currentFilterStatus === 'pending') {
             // Pending means NOT Checked, NOT Saved, NOT Cancelled
-            return rawStatus !== 'checked' && rawStatus !== 'saved' && !rawStatus.includes('cancel');
+            if (rawStatus === 'checked' || rawStatus === 'saved' || rawStatus.includes('cancel')) return false;
+        }
+
+        // 3. Platform Filter
+        if (selectedPlatforms.length > 0) {
+            const orderPlatform = (o['Platform'] || '').toLowerCase();
+            const matchesPlatform = selectedPlatforms.some(p => orderPlatform.includes(p));
+            if (!matchesPlatform) return false;
         }
 
         return true;
@@ -251,6 +259,20 @@ function filterOrders(query) {
 
     document.getElementById('order-count').innerText = filtered.length;
     renderOrders(filtered);
+}
+
+function togglePlatform(platform) {
+    const chip = document.querySelector(`.platform-chip[data-platform="${platform}"]`);
+
+    if (selectedPlatforms.includes(platform)) {
+        selectedPlatforms = selectedPlatforms.filter(p => p !== platform);
+        if (chip) chip.classList.remove('active');
+    } else {
+        selectedPlatforms.push(platform);
+        if (chip) chip.classList.add('active');
+    }
+
+    applyFilters();
 }
 
 function startAutoRecovery(orders) {

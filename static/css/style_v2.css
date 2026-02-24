@@ -293,3 +293,64 @@ h6 {
     gap: 8px;
     flex-shrink: 0;
 }
+
+/* Platform Filter Island */
+.platform-filter-island {
+    background: var(--card-bg);
+    border-radius: 20px;
+    padding: 10px 15px;
+    box-shadow: var(--shadow-soft);
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+}
+
+.platform-filter-island::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome/Safari */
+}
+
+.platform-chip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 30px;
+    background: #f1f3f5;
+    color: var(--text-secondary);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    border: 2px solid transparent;
+    user-select: none;
+}
+
+.platform-chip img {
+    height: 20px;
+    width: auto;
+    filter: grayscale(1);
+    opacity: 0.7;
+    transition: var(--transition);
+}
+
+.platform-chip:hover {
+    background: #e9ecef;
+}
+
+.platform-chip.active {
+    background: #ffffff;
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.15);
+}
+
+.platform-chip.active img {
+    filter: none;
+    opacity: 1;
+}
+
+.platform-chip.active[data-platform="shopee"] { border-color: #ee4d2d; color: #ee4d2d; }
+.platform-chip.active[data-platform="lazada"] { border-color: #00008b; color: #00008b; }
+.platform-chip.active[data-platform="tiktok"] { border-color: #000000; color: #000000; }
+.platform-chip.active[data-platform="amaze"] { border-color: #00c2ff; color: #00c2ff; }
