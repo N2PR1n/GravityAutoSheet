@@ -234,17 +234,19 @@ function filterOrders(query) {
         if (!matchesText) return false;
 
         // 2. Status Filter
-        if (currentFilterStatus === 'all') return true;
+        if (currentFilterStatus !== 'all') {
+            const rawStatus = (o['Status'] || 'pending').toLowerCase().trim();
+            const statusLabel = rawStatus; // Simplified for check
 
-        const rawStatus = (o['Status'] || 'pending').toLowerCase().trim();
+            let statusMatch = false;
+            if (currentFilterStatus === 'checked') statusMatch = (rawStatus === 'checked');
+            else if (currentFilterStatus === 'saved') statusMatch = (rawStatus === 'saved');
+            else if (currentFilterStatus === 'cancelled') statusMatch = rawStatus.includes('cancel');
+            else if (currentFilterStatus === 'pending') {
+                statusMatch = (rawStatus !== 'checked' && rawStatus !== 'saved' && !rawStatus.includes('cancel'));
+            }
 
-        if (currentFilterStatus === 'checked') return rawStatus === 'checked';
-        if (currentFilterStatus === 'saved') return rawStatus === 'saved';
-        if (currentFilterStatus === 'cancelled') return rawStatus.includes('cancel');
-
-        if (currentFilterStatus === 'pending') {
-            // Pending means NOT Checked, NOT Saved, NOT Cancelled
-            if (rawStatus === 'checked' || rawStatus === 'saved' || rawStatus.includes('cancel')) return false;
+            if (!statusMatch) return false;
         }
 
         // 3. Platform Filter
