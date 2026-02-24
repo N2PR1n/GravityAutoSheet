@@ -40,15 +40,20 @@ def get_config_service():
 def get_services():
     global sheet_service, drive_service
     
-    if sheet_service and drive_service:
-        return sheet_service, drive_service
-
     # Init Config
     cfg = get_config_service()
+    sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv('GOOGLE_SHEET_NAME'))
     
     creds_source = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
     sheet_id = os.getenv('GOOGLE_SHEET_ID')
-    sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv('GOOGLE_SHEET_NAME'))
+
+    if sheet_service and drive_service:
+        # Check if sheet mismatch
+        current_sheet = sheet_service.sheet.title if sheet_service.sheet else ""
+        if current_sheet != sheet_name:
+            print(f"DEBUG: App sheet mismatch. Switching from {current_sheet} to {sheet_name}")
+            sheet_service.set_worksheet(sheet_name)
+        return sheet_service, drive_service
     
     # Check if creds_source is a file path or JSON string
     if creds_source:

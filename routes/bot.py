@@ -70,22 +70,26 @@ _config_service = ConfigService()
 def get_services():
     global _image_service, _drive_service, _openai_service, _sheet_service, _accounting_service
     
-    # Check if loaded (check key services)
-    if _sheet_service and _drive_service and _openai_service:
-        return _image_service, _drive_service, _openai_service, _sheet_service, _accounting_service
-
     # Load Creds
     creds = get_credentials()
     
-    # Init Services
+    # Init Services that don't depend on sheet selection
     if not _image_service: _image_service = ImageService()
     if not _drive_service: _drive_service = DriveService(creds)
     if not _openai_service: _openai_service = OpenAIService(OPENAI_API_KEY)
     
+    # Always check for the latest sheet name from config
+    sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+    
     if not _sheet_service:
-        sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
         print(f"DEBUG: Bot connecting to Sheet: {sheet_name}")
         _sheet_service = SheetService(creds, GOOGLE_SHEET_ID, sheet_name)
+    else:
+        # Check if the current sheet matches the desired sheet
+        current_sheet = _sheet_service.sheet.title if _sheet_service.sheet else ""
+        if current_sheet != sheet_name:
+            print(f"DEBUG: Bot sheet mismatch. Switching from {current_sheet} to {sheet_name}")
+            _sheet_service.set_worksheet(sheet_name)
         
     if not _accounting_service: _accounting_service = AccountingService(_sheet_service, _drive_service)
     
@@ -274,6 +278,8 @@ def process_images_thread(user_id):
                 f"ที่อยู่: {data.get('location', '-')}\n"
                 f"ร้าน: {data.get('shop_name', '-')}\n"
                 f"ยอด: {data.get('price', '-')}\n"
+                f"เหรียญ: {data.get('coins', '0')}\n"
+                f"Platform: {data.get('platform', '-')}\n"
                 f"Order: {data.get('order_id', '-')}"
                 f"{tracking_info}"
             )
