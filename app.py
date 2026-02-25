@@ -195,7 +195,8 @@ def get_orders():
             'Platform': 'Platform', 'platform': 'Platform',
             'Coins': 'Coins', 'coins': 'Coins', 'เหรียญ': 'Coins',
             'Date': 'Date', 'date': 'Date', 'วันที่ bought': 'Date', 'วันที่': 'Date', 'วันที่ซื้อ': 'Date',
-            'Location': 'Location', 'location': 'Location', 'ที่อยู่': 'Location', 'ส่งที่ไหน': 'Location'
+            'Location': 'Location', 'location': 'Location', 'ที่อยู่': 'Location', 'ส่งที่ไหน': 'Location',
+            'วันรับของ': 'SavedDate', 'delivery_date': 'SavedDate', 'saved_date': 'SavedDate'
         }
         
         renamed = {}

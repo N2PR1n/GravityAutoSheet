@@ -175,7 +175,10 @@ function renderOrders(orders) {
                            <span class="run-no me-2">${order['Run No'] || '-'}</span>
                            ${platformLogo}
                         </div>
-                        <span class="badge badge-status ${statusClass}">${statusLabel}</span>
+                        <div class="d-flex align-items-center">
+                            ${statusLabel === 'Saved' && order['SavedDate'] ? `<span class="saved-date-label me-2">${order['SavedDate']}</span>` : ''}
+                            <span class="badge badge-status ${statusClass}">${statusLabel}</span>
+                        </div>
                     </div>
                     
                     <div class="row g-2 mt-2">
