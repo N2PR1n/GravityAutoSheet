@@ -257,6 +257,7 @@ def process_images_thread(user_id):
         try:
             sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
             folder_id = _config_service.get_folder_for_sheet(sheet_name)
+            print(f"DEBUG: Drive Upload -> Sheet: {sheet_name}, Folder: {folder_id}, File: {target_filename}", flush=True)
             drive_file = drive_service.upload_file(final_image_path, folder_id, target_filename)
             if drive_file:
                 drive_link = drive_file.get('webViewLink', '')
