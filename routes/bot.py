@@ -8,9 +8,7 @@ from linebot.v3.messaging import (
     ReplyMessageRequest,
     PushMessageRequest,
     TextMessage,
-    ImageMessage,
-    FlexMessage,
-    FlexContainer
+    ImageMessage
 )
 from linebot.v3.webhooks import (
     MessageEvent,
@@ -164,98 +162,6 @@ def handle_text_message(event):
         except Exception as e:
             print(f"Text Handle Error: {e}")
 
-def create_order_flex_bubble(data, next_run_no, drive_warning):
-    bubble = {
-      "type": "bubble",
-      "size": "mega",
-      "header": {
-        "type": "box",
-        "layout": "vertical",
-        "contents": [
-          {
-            "type": "text",
-            "text": f"✅ บันทึกแล้ว! (No. {next_run_no})",
-            "weight": "bold",
-            "size": "md",
-            "color": "#1DB446"
-          }
-        ]
-      },
-      "body": {
-        "type": "box",
-        "layout": "vertical",
-        "spacing": "sm",
-        "contents": []
-      }
-    }
-    
-    body_contents = bubble["body"]["contents"]
-    
-    def add_row(title, value, copyable=True):
-        if not value or value == '-': return
-        
-        row = {
-          "type": "box",
-          "layout": "horizontal",
-          "contents": [
-            {
-              "type": "text",
-              "text": f"{title}:",
-              "weight": "bold",
-              "color": "#aaaaaa",
-              "flex": 2,
-              "size": "sm"
-            },
-            {
-              "type": "text",
-              "text": str(value),
-              "color": "#333333",
-              "flex": 4,
-              "size": "sm",
-              "wrap": True
-            }
-          ],
-          "alignItems": "center"
-        }
-        
-        if copyable:
-            row["contents"].append({
-              "type": "button",
-              "action": {
-                "type": "clipboard",
-                "label": "Copy",
-                "clipboardText": str(value)
-              },
-              "flex": 2,
-              "height": "sm",
-              "style": "secondary"
-            })
-            
-        body_contents.append(row)
-
-    add_row("ชื่อ", data.get("receiver_name"))
-    add_row("ที่อยู่", data.get("location"))
-    add_row("ร้าน", data.get("shop_name"), copyable=False)
-    add_row("ยอด", data.get("price"), copyable=True)
-    body_contents.append({"type": "separator", "margin": "md"})
-    add_row("Platform", data.get("platform"), copyable=False)
-    add_row("Order", data.get("order_id"))
-    
-    if data.get("tracking_number"):
-        add_row("Tracking", data.get("tracking_number"))
-        
-    if drive_warning:
-        body_contents.append({
-          "type": "text",
-          "text": drive_warning,
-          "color": "#FF334B",
-          "size": "xs",
-          "wrap": True,
-          "margin": "md"
-        })
-
-    return bubble
-
 @handler.add(MessageEvent, message=ImageMessageContent)
 def handle_image_message(event):
     user_id = event.source.user_id
@@ -362,18 +268,24 @@ def process_images_thread(user_id):
         # 6. Save to Sheet
         if sheet_service.append_data(data, next_run_no):
             # Success
-            drive_warning = "⚠️ ไม่สามารถเซฟรูปลง Drive ได้! โปรดเช็กสิทธิ์" if not drive_link else ""
-            
-            flex_bubble = create_order_flex_bubble(data, next_run_no, drive_warning)
-            flex_msg = FlexMessage(
-                alt_text=f"สรุปออเดอร์ No. {next_run_no}",
-                contents=FlexContainer.from_dict(flex_bubble)
+            tracking_info = f"\nTracking: {data.get('tracking_number')}" if data.get('tracking_number') and data.get('tracking_number') != '-' else ""
+            drive_warning = "\n⚠️ **ไม่สามารถเซฟรูปลง Drive ได้!** โปรดตรวจสอบว่าได้แชร์โฟลเดอร์ให้ Service Account หรือยัง" if not drive_link else ""
+            summary = (
+                f"✅ บันทึกแล้ว! (No. {next_run_no})\n"
+                f"ชื่อ: {data.get('receiver_name', '-')}\n"
+                f"ที่อยู่: {data.get('location', '-')}\n"
+                f"ร้าน: {data.get('shop_name', '-')}\n"
+                f"ยอด: {data.get('price', '-')}\n"
+                f"เหรียญ: {data.get('coins', '0')}\n"
+                f"Platform: {data.get('platform', '-')}\n"
+                f"Order: {data.get('order_id', '-')}"
+                f"{tracking_info}"
+                f"{drive_warning}"
             )
-
             messaging_api.push_message(
                  PushMessageRequest(
                      to=user_id,
-                     messages=[flex_msg]
+                     messages=[TextMessage(text=summary)]
                  )
              )
         else:
