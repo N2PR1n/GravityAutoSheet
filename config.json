@@ -1,4 +1,8 @@
 {
-    "GOOGLE_DRIVE_FOLDER_ID": "1KdLuDJIyHiyDy6-M-dzU2LyLLOES4x4l",
-    "ACTIVE_SHEET_NAME": "\u0e40\u0e14\u0e37\u0e2d\u0e19 2/26"
+    "GOOGLE_DRIVE_FOLDER_ID": "1MaQw8jIMzqOIjuoSaqOmGA2vDZbO2WQ_",
+    "ACTIVE_SHEET_NAME": "\u0e40\u0e14\u0e37\u0e2d\u0e19 2/26",
+    "SHEET_FOLDER_MAP": {
+        "\u0e40\u0e14\u0e37\u0e2d\u0e19 2/26": "1MaQw8jIMzqOIjuoSaqOmGA2vDZbO2WQ_",
+        "TestBot": "1KdLuDJIyHiyDy6-M-dzU2LyLLOES4x4l"
+    }
 }

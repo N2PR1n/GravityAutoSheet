@@ -496,6 +496,7 @@ async function switchSheet(sheetName) {
         if (result.success) {
             showToast(`Switched to ${sheetName}`);
             await fetchSheets(); // Refresh UI
+            await fetchConfig(); // Refresh Config for the active sheet in settings
             await fetchOrders(); // Reload Data
         } else {
             showToast('Failed to switch sheet');
@@ -514,6 +515,10 @@ async function fetchConfig() {
         const data = await response.json();
         if (data.GOOGLE_DRIVE_FOLDER_ID) {
             document.getElementById('folder-id-input').value = data.GOOGLE_DRIVE_FOLDER_ID;
+        }
+        if (data.ACTIVE_SHEET_NAME) {
+            const labelEl = document.getElementById('settings-sheet-name');
+            if (labelEl) labelEl.innerText = data.ACTIVE_SHEET_NAME;
         }
     } catch (e) {
         console.error("Error fetching config:", e);

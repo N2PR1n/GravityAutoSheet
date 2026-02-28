@@ -5,6 +5,9 @@ import pandas as pd
 from dotenv import load_dotenv
 import re
 import json
+import socket
+
+
 
 load_dotenv() # Load first!
 
@@ -44,46 +47,30 @@ def get_services():
     cfg = get_config_service()
     sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv('GOOGLE_SHEET_NAME'))
     
-    creds_source = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    import services.auth_service as auth_service
+    
+    try:
+        creds_source = auth_service.get_google_credentials()
+    except Exception as e:
+        print(f"❌ Auth Error: {e}")
+        return None, None
     sheet_id = os.getenv('GOOGLE_SHEET_ID')
 
-    if sheet_service and drive_service:
-        # Check if sheet mismatch
-        current_sheet = sheet_service.sheet.title if sheet_service.sheet else ""
-        if current_sheet != sheet_name:
-            print(f"DEBUG: App sheet mismatch. Switching from {current_sheet} to {sheet_name}")
-            sheet_service.set_worksheet(sheet_name)
-        return sheet_service, drive_service
-    
-    # Check if creds_source is a file path or JSON string
-    if creds_source:
-        if creds_source.strip().startswith('{'):
-            try:
-                print("DEBUG: Detected JSON string for credentials.")
-                creds_source = json.loads(creds_source)
-            except json.JSONDecodeError as e:
-                print(f"❌ Error parsing GOOGLE_APPLICATION_CREDENTIALS as JSON: {e}")
-                return None, None
-        else:
-            # Assume File Path
-            if not os.path.isabs(creds_source):
-                creds_source = os.path.abspath(os.path.join(current_dir, creds_source))
-            
-            print(f"DEBUG: Loading credentials from file: {creds_source}")
-            if not os.path.exists(creds_source):
-                print(f"❌ Credentials file not found at: {creds_source}")
-                return None, None
-
-    if not creds_source:
-        print("❌ GOOGLE_APPLICATION_CREDENTIALS not set.")
-        return None, None
-
     try:
+        if sheet_service and drive_service:
+            current_sheet = sheet_service.sheet.title if sheet_service.sheet else ""
+            if current_sheet != sheet_name:
+                print(f"DEBUG: App sheet mismatch. Switching from {current_sheet} to {sheet_name}")
+                sheet_service.set_worksheet(sheet_name)
+            return sheet_service, drive_service
+
         sheet_service = SheetService(creds_source, sheet_id, sheet_name)
         drive_service = DriveService(creds_source) # Drive might ignore it but passing anyway
         return sheet_service, drive_service
     except Exception as e:
         print(f"❌ Service Init Failed: {e}")
+        import traceback
+        traceback.print_exc()
         return None, None
 
 # ...
@@ -262,9 +249,10 @@ def find_image(order_target):
     _, drive_service = get_services()
     if not drive_service: return jsonify({'error': 'Service unavailable'}), 500
     
-    # Use folder ID from config
+    # Use folder ID for specific sheet
     cfg = get_config_service()
-    FOLDER_ID = cfg.get("GOOGLE_DRIVE_FOLDER_ID", os.getenv("GOOGLE_DRIVE_FOLDER_ID"))
+    sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv("GOOGLE_SHEET_NAME"))
+    FOLDER_ID = cfg.get_folder_for_sheet(sheet_name)
     
     try:
         # Search by exact name "1.jpg", "2.jpg" etc. 
@@ -317,9 +305,10 @@ def set_sheet():
 @app.route('/api/config', methods=['GET'])
 def get_config():
     cfg = get_config_service()
+    sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv("GOOGLE_SHEET_NAME"))
     return jsonify({
-        'GOOGLE_DRIVE_FOLDER_ID': cfg.get('GOOGLE_DRIVE_FOLDER_ID', os.getenv("GOOGLE_DRIVE_FOLDER_ID")),
-        'ACTIVE_SHEET_NAME': cfg.get('ACTIVE_SHEET_NAME', os.getenv("GOOGLE_SHEET_NAME"))
+        'GOOGLE_DRIVE_FOLDER_ID': cfg.get_folder_for_sheet(sheet_name),
+        'ACTIVE_SHEET_NAME': sheet_name
     })
 
 @app.route('/api/config', methods=['POST'])
@@ -328,10 +317,11 @@ def update_config():
     data = request.json
     folder_id = data.get('folder_id')
     if folder_id:
-        cfg.set('GOOGLE_DRIVE_FOLDER_ID', folder_id)
+        sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv("GOOGLE_SHEET_NAME"))
+        cfg.set_folder_for_sheet(sheet_name, folder_id)
         return jsonify({'success': True})
     return jsonify({'error': 'Invalid data'}), 400
 
 if __name__ == '__main__':
     # Use 0.0.0.0 to allow access from local network
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5001, debug=True, use_reloader=False, threaded=False)

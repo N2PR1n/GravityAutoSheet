@@ -13,8 +13,11 @@ class DriveService:
             return
 
         try:
+            from google.oauth2.credentials import Credentials as OAuth2Credentials
             creds = None
-            if isinstance(credentials_source, dict):
+            if isinstance(credentials_source, OAuth2Credentials):
+                creds = credentials_source
+            elif isinstance(credentials_source, dict):
                 # Load from Dict
                 creds = service_account.Credentials.from_service_account_info(
                     credentials_source, scopes=self.scopes)
@@ -24,7 +27,7 @@ class DriveService:
                     credentials_source, scopes=self.scopes)
             
             self.service = build('drive', 'v3', credentials=creds)
-            print("DEBUG: Drive Service Initialized with Service Account!")
+            print("DEBUG: Drive Service Initialized with Credentials!")
         except Exception as e:
             print(f"Warning: DriveService init failed: {e}")
             self.service = None
@@ -45,10 +48,13 @@ class DriveService:
             file = self.service.files().create(
                 body=file_metadata,
                 media_body=media,
-                fields='id, webViewLink, webContentLink'
+                fields='id, webViewLink, webContentLink',
+                supportsAllDrives=True
             ).execute()
+            
+            # Make public so we don't need auth to view
             self.make_public(file['id'])
-
+            
             return file
         except Exception as e:
             print(f"Upload Error: {e}")
@@ -68,6 +74,23 @@ class DriveService:
             ).execute()
         except Exception as e:
             print(f"Permission Error: {e}")
+
+    def transfer_ownership(self, file_id, email_address):
+        if not self.service: return
+        try:
+            user_permission = {
+                'type': 'user',
+                'role': 'owner',
+                'emailAddress': email_address
+            }
+            self.service.permissions().create(
+                fileId=file_id,
+                body=user_permission,
+                transferOwnership=True,
+                fields='id',
+            ).execute()
+        except Exception as e:
+            print(f"Ownership Transfer Error: {e}")
 
     def find_files_by_name(self, name_query, folder_id=None):
         """Search for files in Drive. Optional: Restrict to folder."""
@@ -103,15 +126,17 @@ class DriveService:
         """Downloads file content as bytes."""
         if not self.service: return None
         try:
-            # Use googleapiclient.http.MediaIoBaseDownload
-            request = self.service.files().get_media(fileId=file_id)
             from io import BytesIO
-            fh = BytesIO()
             from googleapiclient.http import MediaIoBaseDownload
+            
+            request = self.service.files().get_media(fileId=file_id)
+            fh = BytesIO()
             downloader = MediaIoBaseDownload(fh, request)
+            
             done = False
             while done is False:
                 status, done = downloader.next_chunk()
+                
             return fh.getvalue()
         except Exception as e:
             print(f"Error downloading file content: {e}")

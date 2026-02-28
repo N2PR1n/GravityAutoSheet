@@ -46,13 +46,8 @@ os.environ['SSL_CERT_FILE'] = certifi.where()
 
 # Helper to load creds
 def get_credentials():
-    source = GOOGLE_CREDENTIALS_SOURCE
-    if source and source.strip().startswith('{'):
-        try:
-            return json.loads(source)
-        except:
-            print("Failed to parse JSON credentials in bot.py")
-    return source
+    import services.auth_service as auth_service
+    return auth_service.get_google_credentials()
 
 # LINE SDK
 configuration = Configuration(access_token=LINE_CHANNEL_ACCESS_TOKEN)
@@ -140,7 +135,8 @@ def handle_text_message(event):
             # Run export in background thread
             def run_export():
                 try:
-                    folder_id = _config_service.get("GOOGLE_DRIVE_FOLDER_ID", GOOGLE_DRIVE_FOLDER_ID)
+                    sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+                    folder_id = _config_service.get_folder_for_sheet(sheet_name)
                     link = accounting_service.export_report(folder_id)
                     if link:
                         msg = f"✅ สร้างไฟล์เสร็จแล้วครับ!\nโหลดได้ที่นี่: {link}"
@@ -259,7 +255,8 @@ def process_images_thread(user_id):
         
         drive_link = ""
         try:
-            folder_id = _config_service.get("GOOGLE_DRIVE_FOLDER_ID", GOOGLE_DRIVE_FOLDER_ID)
+            sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+            folder_id = _config_service.get_folder_for_sheet(sheet_name)
             drive_file = drive_service.upload_file(final_image_path, folder_id, target_filename)
             if drive_file:
                 drive_link = drive_file.get('webViewLink', '')
@@ -272,6 +269,7 @@ def process_images_thread(user_id):
         if sheet_service.append_data(data, next_run_no):
             # Success
             tracking_info = f"\nTracking: {data.get('tracking_number')}" if data.get('tracking_number') and data.get('tracking_number') != '-' else ""
+            drive_warning = "\n⚠️ **ไม่สามารถเซฟรูปลง Drive ได้!** โปรดตรวจสอบว่าได้แชร์โฟลเดอร์ให้ Service Account หรือยัง" if not drive_link else ""
             summary = (
                 f"✅ บันทึกแล้ว! (No. {next_run_no})\n"
                 f"ชื่อ: {data.get('receiver_name', '-')}\n"
@@ -282,6 +280,7 @@ def process_images_thread(user_id):
                 f"Platform: {data.get('platform', '-')}\n"
                 f"Order: {data.get('order_id', '-')}"
                 f"{tracking_info}"
+                f"{drive_warning}"
             )
             messaging_api.push_message(
                  PushMessageRequest(

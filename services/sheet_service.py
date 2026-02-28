@@ -3,22 +3,22 @@ from google.oauth2 import service_account
 import socket
 import requests.packages.urllib3.util.connection as urllib3_cn
 
-# Force IPv4 to prevent macOS IPv6 hangs
-def allowed_gai_family():
-    return socket.AF_INET
-
-urllib3_cn.allowed_gai_family = allowed_gai_family
+# Removed monkey patch
 
 class SheetService:
     def __init__(self, credentials_source, sheet_id, sheet_name=None):
         self.scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
         try:
-            if isinstance(credentials_source, dict):
-                # Load from Dict
+            from google.oauth2.credentials import Credentials as OAuth2Credentials
+            
+            if isinstance(credentials_source, OAuth2Credentials):
+                self.creds = credentials_source
+            elif isinstance(credentials_source, dict):
+                # Load from Dict (Service Account)
                 self.creds = service_account.Credentials.from_service_account_info(
                     credentials_source, scopes=self.scopes)
             else:
-                # Load from File Path
+                # Load from File Path (Service Account)
                 self.creds = service_account.Credentials.from_service_account_file(
                     credentials_source, scopes=self.scopes)
             
