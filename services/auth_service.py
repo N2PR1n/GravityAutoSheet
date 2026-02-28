@@ -32,7 +32,11 @@ def get_google_credentials():
             flow = InstalledAppFlow.from_client_secrets_file(client_secret_path, SCOPES)
             creds = flow.run_local_server(port=0)
             
-        with open(token_path, 'w') as token:
-            token.write(creds.to_json())
+        try:
+            with open(token_path, 'w') as token:
+                token.write(creds.to_json())
+            print("INFO: Saved updated token.")
+        except IOError:
+            print("WARNING: Could not save token (file system might be read-only, e.g. /etc/secrets on Render). Authentication will still proceed for this session.")
             
     return creds
