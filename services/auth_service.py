@@ -29,6 +29,14 @@ def get_google_credentials():
             if not os.path.exists(client_secret_path):
                 raise FileNotFoundError(f"{client_secret_path} not found. Cannot perform OAuth 2.0 Auth.")
             
+            # Detect headless environment (Render) to avoid hanging workers
+            if os.environ.get('RENDER'):
+                raise Exception(
+                    f"OAuth Token is expired or missing at {token_path}! "
+                    "Cannot run browser auth on a headless Render server. "
+                    "Please run the bot locally to generate a fresh token.json, then replace it on Render."
+                )
+            
             flow = InstalledAppFlow.from_client_secrets_file(client_secret_path, SCOPES)
             creds = flow.run_local_server(port=0)
             
