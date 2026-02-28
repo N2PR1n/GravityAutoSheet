@@ -254,15 +254,21 @@ def process_images_thread(user_id):
         target_filename = f"{next_run_no}.jpg"
         
         drive_link = ""
+        drive_error = ""
+        folder_display_name = "ไม่ทราบชื่อโฟลเดอร์"
         try:
             sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
             folder_id = _config_service.get_folder_for_sheet(sheet_name)
-            print(f"DEBUG: Drive Upload -> Sheet: {sheet_name}, Folder: {folder_id}, File: {target_filename}", flush=True)
+            folder_display_name = drive_service.get_folder_name(folder_id)
+            print(f"DEBUG: Drive Upload -> Sheet: {sheet_name}, Folder: {folder_id} ({folder_display_name}), File: {target_filename}", flush=True)
             drive_file = drive_service.upload_file(final_image_path, folder_id, target_filename)
             if drive_file:
                 drive_link = drive_file.get('webViewLink', '')
+            else:
+                drive_error = "Upload failed (Check Service Account access)"
         except Exception as e:
             print(f"Drive Upload Error: {e}")
+            drive_error = str(e)
 
         data['image_link'] = drive_link
 
@@ -270,7 +276,9 @@ def process_images_thread(user_id):
         if sheet_service.append_data(data, next_run_no):
             # Success
             tracking_info = f"\nTracking: {data.get('tracking_number')}" if data.get('tracking_number') and data.get('tracking_number') != '-' else ""
-            drive_warning = "\n⚠️ **ไม่สามารถเซฟรูปลง Drive ได้!** โปรดตรวจสอบว่าได้แชร์โฟลเดอร์ให้ Service Account หรือยัง" if not drive_link else ""
+            
+            drive_status = f"\n📁 บันทึกรูปไปที่: {folder_display_name}" if drive_link else f"\n⚠️ **เซฟรูปลง Drive ไม่สำเร็จ!**\n(โฟลเดอร์: {folder_display_name})\nสาเหตุ: {drive_error}"
+            
             summary = (
                 f"✅ บันทึกแล้ว! (No. {next_run_no})\n"
                 f"ชื่อ: {data.get('receiver_name', '-')}\n"
@@ -281,7 +289,7 @@ def process_images_thread(user_id):
                 f"Platform: {data.get('platform', '-')}\n"
                 f"Order: {data.get('order_id', '-')}"
                 f"{tracking_info}"
-                f"{drive_warning}"
+                f"{drive_status}"
             )
             messaging_api.push_message(
                  PushMessageRequest(

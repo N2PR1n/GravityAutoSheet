@@ -142,3 +142,16 @@ class DriveService:
             print(f"Error downloading file content: {e}")
             return None
 
+    def get_folder_name(self, folder_id):
+        """Retrieves folder name from ID."""
+        if not self.service or not folder_id: return "Unknown Folder"
+        try:
+            folder = self.service.files().get(
+                fileId=folder_id,
+                fields='name'
+            ).execute()
+            return folder.get('name', 'Unknown Folder')
+        except Exception as e:
+            print(f"Error getting folder name: {e}")
+            return f"Error: {str(e)}"
+
