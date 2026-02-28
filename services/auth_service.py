@@ -7,8 +7,12 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapi
 
 def get_google_credentials():
     creds = None
-    token_path = 'token.json'
-    client_secret_path = 'client_secret.json'
+    # Use environment variable if provided, otherwise default to local 'token.json'
+    token_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'token.json')
+    
+    # Infer client_secret_path from token_path directory
+    secret_dir = os.path.dirname(token_path) if os.path.dirname(token_path) else '.'
+    client_secret_path = os.path.join(secret_dir, 'client_secret.json')
     
     if os.path.exists(token_path):
         creds = Credentials.from_authorized_user_file(token_path, SCOPES)
