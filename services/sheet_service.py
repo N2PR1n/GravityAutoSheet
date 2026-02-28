@@ -170,8 +170,8 @@ class SheetService:
             except:
                 return str(val)
 
-        # Prepare row data (14 columns A-N)
-        row = [""] * 14
+        # Prepare row data (15 columns A-O)
+        row = [""] * 15
         
         # Fill data
         # A: Image Link with Filename
@@ -200,6 +200,9 @@ class SheetService:
         row[12] = str(data_dict.get('tracking_number', '')) # M
 
         row[13] = ""           # N: Delivery Date
+        
+        # O: Status (New Default: Pending)
+        row[14] = "Pending"
 
         # IMPORTANT: Use value_input_option='USER_ENTERED' to parse formulas
         try:
