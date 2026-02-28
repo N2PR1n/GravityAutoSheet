@@ -57,11 +57,17 @@ class ConfigService:
         return self.get("GOOGLE_DRIVE_FOLDER_ID", os.getenv("GOOGLE_DRIVE_FOLDER_ID", ""))
 
     def set_folder_for_sheet(self, sheet_name, folder_id):
-        """Sets the folder ID for a specific sheet."""
+        """Sets the folder ID for a specific sheet and syncs with global if active."""
         self.config = self._load_config()
         if "SHEET_FOLDER_MAP" not in self.config:
             self.config["SHEET_FOLDER_MAP"] = {}
             
         self.config["SHEET_FOLDER_MAP"][sheet_name] = folder_id
+        
+        # If this is the active sheet, also sync the global default
+        # to ensure the UI (Settings Modal) stays consistent.
+        if self.config.get('ACTIVE_SHEET_NAME') == sheet_name:
+            self.config["GOOGLE_DRIVE_FOLDER_ID"] = folder_id
+            
         self._save_config(self.config)
         return True
