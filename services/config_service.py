@@ -9,25 +9,32 @@ class ConfigService:
             "ACTIVE_SHEET_NAME": os.getenv("GOOGLE_SHEET_NAME", "Sheet1"),
             "SHEET_FOLDER_MAP": {}
         }
+        self._cached_config = None
         self.config = self._load_config()
 
     def _load_config(self):
+        # Return cache if available and not explicitly clearing
+        if self._cached_config is not None:
+            return self._cached_config
+
         if not os.path.exists(self.config_path):
             self._save_config(self.default_config)
+            self._cached_config = self.default_config
             return self.default_config
         
         try:
             with open(self.config_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                # Ensure SHEET_FOLDER_MAP exists even in old configs
                 if "SHEET_FOLDER_MAP" not in data:
                     data["SHEET_FOLDER_MAP"] = {}
+                self._cached_config = data
                 return data
         except Exception as e:
             print(f"Error loading config: {e}")
             return self.default_config
 
     def _save_config(self, config_data):
+        self._cached_config = config_data # Update cache
         try:
             with open(self.config_path, 'w', encoding='utf-8') as f:
                 json.dump(config_data, f, indent=4)
@@ -35,7 +42,7 @@ class ConfigService:
             print(f"Error saving config: {e}")
 
     def get(self, key, default=None):
-        self.config = self._load_config() # Reload from disk
+        # Use cached config instead of reloading from disk every time
         return self.config.get(key, default)
 
     def set(self, key, value):

@@ -15,7 +15,20 @@ def get_google_credentials():
     client_secret_path = os.path.join(secret_dir, 'client_secret.json')
     
     if os.path.exists(token_path):
-        creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+        # Check if it's a Service Account or OAuth Token
+        import json
+        try:
+            with open(token_path, 'r') as f:
+                creds_data = json.load(f)
+            
+            if creds_data.get('type') == 'service_account':
+                from google.oauth2 import service_account
+                return service_account.Credentials.from_service_account_file(token_path, scopes=SCOPES)
+            else:
+                creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+        except Exception as e:
+            print(f"Warning: Failed to load {token_path}: {e}")
+            creds = None
         
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:

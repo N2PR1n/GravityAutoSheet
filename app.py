@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify, request, redirect
+from flask import Flask, render_template, jsonify, request, redirect, g
 import os
 import sys
 import pandas as pd
@@ -8,6 +8,14 @@ import json
 import socket
 
 
+
+# Cache for /api/orders
+order_cache = {
+    'data': None,
+    'timestamp': 0,
+    'sheet_name': None
+}
+CACHE_TTL = 10 # Seconds
 
 load_dotenv() # Load first!
 
@@ -19,6 +27,7 @@ if current_dir not in sys.path:
 from services.sheet_service import SheetService
 from services.drive_service import DriveService
 from services.config_service import ConfigService
+from services.openai_service import OpenAIService
 from routes.bot import bot_bp
 
 # --- CONFIG & INIT ---
@@ -28,9 +37,7 @@ try:
 except Exception as e:
     print(f"❌ Error registering blueprint: {e}")
 
-# Services (Global - Lazy Init)
-sheet_service = None
-drive_service = None
+# Config service remains singleton as it is read-only for most parts or file-based
 _config_service_instance = None
 
 def get_config_service():
@@ -41,8 +48,20 @@ def get_config_service():
     return _config_service_instance
 
 def get_services():
-    global sheet_service, drive_service
-    
+    # Use flask.g to store services per request for thread safety
+    if 'sheet_service' in g and 'drive_service' in g:
+        sheet_service = g.sheet_service
+        drive_service = g.drive_service
+        
+        cfg = get_config_service()
+        sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv('GOOGLE_SHEET_NAME'))
+        
+        current_sheet = sheet_service.sheet.title if sheet_service.sheet else ""
+        if current_sheet != sheet_name:
+            print(f"DEBUG: App sheet mismatch. Switching from {current_sheet} to {sheet_name}")
+            sheet_service.set_worksheet(sheet_name)
+        return sheet_service, drive_service
+
     # Init Config
     cfg = get_config_service()
     sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv('GOOGLE_SHEET_NAME'))
@@ -57,21 +76,25 @@ def get_services():
     sheet_id = os.getenv('GOOGLE_SHEET_ID')
 
     try:
-        if sheet_service and drive_service:
-            current_sheet = sheet_service.sheet.title if sheet_service.sheet else ""
-            if current_sheet != sheet_name:
-                print(f"DEBUG: App sheet mismatch. Switching from {current_sheet} to {sheet_name}")
-                sheet_service.set_worksheet(sheet_name)
-            return sheet_service, drive_service
-
-        sheet_service = SheetService(creds_source, sheet_id, sheet_name)
-        drive_service = DriveService(creds_source) # Drive might ignore it but passing anyway
-        return sheet_service, drive_service
+        g.sheet_service = SheetService(creds_source, sheet_id, sheet_name)
+        g.drive_service = DriveService(creds_source)
+        return g.sheet_service, g.drive_service
     except Exception as e:
         print(f"❌ Service Init Failed: {e}")
         import traceback
         traceback.print_exc()
         return None, None
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    """Global error handler for all unexpected exceptions."""
+    print(f"🔥 Global Error: {e}")
+    import traceback
+    traceback.print_exc()
+    return jsonify({
+        "error": "Internal Server Error",
+        "message": str(e)
+    }), 500
 
 # ...
 
@@ -134,6 +157,21 @@ def index_v2():
 
 @app.route('/api/orders')
 def get_orders():
+    global order_cache
+    
+    cfg = get_config_service()
+    current_sheet = cfg.get('ACTIVE_SHEET_NAME', os.getenv('GOOGLE_SHEET_NAME'))
+    
+    import time
+    now = time.time()
+    
+    # Check Cache
+    if (order_cache['data'] is not None and 
+        order_cache['sheet_name'] == current_sheet and 
+        (now - order_cache['timestamp']) < CACHE_TTL):
+        print(f"DEBUG: Returning cached orders for {current_sheet}")
+        return jsonify(order_cache['data'])
+
     sheet_service, _ = get_services()
     if not sheet_service:
         return jsonify({'error': 'Services not initialized'}), 500
@@ -145,26 +183,14 @@ def get_orders():
         
         # Extended Logic: Fetch Formulas for Image Links
         image_formulas = sheet_service.get_image_links()
-        print(f"DEBUG: Fetched {len(image_formulas)} formulas.", flush=True)
-        if len(image_formulas) > 1:
-            print(f"DEBUG: Sample Formula (Row 2): {image_formulas[1]}", flush=True)
-
-        # formulas[0] is header. records[0] is row 2.
-        # So records[i] -> formulas[i+1]
         
         for i, record in enumerate(data):
-            # Safe index check
             formula_idx = i + 1
             if formula_idx < len(image_formulas):
                 raw_formula = str(image_formulas[formula_idx])
-                # Extract URL from =HYPERLINK("url", "label")
-                # Handle both " and ' quotes
                 match_url = re.search(r'["\'](https?://[^"\']+)["\']', raw_formula)
                 if match_url:
                     record['Image Link'] = match_url.group(1)
-                    if i == 0: print(f"DEBUG: Extracted URL for Row 1: {match_url.group(1)}", flush=True)
-                elif i == 0:
-                     print(f"DEBUG: Regex failed for Row 1 formula: {raw_formula}", flush=True)
         
         df = pd.DataFrame(data)
         
@@ -203,6 +229,12 @@ def get_orders():
             r['DirectImage'] = process_drive_image(raw_link)
             r['RawImageLink'] = raw_link
 
+        # Update Cache
+        order_cache['data'] = records
+        order_cache['timestamp'] = now
+        order_cache['sheet_name'] = current_sheet
+        print(f"DEBUG: Cache updated for {current_sheet}")
+
         return jsonify(records)
     except Exception as e:
         print(f"❌ API Error /api/orders: {e}")
@@ -222,6 +254,8 @@ def check_order():
     
     try:
         success = sheet_service.update_order_status(order_id, "Checked")
+        if success:
+            order_cache['data'] = None # Invalidate
         return jsonify({'success': success})
     except Exception as e:
         print(f"❌ Check Error: {e}")
@@ -239,6 +273,8 @@ def uncheck_order():
     
     try:
         success = sheet_service.update_order_status(order_id, "Pending")
+        if success:
+            order_cache['data'] = None # Invalidate
         return jsonify({'success': success})
     except Exception as e:
         print(f"❌ Uncheck Error: {e}")
@@ -298,6 +334,7 @@ def set_sheet():
     if success:
         cfg = get_config_service()
         cfg.set('ACTIVE_SHEET_NAME', sheet_name)
+        order_cache['data'] = None # Invalidate
         return jsonify({'success': True})
     else:
         return jsonify({'error': 'Failed to switch sheet'}), 500
@@ -324,4 +361,4 @@ def update_config():
 
 if __name__ == '__main__':
     # Use 0.0.0.0 to allow access from local network
-    app.run(host='0.0.0.0', port=5001, debug=True, use_reloader=False, threaded=False)
+    app.run(host='0.0.0.0', port=5001, debug=True, use_reloader=False, threaded=True)

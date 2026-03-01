@@ -14,16 +14,17 @@ class DriveService:
 
         try:
             from google.oauth2.credentials import Credentials as OAuth2Credentials
+            from google.oauth2 import service_account as google_service_account
             creds = None
-            if isinstance(credentials_source, OAuth2Credentials):
+            if isinstance(credentials_source, OAuth2Credentials) or isinstance(credentials_source, google_service_account.Credentials):
                 creds = credentials_source
             elif isinstance(credentials_source, dict):
                 # Load from Dict
-                creds = service_account.Credentials.from_service_account_info(
+                creds = google_service_account.Credentials.from_service_account_info(
                     credentials_source, scopes=self.scopes)
             else:
                 # Load from File Path
-                creds = service_account.Credentials.from_service_account_file(
+                creds = google_service_account.Credentials.from_service_account_file(
                     credentials_source, scopes=self.scopes)
             
             self.service = build('drive', 'v3', credentials=creds)

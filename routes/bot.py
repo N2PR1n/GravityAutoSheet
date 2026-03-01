@@ -55,40 +55,26 @@ api_client = ApiClient(configuration)
 messaging_api = MessagingApi(api_client)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
-_image_service = None
-_drive_service = None
-_openai_service = None
-_sheet_service = None
-_accounting_service = None
 _config_service = ConfigService()
 
 def get_services():
-    global _image_service, _drive_service, _openai_service, _sheet_service, _accounting_service
-    
     # Load Creds
     creds = get_credentials()
     
-    # Init Services that don't depend on sheet selection
-    if not _image_service: _image_service = ImageService()
-    if not _drive_service: _drive_service = DriveService(creds)
-    if not _openai_service: _openai_service = OpenAIService(OPENAI_API_KEY)
+    # Init Services fresh per call for thread safety in background threads/timers
+    image_service = ImageService()
+    drive_service = DriveService(creds)
+    openai_service = OpenAIService(OPENAI_API_KEY)
     
     # Always check for the latest sheet name from config
     sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
     
-    if not _sheet_service:
-        print(f"DEBUG: Bot connecting to Sheet: {sheet_name}")
-        _sheet_service = SheetService(creds, GOOGLE_SHEET_ID, sheet_name)
-    else:
-        # Check if the current sheet matches the desired sheet
-        current_sheet = _sheet_service.sheet.title if _sheet_service.sheet else ""
-        if current_sheet != sheet_name:
-            print(f"DEBUG: Bot sheet mismatch. Switching from {current_sheet} to {sheet_name}")
-            _sheet_service.set_worksheet(sheet_name)
+    print(f"DEBUG: Bot connecting to Sheet: {sheet_name}")
+    sheet_service = SheetService(creds, GOOGLE_SHEET_ID, sheet_name)
         
-    if not _accounting_service: _accounting_service = AccountingService(_sheet_service, _drive_service)
+    accounting_service = AccountingService(sheet_service, drive_service)
     
-    return _image_service, _drive_service, _openai_service, _sheet_service, _accounting_service
+    return image_service, drive_service, openai_service, sheet_service, accounting_service
 
 # State for Image Batching
 # user_id: {'images': [], 'timer': threading.Timer, 'reply_token': str}
@@ -274,6 +260,13 @@ def process_images_thread(user_id):
 
         # 6. Save to Sheet
         if sheet_service.append_data(data, next_run_no):
+            # Invalidate Cache
+            try:
+                from app import order_cache
+                order_cache['data'] = None
+            except:
+                pass
+            
             # Success
             tracking_info = f"\nTracking: {data.get('tracking_number')}" if data.get('tracking_number') and data.get('tracking_number') != '-' else ""
             

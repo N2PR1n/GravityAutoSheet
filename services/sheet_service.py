@@ -8,18 +8,25 @@ import requests.packages.urllib3.util.connection as urllib3_cn
 class SheetService:
     def __init__(self, credentials_source, sheet_id, sheet_name=None):
         self.scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
+        self.client = None
+        self.sheet = None
+        self.row_index_map = {} # Cache for Order ID -> Row Number
+        self.status_col = None  # Cache for Status Column Index
+        self.all_data_cache = None
+        self.last_fetch_time = 0
         try:
             from google.oauth2.credentials import Credentials as OAuth2Credentials
+            from google.oauth2 import service_account as google_service_account
             
-            if isinstance(credentials_source, OAuth2Credentials):
+            if isinstance(credentials_source, OAuth2Credentials) or isinstance(credentials_source, google_service_account.Credentials):
                 self.creds = credentials_source
             elif isinstance(credentials_source, dict):
                 # Load from Dict (Service Account)
-                self.creds = service_account.Credentials.from_service_account_info(
+                self.creds = google_service_account.Credentials.from_service_account_info(
                     credentials_source, scopes=self.scopes)
             else:
                 # Load from File Path (Service Account)
-                self.creds = service_account.Credentials.from_service_account_file(
+                self.creds = google_service_account.Credentials.from_service_account_file(
                     credentials_source, scopes=self.scopes)
             
             self.client = gspread.authorize(self.creds)
@@ -65,13 +72,18 @@ class SheetService:
             return False
 
     def check_duplicate(self, order_id):
-        """Checks if order_id already exists in Column L (Index 12)."""
+        """Checks if order_id already exists using local map or API fallback."""
         if not self.sheet or not order_id: return False
+        
+        order_id_str = str(order_id)
+        # Use local row map if available (populated by get_all_data)
+        if self.row_index_map:
+            return order_id_str in self.row_index_map
+            
         try:
-            # Get all values in Column L (Order IDs)
-            # Row 1 is header, data starts from Row 2
+            # Fallback to API if map is empty
             order_ids = self.sheet.col_values(12)  # Column L = 12
-            return str(order_id) in order_ids
+            return order_id_str in order_ids
         except Exception as e:
             print(f"Warning: Duplicate check failed: {e}")
             return False
@@ -105,12 +117,21 @@ class SheetService:
             
             # Convert to list of dicts
             records = []
-            for row in data_rows:
+            self.row_index_map = {}
+            for i, row in enumerate(data_rows):
                 # Pad row with empty strings if it's shorter than headers
                 row_extended = row + [""] * (len(clean_headers) - len(row))
                 record = dict(zip(clean_headers, row_extended))
                 records.append(record)
                 
+                # Build Row Map (Index starts at 1, Header is row 1, Data is row 2+)
+                order_id = str(record.get('Order ID') or record.get('order_id') or record.get('เลขออเดอร์') or "")
+                if order_id:
+                    self.row_index_map[order_id] = i + 2
+                
+            self.all_data_cache = records
+            import time
+            self.last_fetch_time = time.time()
             return records
         except Exception as e:
             print(f"Error fetching data: {e}")
@@ -129,22 +150,34 @@ class SheetService:
             return []
 
     def get_next_run_no(self):
-        """Calculates the next Run No. based on Column D (index 4)."""
+        """Calculates next Run No. by finding the first missing integer starting from 1."""
         if not self.sheet: return 1
-        try:
-            # Column D is index 4
-            col_values = self.sheet.col_values(4) 
-            run_nos = []
-            for val in col_values:
-                # Filter for numeric values (skip header/text)
-                if str(val).isdigit():
-                    run_nos.append(int(val))
+        
+        import time
+        run_nos_set = set()
+        
+        # Try to use cache if it's fresh (< 60s)
+        if self.all_data_cache and (time.time() - self.last_fetch_time < 60):
+            for r in self.all_data_cache:
+                val = r.get('Run No') or r.get('run_no') or r.get('ลำดับ') or r.get('Run No.')
+                if val and str(val).isdigit():
+                    run_nos_set.add(int(val))
+        else:
+            try:
+                # Column D is index 4
+                col_values = self.sheet.col_values(4) 
+                for val in col_values:
+                    if str(val).isdigit():
+                        run_nos_set.add(int(val))
+            except Exception as e:
+                print(f"Error getting run nos from API: {e}")
+        
+        # Find first missing number starting from 1
+        next_no = 1
+        while next_no in run_nos_set:
+            next_no += 1
             
-            if not run_nos: return 1
-            return max(run_nos) + 1
-        except Exception as e:
-            print(f"Error getting next run no: {e}")
-            return 1
+        return next_no
 
     def append_data(self, data_dict, run_no=None):
         """
@@ -214,30 +247,33 @@ class SheetService:
             return False
 
     def update_order_status(self, order_id, status="Checked"):
-        """Updates the status of an order."""
+        """Updates the status of an order using optimized row mapping."""
         if not self.sheet: return False
         try:
-            # Find the cell with the order_id
-            cell = self.sheet.find(str(order_id))
-            if not cell:
-                print(f"Order ID {order_id} not found.")
-                return False
+            order_id_str = str(order_id)
+            row_idx = self.row_index_map.get(order_id_str)
             
-            # Find Status Column
-            headers = self.sheet.row_values(1)
-            try:
-                # Try english first, then thai
+            # Fallback to search if map is empty/missing (e.g. newly appended)
+            if not row_idx:
+                print(f"DEBUG: Row map miss for {order_id}, searching...")
+                cell = self.sheet.find(order_id_str)
+                if not cell: return False
+                row_idx = cell.row
+                # Update map for next time
+                self.row_index_map[order_id_str] = row_idx
+
+            # Find/Cache Status Column
+            if not self.status_col:
+                headers = self.sheet.row_values(1)
                 if "Status" in headers:
-                    status_col = headers.index("Status") + 1
+                    self.status_col = headers.index("Status") + 1
                 elif "สถานะ" in headers:
-                    status_col = headers.index("สถานะ") + 1
+                    self.status_col = headers.index("สถานะ") + 1
                 else:
                     return False
-            except:
-                return False
             
-            # Update
-            self.sheet.update_cell(cell.row, status_col, status)
+            # Update (Single API Call)
+            self.sheet.update_cell(row_idx, self.status_col, status)
             return True
         except Exception as e:
             print(f"Error updating status: {e}")

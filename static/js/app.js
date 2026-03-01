@@ -19,6 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// ... (fetchOrders, updateStatus, etc.) ...
+
 // --- API ---
 async function fetchOrders() {
     const listEl = document.getElementById('order-list');
@@ -46,7 +48,20 @@ async function fetchOrders() {
 }
 
 async function updateStatus(orderId, action) {
-    if (!confirm(`Are you sure you want to ${action} this order?`)) return;
+    const statusMap = { 'check': 'Checked', 'uncheck': 'Pending' };
+    const targetStatus = statusMap[action];
+
+    // 1. Optimistic Update
+    const orderIndex = allOrders.findIndex(o => o['Order ID'] == orderId);
+    if (orderIndex === -1) return;
+
+    const originalStatus = allOrders[orderIndex]['Status'];
+
+    // Update local state
+    allOrders[orderIndex]['Status'] = targetStatus;
+    applyFilters(); // Re-render immediately
+
+    showToast(`Updating order...`);
 
     try {
         const res = await fetch(`/api/orders/${action}`, {
@@ -58,13 +73,20 @@ async function updateStatus(orderId, action) {
 
         if (result.success) {
             showToast(`Order ${action}ed successfully!`);
-            fetchOrders(); // Refresh
+            // No need to fetchOrders() immediately, the local state is already correct.
+            // But we can do it in the background if we want to be absolute sure.
         } else {
-            alert('Failed to update status.');
+            // Rollback
+            allOrders[orderIndex]['Status'] = originalStatus;
+            applyFilters();
+            alert('Failed to update status on Google Sheets.');
         }
     } catch (e) {
         console.error(e);
-        alert('Error connecting to server.');
+        // Rollback
+        allOrders[orderIndex]['Status'] = originalStatus;
+        applyFilters();
+        alert('Error connecting to server. Change rolled back.');
     }
 }
 
@@ -550,4 +572,19 @@ async function saveConfig() {
         console.error("Error saving config:", e);
         showToast("Error saving settings.");
     }
+}
+
+// --- Navigation ---
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+function scrollToBottom() {
+    window.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'smooth'
+    });
 }
