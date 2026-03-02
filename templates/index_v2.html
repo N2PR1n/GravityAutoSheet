@@ -156,7 +156,33 @@
     </div>
 
     <!-- Settings Modal -->
-    ... (unchanged) ...
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold ms-2 mt-2">⚙️ System Settings</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="folder-id-input" class="form-label fw-bold">Drive Folder ID for: <span
+                                id="settings-sheet-name" class="text-primary">Current Sheet</span></label>
+                        <input type="text" id="folder-id-input" class="form-control rounded-3"
+                            placeholder="Enter Google Drive Folder ID">
+                        <div class="form-text mt-2">
+                            This folder will be used to store images and exported reports for the currently selected
+                            sheet.
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" onclick="saveConfig()">Save
+                        Settings</button>
+                </div>
+            </div>
+        </div>
     </div>
 
 
