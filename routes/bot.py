@@ -148,6 +148,33 @@ def handle_text_message(event):
         except Exception as e:
             print(f"Text Handle Error: {e}")
 
+    elif text in ["status", "เช็คชีท", "ชีทไหน", "เช็ค"]:
+        try:
+            sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+            folder_id = _config_service.get_folder_for_sheet(sheet_name)
+            
+            status_msg = (
+                f"🤖 สถานะบอทปัจจุบัน:\n"
+                f"📁 ชีทที่ใช้งาน: {sheet_name}\n"
+                f"📂 Folder ID: {folder_id[:5]}...{folder_id[-5:]}\n\n"
+                f"💡 หากต้องการเปลี่ยนชีท ให้ไปที่หน้าเว็บแล้วเลือกใหม่นะครับ"
+            )
+            
+            messaging_api.reply_message(
+                ReplyMessageRequest(
+                    replyToken=reply_token,
+                    messages=[TextMessage(text=status_msg)]
+                )
+            )
+        except Exception as e:
+            print(f"Status Check Error: {e}")
+            messaging_api.reply_message(
+                ReplyMessageRequest(
+                    replyToken=reply_token,
+                    messages=[TextMessage(text=f"เกิดข้อผิดพลาดในการเช็คสถานะ: {str(e)}")]
+                )
+            )
+
 @handler.add(MessageEvent, message=ImageMessageContent)
 def handle_image_message(event):
     user_id = event.source.user_id
