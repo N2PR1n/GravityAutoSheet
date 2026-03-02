@@ -237,13 +237,38 @@ class SheetService:
         # O: Status (New Default: Pending)
         row[14] = "Pending"
 
+        # NEW LOGIC: Find FIRST EMPTY ROW (Gap Filling)
+        # Column D (index 4) is 'Run No'. If it's empty, we fill that row.
+        target_row_idx = None
+        try:
+            # We already have data in cache or can fetch it
+            all_rows = self.sheet.get_values()
+            # Start looking from row 2 (index 1)
+            for i in range(1, len(all_rows)):
+                row_data = all_rows[i]
+                # If row is shorter than 4 columns or Column D (index 3) is empty
+                if len(row_data) < 4 or not str(row_data[3]).strip():
+                    target_row_idx = i + 1 # gspread is 1-indexed
+                    print(f"DEBUG: Found empty gap at row {target_row_idx}")
+                    break
+        except Exception as e:
+            print(f"Error searching for gap: {e}")
+
         # IMPORTANT: Use value_input_option='USER_ENTERED' to parse formulas
         try:
-            result = self.sheet.append_row(row, value_input_option='USER_ENTERED')
-            print(f"DEBUG: Data appended result: {result}")
+            if target_row_idx:
+                # Update existing empty row
+                # Range A[idx]:O[idx]
+                range_label = f"A{target_row_idx}:O{target_row_idx}"
+                self.sheet.update(range_name=range_label, values=[row], value_input_option='USER_ENTERED')
+                print(f"DEBUG: Data updated in gap at row {target_row_idx}")
+            else:
+                # Append to bottom if no gap found
+                result = self.sheet.append_row(row, value_input_option='USER_ENTERED')
+                print(f"DEBUG: Data appended to bottom: {result}")
             return True
         except Exception as e:
-            print(f"Error appending data to sheet: {e}")
+            print(f"Error saving data to sheet: {e}")
             return False
 
     def update_order_status(self, order_id, status="Checked"):
