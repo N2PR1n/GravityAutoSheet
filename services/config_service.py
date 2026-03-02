@@ -12,9 +12,9 @@ class ConfigService:
         self._cached_config = None
         self.config = self._load_config()
 
-    def _load_config(self):
+    def _load_config(self, force_reload=False):
         # Return cache if available and not explicitly clearing
-        if self._cached_config is not None:
+        if not force_reload and self._cached_config is not None:
             return self._cached_config
 
         if not os.path.exists(self.config_path):
@@ -42,18 +42,19 @@ class ConfigService:
             print(f"Error saving config: {e}")
 
     def get(self, key, default=None):
-        # Use cached config instead of reloading from disk every time
+        # Reload from disk every time to ensure fresh values across workers/threads
+        self.config = self._load_config(force_reload=True)
         return self.config.get(key, default)
 
     def set(self, key, value):
-        self.config = self._load_config() # Sync before writing
+        self.config = self._load_config(force_reload=True) # Sync before writing
         self.config[key] = value
         self._save_config(self.config)
         return True
 
     def get_folder_for_sheet(self, sheet_name):
         """Returns the specific folder ID for a sheet, or the default fallback."""
-        self.config = self._load_config()
+        self.config = self._load_config(force_reload=True)
         folder_map = self.config.get("SHEET_FOLDER_MAP", {})
         
         # If specific mapping exists and is not empty
