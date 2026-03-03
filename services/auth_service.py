@@ -7,7 +7,13 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapi
 
 def get_google_credentials():
     creds = None
-    creds_env = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'token.json')
+    
+    # Priority 1: Check for local token.json first (User/OAuth Account)
+    if os.path.exists('token.json'):
+        creds_env = 'token.json'
+    else:
+        # Priority 2: Fallback to Environment Variable or default
+        creds_env = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'token.json')
     
     # Check if it's a JSON string instead of a path
     if creds_env.strip().startswith('{'):
