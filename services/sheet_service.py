@@ -10,6 +10,7 @@ class SheetService:
         self.scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
         self.client = None
         self.sheet = None
+        self.sheet_id = sheet_id
         self.row_index_map = {} # Cache for Order ID -> Row Number
         self.status_col = None  # Cache for Status Column Index
         self.all_data_cache = None
@@ -50,10 +51,10 @@ class SheetService:
 
     def get_worksheets(self):
         """Returns a list of all worksheet titles."""
-        if not self.client: return []
+        if not self.client or not self.sheet_id: return []
         try:
-            # Re-open spreadsheet to ensure fresh list
-            spreadsheet = self.client.open_by_key(self.sheet.spreadsheet.id)
+            # Re-open spreadsheet using stored ID
+            spreadsheet = self.client.open_by_key(self.sheet_id)
             return [ws.title for ws in spreadsheet.worksheets()]
         except Exception as e:
             print(f"Error getting worksheets: {e}")
@@ -61,9 +62,9 @@ class SheetService:
 
     def set_worksheet(self, sheet_name):
         """Switches the active worksheet."""
-        if not self.client: return False
+        if not self.client or not self.sheet_id: return False
         try:
-            spreadsheet = self.client.open_by_key(self.sheet.spreadsheet.id)
+            spreadsheet = self.client.open_by_key(self.sheet_id)
             self.sheet = spreadsheet.worksheet(sheet_name)
             print(f"DEBUG: Switched to Sheet: '{self.sheet.title}'")
             return True
