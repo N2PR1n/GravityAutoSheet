@@ -7,11 +7,23 @@ let currentFilterStatus = 'all'; // 'all', 'pending', 'checked'
 let selectedPlatforms = []; // List of selected platforms to filter by
 
 // --- INIT ---
-document.addEventListener('DOMContentLoaded', () => {
-    fetchOrders();
-    fetchSheets(true);
-    fetchConfig();
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. Initial UI setup
     initScanner();
+
+    // 2. Fetch Config & Sheets in sequence or smartly
+    const pinnedSheet = localStorage.getItem('pinnedSheet');
+
+    if (pinnedSheet) {
+        console.log("Found pinned sheet:", pinnedSheet);
+        // If we have a pin, we switch to it immediately which will trigger fetchOrders
+        await fetchSheets(true);
+    } else {
+        // Normal load
+        await fetchOrders();
+        await fetchSheets(false);
+        await fetchConfig();
+    }
 
     // Search Listener
     document.getElementById('search-input').addEventListener('input', (e) => {
@@ -457,9 +469,14 @@ async function fetchSheets(isFirstLoad = false) {
             }
 
             // Auto-switch if pinned and first load
-            if (isFirstLoad && pinnedSheet && data.sheets.includes(pinnedSheet) && data.current !== pinnedSheet) {
-                console.log("Auto-switching to pinned sheet:", pinnedSheet);
-                switchSheet(pinnedSheet);
+            if (isFirstLoad && pinnedSheet && data.sheets.includes(pinnedSheet)) {
+                if (data.current !== pinnedSheet) {
+                    console.log("Auto-switching to pinned sheet:", pinnedSheet);
+                    await switchSheet(pinnedSheet);
+                } else {
+                    // Already on pinned sheet, just load config
+                    await fetchConfig(pinnedSheet);
+                }
                 return;
             }
 
@@ -539,7 +556,7 @@ async function fetchConfig(targetSheet = null) {
         } else {
             // Check if we have a current sheet name locally (from UI)
             const currentLabel = document.getElementById('current-sheet-name').innerText;
-            if (currentLabel && currentLabel !== "Select Month") {
+            if (currentLabel && currentLabel !== "Select Month" && currentLabel !== "Loading...") {
                 url += `?sheet_name=${encodeURIComponent(currentLabel)}`;
             }
         }
