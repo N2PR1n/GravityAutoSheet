@@ -5,17 +5,23 @@ from google.auth.transport.requests import Request
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
 
-def get_google_credentials():
-    creds = None
-    # Use environment variable if provided, otherwise default to local 'token.json'
-    token_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'token.json')
+    creds_env = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'token.json')
     
+    # Check if it's a JSON string instead of a path
+    if creds_env.strip().startswith('{'):
+        try:
+            import json
+            from google.oauth2 import service_account
+            creds_data = json.loads(creds_env)
+            if creds_data.get('type') == 'service_account':
+                return service_account.Credentials.from_service_account_info(creds_data, scopes=SCOPES)
+        except Exception as e:
+            print(f"Error parsing GOOGLE_APPLICATION_CREDENTIALS as JSON: {e}")
+
+    token_path = creds_env
     # Infer client_secret_path from token_path directory
-    secret_dir = os.path.dirname(token_path) if os.path.dirname(token_path) else '.'
-    client_secret_path = os.path.join(secret_dir, 'client_secret.json')
-    
+    # ...
     if os.path.exists(token_path):
-        # Check if it's a Service Account or OAuth Token
         import json
         try:
             with open(token_path, 'r') as f:
