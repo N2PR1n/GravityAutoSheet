@@ -474,8 +474,9 @@ async function fetchSheets(isFirstLoad = false) {
                     console.log("Auto-switching to pinned sheet:", pinnedSheet);
                     await switchSheet(pinnedSheet);
                 } else {
-                    // Already on pinned sheet, just load config
+                    // Already on pinned sheet, just load config and orders
                     await fetchConfig(pinnedSheet);
+                    await fetchOrders();
                 }
                 return;
             }
