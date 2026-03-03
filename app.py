@@ -343,10 +343,16 @@ def set_sheet():
 @app.route('/api/config', methods=['GET'])
 def get_config():
     cfg = get_config_service()
-    sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv("GOOGLE_SHEET_NAME"))
+    # Support optional sheet_name query param
+    requested_sheet = request.args.get('sheet_name')
+    active_sheet = cfg.get('ACTIVE_SHEET_NAME', os.getenv("GOOGLE_SHEET_NAME"))
+    
+    target_sheet = requested_sheet if requested_sheet else active_sheet
+    
     return jsonify({
-        'GOOGLE_DRIVE_FOLDER_ID': cfg.get_folder_for_sheet(sheet_name),
-        'ACTIVE_SHEET_NAME': sheet_name,
+        'GOOGLE_DRIVE_FOLDER_ID': cfg.get_folder_for_sheet(target_sheet),
+        'ACTIVE_SHEET_NAME': active_sheet,
+        'TARGET_SHEET_NAME': target_sheet,
         'AI_PROVIDER': cfg.get('AI_PROVIDER', 'openai')
     })
 
@@ -365,9 +371,14 @@ def update_config():
     cfg = get_config_service()
     data = request.json
     folder_id = data.get('folder_id')
+    sheet_name = data.get('sheet_name') # Frontend should send this
+    
     if folder_id:
-        sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv("GOOGLE_SHEET_NAME"))
+        if not sheet_name:
+            sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv("GOOGLE_SHEET_NAME"))
+        
         cfg.set_folder_for_sheet(sheet_name, folder_id)
+        # Also ensure it's globally updated if it's the current sheet
         return jsonify({'success': True})
     return jsonify({'error': 'Invalid data'}), 400
 

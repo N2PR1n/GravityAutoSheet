@@ -55,6 +55,9 @@ class ConfigService:
 
     def get_folder_for_sheet(self, sheet_name):
         """Returns the specific folder ID for a sheet, or the default fallback."""
+        if not sheet_name:
+            sheet_name = self.get('ACTIVE_SHEET_NAME', os.getenv("GOOGLE_SHEET_NAME"))
+            
         self.config = self._load_config(force_reload=True)
         folder_map = self.config.get("SHEET_FOLDER_MAP", {})
         
@@ -62,7 +65,7 @@ class ConfigService:
         if sheet_name in folder_map and folder_map[sheet_name]:
             return folder_map[sheet_name]
             
-        # Fallback to global config
+        # Fallback to global config (which might be the last used folder ID)
         return self.get("GOOGLE_DRIVE_FOLDER_ID", os.getenv("GOOGLE_DRIVE_FOLDER_ID", ""))
 
     def set_folder_for_sheet(self, sheet_name, folder_id):

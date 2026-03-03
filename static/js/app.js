@@ -518,7 +518,7 @@ async function switchSheet(sheetName) {
         if (result.success) {
             showToast(`Switched to ${sheetName}`);
             await fetchSheets(); // Refresh UI
-            await fetchConfig(); // Refresh Config for the active sheet in settings
+            await fetchConfig(sheetName); // Refresh Config for the active sheet in settings
             await fetchOrders(); // Reload Data
         } else {
             showToast('Failed to switch sheet');
@@ -531,17 +531,32 @@ async function switchSheet(sheetName) {
 }
 
 // --- Config Logic ---
-async function fetchConfig() {
+async function fetchConfig(targetSheet = null) {
     try {
-        const response = await fetch('/api/config');
+        let url = '/api/config';
+        if (targetSheet) {
+            url += `?sheet_name=${encodeURIComponent(targetSheet)}`;
+        } else {
+            // Check if we have a current sheet name locally (from UI)
+            const currentLabel = document.getElementById('current-sheet-name').innerText;
+            if (currentLabel && currentLabel !== "Select Month") {
+                url += `?sheet_name=${encodeURIComponent(currentLabel)}`;
+            }
+        }
+
+        const response = await fetch(url);
         const data = await response.json();
         if (data.GOOGLE_DRIVE_FOLDER_ID) {
             document.getElementById('folder-id-input').value = data.GOOGLE_DRIVE_FOLDER_ID;
         }
-        if (data.ACTIVE_SHEET_NAME) {
+
+        // Update the "Drive Folder ID for: [Sheet Name]" label in modal
+        const sheetDisplay = data.TARGET_SHEET_NAME || data.ACTIVE_SHEET_NAME;
+        if (sheetDisplay) {
             const labelEl = document.getElementById('settings-sheet-name');
-            if (labelEl) labelEl.innerText = data.ACTIVE_SHEET_NAME;
+            if (labelEl) labelEl.innerText = sheetDisplay;
         }
+
         if (data.AI_PROVIDER) {
             const aiSelect = document.getElementById('ai-provider-select');
             if (aiSelect) aiSelect.value = data.AI_PROVIDER;
@@ -554,6 +569,7 @@ async function fetchConfig() {
 async function saveConfig() {
     const folderId = document.getElementById('folder-id-input').value.trim();
     const aiProvider = document.getElementById('ai-provider-select').value;
+    const currentSheet = document.getElementById('settings-sheet-name').innerText;
 
     if (!folderId) {
         alert("Please enter a valid Folder ID.");
@@ -561,11 +577,14 @@ async function saveConfig() {
     }
 
     try {
-        // 1. Save Folder Config
+        // 1. Save Folder Config (now with sheet_name context)
         const resConfig = await fetch('/api/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ folder_id: folderId })
+            body: JSON.stringify({
+                folder_id: folderId,
+                sheet_name: currentSheet
+            })
         });
 
         // 2. Save AI Config
