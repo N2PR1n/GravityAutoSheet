@@ -5,6 +5,8 @@ from google.auth.transport.requests import Request
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
 
+def get_google_credentials():
+    creds = None
     creds_env = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'token.json')
     
     # Check if it's a JSON string instead of a path
@@ -20,7 +22,9 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapi
 
     token_path = creds_env
     # Infer client_secret_path from token_path directory
-    # ...
+    secret_dir = os.path.dirname(token_path) if os.path.dirname(token_path) else '.'
+    client_secret_path = os.path.join(secret_dir, 'client_secret.json')
+    
     if os.path.exists(token_path):
         import json
         try:
