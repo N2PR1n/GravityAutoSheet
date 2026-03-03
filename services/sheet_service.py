@@ -19,16 +19,27 @@ class SheetService:
             from google.oauth2.credentials import Credentials as OAuth2Credentials
             from google.oauth2 import service_account as google_service_account
             
-            if isinstance(credentials_source, OAuth2Credentials) or isinstance(credentials_source, google_service_account.Credentials):
+            # Robust Credential Detection
+            if hasattr(credentials_source, 'token') or hasattr(credentials_source, 'service_account_email'):
                 self.creds = credentials_source
             elif isinstance(credentials_source, dict):
-                # Load from Dict (Service Account)
-                self.creds = google_service_account.Credentials.from_service_account_info(
-                    credentials_source, scopes=self.scopes)
+                if credentials_source.get('type') == 'service_account':
+                    self.creds = google_service_account.Credentials.from_service_account_info(
+                        credentials_source, scopes=self.scopes)
+                else:
+                    self.creds = OAuth2Credentials.from_authorized_user_info(credentials_source, self.scopes)
+            elif isinstance(credentials_source, str) and os.path.exists(credentials_source):
+                import json
+                with open(credentials_source, 'r') as f:
+                    data = json.load(f)
+                if data.get('type') == 'service_account':
+                    self.creds = google_service_account.Credentials.from_service_account_file(
+                        credentials_source, scopes=self.scopes)
+                else:
+                    self.creds = OAuth2Credentials.from_authorized_user_file(credentials_source, self.scopes)
             else:
-                # Load from File Path (Service Account)
-                self.creds = google_service_account.Credentials.from_service_account_file(
-                    credentials_source, scopes=self.scopes)
+                # Direct object fallback if not detected above
+                self.creds = credentials_source
             
             self.client = gspread.authorize(self.creds)
             

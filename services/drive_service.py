@@ -16,19 +16,33 @@ class DriveService:
             from google.oauth2.credentials import Credentials as OAuth2Credentials
             from google.oauth2 import service_account as google_service_account
             creds = None
-            if isinstance(credentials_source, OAuth2Credentials) or isinstance(credentials_source, google_service_account.Credentials):
-                creds = credentials_source
-            elif isinstance(credentials_source, dict):
-                # Load from Dict
-                creds = google_service_account.Credentials.from_service_account_info(
-                    credentials_source, scopes=self.scopes)
-            else:
-                # Load from File Path
-                creds = google_service_account.Credentials.from_service_account_file(
-                    credentials_source, scopes=self.scopes)
             
+            # 1. Direct object check
+            if hasattr(credentials_source, 'token') or hasattr(credentials_source, 'service_account_email'):
+                creds = credentials_source
+            # 2. Dict check
+            elif isinstance(credentials_source, dict):
+                if credentials_source.get('type') == 'service_account':
+                    creds = google_service_account.Credentials.from_service_account_info(
+                        credentials_source, scopes=self.scopes)
+                else:
+                    creds = OAuth2Credentials.from_authorized_user_info(credentials_source, self.scopes)
+            # 3. File Path check
+            elif isinstance(credentials_source, str) and os.path.exists(credentials_source):
+                import json
+                with open(credentials_source, 'r') as f:
+                    data = json.load(f)
+                if data.get('type') == 'service_account':
+                    creds = google_service_account.Credentials.from_service_account_file(
+                        credentials_source, scopes=self.scopes)
+                else:
+                    creds = OAuth2Credentials.from_authorized_user_file(credentials_source, self.scopes)
+            
+            if not creds:
+                raise ValueError("Could not determine credential type from source")
+
             self.service = build('drive', 'v3', credentials=creds)
-            print("DEBUG: Drive Service Initialized with Credentials!")
+            print("DEBUG: Drive Service Initialized!")
         except Exception as e:
             print(f"Warning: DriveService init failed: {e}")
             self.service = None
@@ -149,7 +163,8 @@ class DriveService:
         try:
             folder = self.service.files().get(
                 fileId=folder_id,
-                fields='name'
+                fields='name',
+                supportsAllDrives=True
             ).execute()
             return folder.get('name', 'Unknown Folder')
         except Exception as e:
