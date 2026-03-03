@@ -11,3 +11,4 @@ Pillow
 requests
 certifi
 gspread
+google-generativeai

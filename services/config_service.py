@@ -7,6 +7,7 @@ class ConfigService:
         self.default_config = {
             "GOOGLE_DRIVE_FOLDER_ID": os.getenv("GOOGLE_DRIVE_FOLDER_ID", ""),
             "ACTIVE_SHEET_NAME": os.getenv("GOOGLE_SHEET_NAME", "Sheet1"),
+            "AI_PROVIDER": "openai",
             "SHEET_FOLDER_MAP": {}
         }
         self._cached_config = None

@@ -542,6 +542,10 @@ async function fetchConfig() {
             const labelEl = document.getElementById('settings-sheet-name');
             if (labelEl) labelEl.innerText = data.ACTIVE_SHEET_NAME;
         }
+        if (data.AI_PROVIDER) {
+            const aiSelect = document.getElementById('ai-provider-select');
+            if (aiSelect) aiSelect.value = data.AI_PROVIDER;
+        }
     } catch (e) {
         console.error("Error fetching config:", e);
     }
@@ -549,24 +553,36 @@ async function fetchConfig() {
 
 async function saveConfig() {
     const folderId = document.getElementById('folder-id-input').value.trim();
+    const aiProvider = document.getElementById('ai-provider-select').value;
+
     if (!folderId) {
         alert("Please enter a valid Folder ID.");
         return;
     }
 
     try {
-        const response = await fetch('/api/config', {
+        // 1. Save Folder Config
+        const resConfig = await fetch('/api/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ folder_id: folderId })
         });
 
-        const result = await response.json();
-        if (result.success) {
-            showToast("Settings saved successfully!");
+        // 2. Save AI Config
+        const resAI = await fetch('/api/ai_config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provider: aiProvider })
+        });
+
+        const resultConfig = await resConfig.json();
+        const resultAI = await resAI.json();
+
+        if (resultConfig.success && resultAI.success) {
+            showToast("Settings and AI provider saved!");
             bootstrap.Modal.getInstance(document.getElementById('settingsModal')).hide();
         } else {
-            showToast("Failed to save settings.");
+            showToast("Failed to save some settings.");
         }
     } catch (e) {
         console.error("Error saving config:", e);

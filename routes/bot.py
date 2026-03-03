@@ -64,17 +64,25 @@ def get_services():
     # Init Services fresh per call for thread safety in background threads/timers
     image_service = ImageService()
     drive_service = DriveService(creds)
-    openai_service = OpenAIService(OPENAI_API_KEY)
+    
+    # AI Service Factory
+    from services.ai_factory import AIFactory
+    ai_provider = _config_service.get('AI_PROVIDER', 'openai')
+    
+    gemini_key = os.getenv('GEMINI_API_KEY')
+    openai_key = os.getenv('OPENAI_API_KEY')
+    
+    ai_service = AIFactory.get_service(ai_provider, openai_key, gemini_key)
     
     # Always check for the latest sheet name from config
     sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
     
-    print(f"DEBUG: Bot connecting to Sheet: {sheet_name}")
+    print(f"DEBUG: Bot connecting to Sheet: {sheet_name} | AI: {ai_provider}")
     sheet_service = SheetService(creds, GOOGLE_SHEET_ID, sheet_name)
         
     accounting_service = AccountingService(sheet_service, drive_service)
     
-    return image_service, drive_service, openai_service, sheet_service, accounting_service
+    return image_service, drive_service, ai_service, sheet_service, accounting_service
 
 # State for Image Batching
 # user_id: {'images': [], 'timer': threading.Timer, 'reply_token': str}
@@ -216,10 +224,11 @@ def process_images_thread(user_id):
     try:
         # Notify Start
         try:
+            ai_provider = _config_service.get('AI_PROVIDER', 'openai').upper()
             messaging_api.reply_message(
                 ReplyMessageRequest(
                     replyToken=reply_token,
-                    messages=[TextMessage(text=f"ได้รับ {len(image_ids)} รูปภาพ กำลังประมวลผล (OpenAI/v3)...")]
+                    messages=[TextMessage(text=f"ได้รับ {len(image_ids)} รูปภาพ กำลังประมวลผล ({ai_provider}/v3)...")]
                 )
             )
         except Exception as e:
@@ -247,7 +256,7 @@ def process_images_thread(user_id):
              messaging_api.push_message(
                  PushMessageRequest(
                      to=user_id,
-                     messages=[TextMessage(text=f"❌ AI (OpenAI) อ่านข้อมูลไม่ได้ครับ")]
+                     messages=[TextMessage(text=f"❌ AI อ่านข้อมูลไม่ได้ครับ")]
                  )
              )
              return

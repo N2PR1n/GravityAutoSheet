@@ -28,6 +28,7 @@ from services.sheet_service import SheetService
 from services.drive_service import DriveService
 from services.config_service import ConfigService
 from services.openai_service import OpenAIService
+from services.ai_factory import AIFactory
 from routes.bot import bot_bp
 
 # --- CONFIG & INIT ---
@@ -345,8 +346,19 @@ def get_config():
     sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv("GOOGLE_SHEET_NAME"))
     return jsonify({
         'GOOGLE_DRIVE_FOLDER_ID': cfg.get_folder_for_sheet(sheet_name),
-        'ACTIVE_SHEET_NAME': sheet_name
+        'ACTIVE_SHEET_NAME': sheet_name,
+        'AI_PROVIDER': cfg.get('AI_PROVIDER', 'openai')
     })
+
+@app.route('/api/ai_config', methods=['POST'])
+def update_ai_config():
+    cfg = get_config_service()
+    data = request.json
+    provider = data.get('provider')
+    if provider in ['openai', 'gemini']:
+        cfg.set('AI_PROVIDER', provider)
+        return jsonify({'success': True})
+    return jsonify({'error': 'Invalid AI Provider'}), 400
 
 @app.route('/api/config', methods=['POST'])
 def update_config():
