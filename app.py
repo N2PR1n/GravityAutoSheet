@@ -314,14 +314,21 @@ def find_image(order_target):
 
 @app.route('/api/sheets', methods=['GET'])
 def get_sheets():
-    sheet_service, _ = get_services()
-    if not sheet_service: return jsonify({'error': 'Service unavailable'}), 500
     try:
+        sheet_service, _ = get_services()
+        if not sheet_service:
+            return jsonify({'error': 'Service unavailable (Init Failed)'}), 500
+        
         sheets = sheet_service.get_worksheets()
-        current = sheet_service.sheet.title if sheet_service.sheet else ""
+        current = sheet_service.sheet.title if sheet_service and sheet_service.sheet else ""
         return jsonify({'sheets': sheets, 'current': current})
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'error': str(e),
+            'traceback': traceback.format_exc() if os.getenv('FLASK_DEBUG') == '1' else 'Consult logs'
+        }), 500
 
 @app.route('/api/set_sheet', methods=['POST'])
 def set_sheet():

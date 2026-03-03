@@ -34,13 +34,16 @@ class SheetService:
             
             if sheet_name:
                 try:
-                    self.sheet = self.client.open_by_key(sheet_id).worksheet(sheet_name)
+                    self.spreadsheet = self.client.open_by_key(sheet_id)
+                    self.sheet = self.spreadsheet.worksheet(sheet_name)
                     print(f"DEBUG: Connected to Sheet (Tab): '{self.sheet.title}'")
                 except gspread.exceptions.WorksheetNotFound:
                     print(f"Warning: Worksheet '{sheet_name}' not found. Falling back to default.")
-                    self.sheet = self.client.open_by_key(sheet_id).sheet1
+                    self.spreadsheet = self.client.open_by_key(sheet_id)
+                    self.sheet = self.spreadsheet.sheet1
             else:
-                self.sheet = self.client.open_by_key(sheet_id).sheet1 # Default to first sheet
+                self.spreadsheet = self.client.open_by_key(sheet_id)
+                self.sheet = self.spreadsheet.sheet1 # Default to first sheet
             
             print(f"DEBUG: Active Sheet Title: '{self.sheet.title}'")
         except Exception as e:
@@ -51,11 +54,10 @@ class SheetService:
 
     def get_worksheets(self):
         """Returns a list of all worksheet titles."""
-        if not self.client or not self.sheet_id: return []
+        if not self.client or not self.spreadsheet: return []
         try:
-            # Re-open spreadsheet using stored ID
-            spreadsheet = self.client.open_by_key(self.sheet_id)
-            return [ws.title for ws in spreadsheet.worksheets()]
+            # Use cached spreadsheet object
+            return [ws.title for ws in self.spreadsheet.worksheets()]
         except Exception as e:
             print(f"Error getting worksheets: {e}")
             return []
