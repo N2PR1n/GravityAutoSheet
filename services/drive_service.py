@@ -171,3 +171,12 @@ class DriveService:
             print(f"Error getting folder name: {e}")
             return f"Error: {str(e)}"
 
+    def get_about(self):
+        """Returns info about current identity."""
+        if not self.service: return "Not Connected"
+        try:
+            about = self.service.about().get(fields="user(emailAddress)").execute()
+            return about.get('user', {}).get('emailAddress', 'Unknown User')
+        except:
+            return "Unable to fetch identity"
+
