@@ -164,8 +164,9 @@ def handle_text_message(event):
             sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
             folder_id = _config_service.get_folder_for_sheet(sheet_name)
             
-            # Fetch Identity
+            # Fetch Identity & Folder Info
             current_user = drive_service.get_about()
+            folder_name = drive_service.get_folder_name(folder_id)
             
             status_msg = (
                 f"🤖 สถานะบอทปัจจุบัน:\n"
