@@ -158,13 +158,20 @@ def handle_text_message(event):
 
     elif text in ["status", "เช็คชีท", "ชีทไหน", "เช็ค"]:
         try:
+            # Lazy Load Services
+            _, drive_service, _, _, _ = get_services()
+            
             sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
             folder_id = _config_service.get_folder_for_sheet(sheet_name)
+            
+            # Fetch Folder Name
+            folder_name = drive_service.get_folder_name(folder_id)
             
             status_msg = (
                 f"🤖 สถานะบอทปัจจุบัน:\n"
                 f"📁 ชีทที่ใช้งาน: {sheet_name}\n"
-                f"📂 Folder ID: {folder_id[:5]}...{folder_id[-5:]}\n\n"
+                f"📂 โฟลเดอร์: {folder_name}\n"
+                f"🆔 ID: {folder_id[:5]}...{folder_id[-5:]}\n\n"
                 f"💡 หากต้องการเปลี่ยนชีท ให้ไปที่หน้าเว็บแล้วเลือกใหม่นะครับ"
             )
             
