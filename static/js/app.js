@@ -473,12 +473,13 @@ async function fetchSheets(isFirstLoad = false) {
                 if (data.current !== pinnedSheet) {
                     console.log("Auto-switching to pinned sheet:", pinnedSheet);
                     await switchSheet(pinnedSheet);
+                    return; // switchSheet re-fetches everything, no need to populate now
                 } else {
                     // Already on pinned sheet, just load config and orders
                     await fetchConfig(pinnedSheet);
                     await fetchOrders();
+                    // Continue to populate the dropdown below
                 }
-                return;
             }
 
             // Populate List
