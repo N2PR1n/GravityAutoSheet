@@ -8,17 +8,12 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapi
 def get_google_credentials():
     creds = None
 
-    # Priority 1: Check for Render Secret File first
-    render_secret_path = '/etc/secrets/token.json'
-    if os.path.exists(render_secret_path):
-        creds_env = render_secret_path
-        print(f"INFO: Using Render Secret File for credentials: {render_secret_path}")
-    # Priority 2: Check for local token.json (User/OAuth Account)
-    elif os.path.exists('token.json'):
+    # Priority 1: Check Environment Variable first (Best for Render/Cloud)
+    creds_env = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', '')
+    
+    # Priority 2: Fallback to local token.json
+    if not creds_env and os.path.exists('token.json'):
         creds_env = 'token.json'
-    else:
-        # Priority 3: Fallback to Environment Variable or default
-        creds_env = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'token.json')
     
     # Check if it's a JSON string instead of a path
     if creds_env.strip().startswith('{'):
