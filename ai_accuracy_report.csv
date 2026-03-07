@@ -1,0 +1,8 @@
+RunNo,Filename,Status,AI_Shop,Sheet_Shop,AI_Coins,Sheet_Coins,Coin_Match,AI_Price,Sheet_Price,Price_Match,AI_Receiver,Sheet_Receiver
+188,188.jpg,AI_FAILED,-,-,-,-,-,-,-,-,-,-
+189,189.jpg,AI_FAILED,-,-,-,-,-,-,-,-,-,-
+190,190.jpg,AI_FAILED,-,-,-,-,-,-,-,-,-,-
+186,186.jpg,AI_FAILED,-,-,-,-,-,-,-,-,-,-
+187,187.jpg,SUCCESS,Lotus's,Lotus,0.0,0.00,TRUE,4388.0,"4,388.00",TRUE,Cayenne,Cayenne
+185,185.jpg,SUCCESS,Lotuss_official,Lotus,0.0,0.00,TRUE,4388.0,"4,388.00",TRUE,chopper,chopper
+184,184.jpg,AI_FAILED,-,-,-,-,-,-,-,-,-,-

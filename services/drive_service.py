@@ -124,7 +124,8 @@ class DriveService:
             results = self.service.files().list(
                 q=query,
                 pageSize=1,
-                fields="files(id, name, webViewLink, thumbnailLink)"
+                fields="files(id, name, webViewLink, thumbnailLink)",
+                supportsAllDrives=True
             ).execute()
             
             files = results.get('files', [])
@@ -135,6 +136,23 @@ class DriveService:
             return []
         except Exception as e:
             print(f"Search Error: {e}")
+            return []
+
+    def list_images_in_folder(self, folder_id):
+        """Lists all image files in a specific folder with pagination support."""
+        if not self.service or not folder_id: return []
+        try:
+            query = f"'{folder_id}' in parents and trashed = false and mimeType contains 'image/'"
+            results = self.service.files().list(
+                q=query,
+                pageSize=1000,
+                fields="files(id, name)",
+                supportsAllDrives=True
+            ).execute()
+            
+            return results.get('files', [])
+        except Exception as e:
+            print(f"Error listing folder contents: {e}")
             return []
 
     def get_file_content(self, file_id):

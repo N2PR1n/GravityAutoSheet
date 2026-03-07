@@ -1,0 +1,561 @@
+ * Serving Flask app 'app'
+ * Debug mode: on
+[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5001
+ * Running on http://192.168.1.175:5001
+[33mPress CTRL+C to quit[0m
+127.0.0.1 - - [28/Feb/2026 15:09:52] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:09:52] "[36mGET /static/css/style_v2.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:09:52] "[36mGET /static/img/shopee.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:09:52] "[36mGET /static/img/lazada.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:09:52] "[36mGET /static/img/Amaze.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:09:52] "[36mGET /static/img/tiktok.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:09:52] "[36mGET /static/js/app.js HTTP/1.1[0m" 304 -
+DEBUG: Index request received
+DEBUG: Connected to Sheet (Tab): 'TestBot'
+DEBUG: Active Sheet Title: 'TestBot'
+DEBUG: Drive Service Initialized with Credentials!
+DEBUG: Fetched 9 formulas.
+DEBUG: Sample Formula (Row 2): =HYPERLINK("https://drive.google.com/file/d/1CwSMbblTyDLxWdz5YfGygOs8V3evvwHs/view?usp=drivesdk", "Check Order 1")
+DEBUG: Extracted URL for Row 1: https://drive.google.com/file/d/1CwSMbblTyDLxWdz5YfGygOs8V3evvwHs/view?usp=drivesdk
+127.0.0.1 - - [28/Feb/2026 15:09:54] "GET /api/orders HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:09:54] "GET /api/sheets HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:09:54] "GET /api/config HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:09:55] "GET /api/proxy_image/1CwSMbblTyDLxWdz5YfGygOs8V3evvwHs HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:09:56] "GET /api/proxy_image/1PGHzHQdMNj4cgJAAMwZ7Fl9iJ3OID__U HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:09:57] "GET /api/proxy_image/1dTP8lPtkg7Jnwgix-eMbkVhvbsh7maf9 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:09:58] "GET /api/proxy_image/1e893UMTu9sjeLWI759DJX3uKF1gB0E_l HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:09:59] "GET /api/proxy_image/12xJLFwaL_PJzRGjDHuErmU6eWMqaGhKw HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:09:59] "POST /api/set_sheet HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:00] "GET /api/proxy_image/1iPUXR8_CaFF_KNThdiUT0w3-czql-kqy HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:01] "GET /api/proxy_image/1luOYMRiWWbFLwniWnSBgzdpuZEz318Qy HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:02] "GET /api/proxy_image/1ONUav_BKa44GlN9iT6VMJUcJbUrNWHSo HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:02] "GET /api/sheets HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:02] "GET /api/config HTTP/1.1" 200 -
+DEBUG: Switched to Sheet: 'เดือน 2/26'
+DEBUG: Fetched 1 formulas.
+127.0.0.1 - - [28/Feb/2026 15:10:03] "GET /api/orders HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:04] "GET /api/find_image/1 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:04] "GET /api/proxy_image/1Mn13azdUW9KiY4SxJBvU3QrzacmvgyK5 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:05] "GET /api/find_image/2 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:06] "GET /api/proxy_image/1Uq7OjZsIZXQyGwqWvNfAIe7_XmkAy_ym HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:06] "GET /api/find_image/3 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:07] "GET /api/proxy_image/1arUqn903nfXhj22Cxwq2NjAqtQl-fwzO HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:07] "GET /api/find_image/4 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:08] "POST /api/set_sheet HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:09] "GET /api/proxy_image/1FWcVAk_JrE3LgzIr_JWWy-Mrjks5B4vi HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:09] "GET /api/find_image/5 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:10] "GET /api/sheets HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:11] "GET /api/find_image/6 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:11] "GET /api/config HTTP/1.1" 200 -
+DEBUG: Switched to Sheet: 'TestBot'
+DEBUG: Fetched 9 formulas.
+DEBUG: Sample Formula (Row 2): =HYPERLINK("https://drive.google.com/file/d/1CwSMbblTyDLxWdz5YfGygOs8V3evvwHs/view?usp=drivesdk", "Check Order 1")
+DEBUG: Extracted URL for Row 1: https://drive.google.com/file/d/1CwSMbblTyDLxWdz5YfGygOs8V3evvwHs/view?usp=drivesdk
+127.0.0.1 - - [28/Feb/2026 15:10:11] "GET /api/orders HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:12] "GET /api/find_image/7 HTTP/1.1" 200 -
+[2026-02-28 15:10:22,512] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603031724732973430","quoteToken":"Vw_Bh6iW148AsVelntF1tEw8iPIlmG9LUXkO0v5H25gN4aUJ-LXMzqoyWQiWLDFnYlLfC0CDb3_dZ-U9HRoE1fq1N8Ouj-m1jfD_oDqxBNeYkEbpbrxOuxzDqdrQ4Y1iBK8hlw6yaxBf3Q9RXIcoCQ","markAsReadToken":"qLrZuHMf5TqCPo09UoYtH-9I-d72rKHo6S163Nk-CfkkpDwbzWY4jrurldWIjwrVqJ_zVmDuFQkKB3oJfoWH2VrqmL592SEcjVP1K4hmbZX3Z7WE_ZMIOO3-KnPKkzrQ2Pk8S9RqWr1kGr5TsodZSHpAR97QpgPqvK_5TILWjj2bePM_rylqhIC1A9Ny7t2N6HeFQ-oy_HDCdy3bCYDp_g","contentProvider":{"type":"line"}},"webhookEventId":"01KJHMRWQM4XGSZM7AQC54R0D7","deliveryContext":{"isRedelivery":false},"timestamp":1772266221863,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"c61d2bb75cdf47c3b579b3c05edec064","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 15:10:22] "POST /callback HTTP/1.1" 200 -
+DEBUG: Drive Service Initialized with Credentials!
+DEBUG: Bot connecting to Sheet: TestBot
+DEBUG: Connected to Sheet (Tab): 'TestBot'
+DEBUG: Active Sheet Title: 'TestBot'
+Extracting data with OpenAI...
+DEBUG: Data appended result: {'spreadsheetId': '16T1rQfmBwdT5_AZf8uaL7Ws6ReW-RuIPgx0nTYbKFe4', 'tableRange': 'TestBot!A1:X9', 'updates': {'spreadsheetId': '16T1rQfmBwdT5_AZf8uaL7Ws6ReW-RuIPgx0nTYbKFe4', 'updatedRange': 'TestBot!A10:N10', 'updatedRows': 1, 'updatedColumns': 14, 'updatedCells': 14}}
+DEBUG: Fetched 10 formulas.
+DEBUG: Sample Formula (Row 2): =HYPERLINK("https://drive.google.com/file/d/1CwSMbblTyDLxWdz5YfGygOs8V3evvwHs/view?usp=drivesdk", "Check Order 1")
+DEBUG: Extracted URL for Row 1: https://drive.google.com/file/d/1CwSMbblTyDLxWdz5YfGygOs8V3evvwHs/view?usp=drivesdk
+127.0.0.1 - - [28/Feb/2026 15:10:52] "GET /api/orders HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:53] "GET /api/proxy_image/117M4NMzfaNnOCb-8opj8QJt5Cs5lEIOg HTTP/1.1" 200 -
+DEBUG: Fetched 10 formulas.
+DEBUG: Sample Formula (Row 2): =HYPERLINK("https://drive.google.com/file/d/1CwSMbblTyDLxWdz5YfGygOs8V3evvwHs/view?usp=drivesdk", "Check Order 1")
+DEBUG: Extracted URL for Row 1: https://drive.google.com/file/d/1CwSMbblTyDLxWdz5YfGygOs8V3evvwHs/view?usp=drivesdk
+127.0.0.1 - - [28/Feb/2026 15:10:54] "GET /api/orders HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:55] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:55] "[36mGET /static/css/style_v2.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:10:55] "[36mGET /static/img/shopee.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:10:55] "[36mGET /static/img/lazada.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:10:55] "[36mGET /static/img/Amaze.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:10:55] "[36mGET /static/img/tiktok.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:10:55] "[36mGET /static/js/app.js HTTP/1.1[0m" 304 -
+DEBUG: Index request received
+DEBUG: Fetched 10 formulas.
+DEBUG: Sample Formula (Row 2): =HYPERLINK("https://drive.google.com/file/d/1CwSMbblTyDLxWdz5YfGygOs8V3evvwHs/view?usp=drivesdk", "Check Order 1")
+DEBUG: Extracted URL for Row 1: https://drive.google.com/file/d/1CwSMbblTyDLxWdz5YfGygOs8V3evvwHs/view?usp=drivesdk
+127.0.0.1 - - [28/Feb/2026 15:10:56] "GET /api/orders HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:56] "GET /api/sheets HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:56] "GET /api/config HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:57] "GET /api/proxy_image/1CwSMbblTyDLxWdz5YfGygOs8V3evvwHs HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:58] "GET /api/proxy_image/1PGHzHQdMNj4cgJAAMwZ7Fl9iJ3OID__U HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:10:59] "GET /api/proxy_image/1dTP8lPtkg7Jnwgix-eMbkVhvbsh7maf9 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:00] "GET /api/proxy_image/1e893UMTu9sjeLWI759DJX3uKF1gB0E_l HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:01] "GET /api/proxy_image/12xJLFwaL_PJzRGjDHuErmU6eWMqaGhKw HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:01] "GET /api/proxy_image/1iPUXR8_CaFF_KNThdiUT0w3-czql-kqy HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:02] "POST /api/set_sheet HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:03] "GET /api/proxy_image/1luOYMRiWWbFLwniWnSBgzdpuZEz318Qy HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:03] "GET /api/proxy_image/1ONUav_BKa44GlN9iT6VMJUcJbUrNWHSo HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:04] "GET /api/proxy_image/117M4NMzfaNnOCb-8opj8QJt5Cs5lEIOg HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:05] "GET /api/sheets HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:05] "GET /api/config HTTP/1.1" 200 -
+DEBUG: Switched to Sheet: 'เดือน 2/26'
+DEBUG: Fetched 1 formulas.
+127.0.0.1 - - [28/Feb/2026 15:11:06] "GET /api/orders HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:06] "GET /api/find_image/1 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:07] "GET /api/proxy_image/1Mn13azdUW9KiY4SxJBvU3QrzacmvgyK5 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:07] "GET /api/find_image/2 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:08] "GET /api/proxy_image/1Uq7OjZsIZXQyGwqWvNfAIe7_XmkAy_ym HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:09] "GET /api/find_image/3 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:10] "GET /api/proxy_image/1arUqn903nfXhj22Cxwq2NjAqtQl-fwzO HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:10] "GET /api/find_image/4 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:11] "GET /api/proxy_image/1FWcVAk_JrE3LgzIr_JWWy-Mrjks5B4vi HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:11] "GET /api/find_image/5 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:12] "GET /api/proxy_image/1fFuPnIyvUqZk3dsJzWMIDY3g4_-lTBnO HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:13] "GET /api/find_image/6 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:13] "GET /api/proxy_image/1SLrubmj-M8oaYQsvry4-oCehsnv9jSM0 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:14] "GET /api/find_image/7 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:15] "GET /api/proxy_image/1K-zfqdA87zDtV41fMUngxBLfoCWn0HIa HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:15] "GET /api/find_image/8 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:16] "GET /api/proxy_image/1U8BhGaZZpl0lr-nmc58--JE1iWYxT757 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:16] "GET /api/find_image/9 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:17] "GET /api/proxy_image/1lLtEH8A1aNeB32CM-wMFdxzJ6UZJnyWa HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:17] "GET /api/find_image/10 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:18] "GET /api/proxy_image/1WmbGvYPSThnnD6nD5tMv7gDbe2w3qyup HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:18] "GET /api/find_image/11 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:19] "GET /api/proxy_image/1T9tWOGArljHmQHC4OQTIO86sLd7nD7N1 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:20] "GET /api/find_image/12 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:20] "GET /api/proxy_image/1gBrWkD_zB_5ISwDRYMe43cWS-bcDGhjU HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:21] "GET /api/find_image/13 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:22] "GET /api/proxy_image/1PPLWODbXxt4IHzqskirajhVdoQNEaeYp HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:22] "GET /api/find_image/14 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:23] "GET /api/proxy_image/1NKR7P1uwQ0Hry9ESA3uOGrsQZVUyYH0o HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:23] "GET /api/find_image/15 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:24] "GET /api/proxy_image/1LMzFmPbK5x9oeg5xXC3U2qGAWMPeczBc HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:24] "GET /api/find_image/16 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:25] "GET /api/proxy_image/1kdAU7z1OgVxLjCaC8qJOEVBvgfkcVozf HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:26] "GET /api/find_image/17 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:26] "GET /api/proxy_image/19LFxls8DHxqaAI18Fg9K0DAeXF3y1Jkm HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:26] "POST /api/config HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:27] "GET /api/find_image/18 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:27] "GET /api/proxy_image/1iRAObbt0ABIglxIt3arpP1LiCimy_xFR HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:28] "GET /api/find_image/19 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:29] "GET /api/proxy_image/1ySEOQ_Gss5SByOWom1FPOSNHpLM0SKCA HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:29] "GET /api/find_image/20 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:30] "GET /api/proxy_image/1ue6jD_GidFHEfS1s8skFt3UAuCHBOHF4 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:30] "GET /api/find_image/21 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:31] "GET /api/proxy_image/1RYgNtwffwR-l0tWhNaRPdTlcjeGuh3dG HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:31] "GET /api/find_image/22 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:32] "GET /api/proxy_image/1zU1TPuPolFnv3sKR-3usby_T9zqCGw_b HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:33] "GET /api/find_image/23 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:34] "GET /api/proxy_image/1-kyUCncXDaX0v6fFIhu504k2ae5l9WJh HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:34] "GET /api/find_image/24 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:35] "GET /api/proxy_image/1zNWcfABu85mYTysyTi-vB9yBAe8VDrIs HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:35] "GET /api/find_image/25 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:36] "GET /api/proxy_image/1dN0tfKU7txbYDWYYUFo2pezyAadqOV5B HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:36] "GET /api/find_image/26 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:37] "GET /api/proxy_image/13QHEtR30IZfLgN3Sl5K06VGPIFEIrDkY HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:37] "GET /api/find_image/27 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:39] "GET /api/proxy_image/1KOC7XHY1W1ubIBEwnscKaGCQjASLWl0V HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:39] "GET /api/find_image/28 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:40] "GET /api/proxy_image/1OyJlk98IIXnOY5mYAhkj4fB6RnRZAxrC HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:40] "GET /api/find_image/29 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:41] "GET /api/proxy_image/1kZtoYuC5J17USlyOKDOcEoCUz2Wg_FjH HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:41] "GET /api/find_image/30 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:42] "GET /api/proxy_image/1nynFObfdaOte9Jl6pJeXNXV2fo9jGqOZ HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:43] "GET /api/find_image/31 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:44] "GET /api/proxy_image/1Y7juSRTIZjT9jrL6vtg1j2uJa83ns1z8 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:44] "GET /api/find_image/32 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:45] "GET /api/proxy_image/1ViA_PfFPrG31cK7HxdUJommFXOa0j5KU HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:46] "GET /api/find_image/33 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:47] "GET /api/proxy_image/1uCcpL-tbU8ni5c9EYYrE_bWE9JeqWxt2 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:47] "GET /api/find_image/34 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:48] "GET /api/proxy_image/13E-sMGVJIytmSD9eeJpAlYgquqnpZQ_A HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:48] "GET /api/find_image/35 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:49] "GET /api/proxy_image/1dhaZmpB3HEqmymdS7C4Fba-ieIm1n3dP HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:49] "GET /api/find_image/36 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:50] "GET /api/proxy_image/11njFTb_UP2oKfO_vtuPJ0g-kMuqkYBjr HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:50] "GET /api/find_image/37 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:52] "GET /api/proxy_image/1p0WZiTm73THCY-8frcERPOFCfoE4scLz HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:52] "GET /api/find_image/38 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:53] "GET /api/proxy_image/1gzhNyb9riS39Kr2T2Jz-vtM9eQlpOOqg HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:53] "GET /api/find_image/39 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:54] "GET /api/proxy_image/1W2tXfJADzUMTmtpka9UlRyr9T-6LUeuc HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:54] "GET /api/find_image/40 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:55] "GET /api/proxy_image/1NAYnrNZniC6TOPGqP-ICynZaWz2a1XYh HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:56] "GET /api/find_image/41 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:56] "GET /api/proxy_image/1znKZ6c3opPJKSRQ2DLrIJSiK6Ljzd-vu HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:57] "GET /api/find_image/42 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:58] "GET /api/proxy_image/1icb_WhT-0cnYHV96BkCdVclAzCe0F_sn HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:58] "GET /api/find_image/43 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:11:59] "GET /api/proxy_image/1TISB_1yTMjrQahMmIfnAMS9sHrFoR2mc HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:00] "GET /api/find_image/44 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:01] "GET /api/proxy_image/1Nki-mE5CKr2z-z8IjnKTPVmkMszHGfrp HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:01] "GET /api/find_image/45 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:02] "GET /api/proxy_image/1tnqEqmt2DWZiMpRLcCSeHQhRL7Xere2v HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:02] "GET /api/find_image/46 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:03] "GET /api/proxy_image/1NDAh2D7ez2oveQNWLQCXeQmPj1bfEJnV HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:03] "GET /api/find_image/47 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:04] "GET /api/proxy_image/1JVrNqRKl611mIotnry3jqorwQBSsvbTN HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:04] "GET /api/find_image/48 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:05] "GET /api/proxy_image/1mc1syX3gOyXoVskJWBL6FMRITC42uXFc HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:05] "GET /api/find_image/49 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:06] "GET /api/proxy_image/1OZ1w1HkC_YWIO-LYTavY1Hq1CSwc3VUW HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:07] "GET /api/find_image/50 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:07] "GET /api/proxy_image/1mbBRVAUKMk6GvEwkuaxchrRSk3LzxWSf HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:08] "GET /api/find_image/51 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:09] "GET /api/proxy_image/1fVF4GAlSNtXlv-ohq6sUWO5jrgsG4H0j HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:09] "GET /api/find_image/52 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:10] "GET /api/proxy_image/18acfDeWGpc70qXiIlIrCSB9RT3hgS-_O HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:11] "GET /api/find_image/53 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:12] "GET /api/proxy_image/1fbBOGUx3_ycXfbE_LHYX_rcEw7FopmPa HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:12] "GET /api/find_image/54 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:13] "GET /api/proxy_image/1eptsuq9ngh07yFj8Nf04qiIZ33TCuCiM HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:13] "GET /api/find_image/55 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:14] "GET /api/proxy_image/1fKnz2pf4_FhFlR_dUWd29v1WHNkfIS-3 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:15] "GET /api/find_image/56 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:16] "GET /api/proxy_image/1tJ95c6GA5WjkeXfx3PNTsPB0ZA7BVRD_ HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:16] "GET /api/find_image/57 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:17] "GET /api/proxy_image/1W40rAtGYYzPy1U4iZ3yyUyy0N-6k2tza HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:17] "GET /api/find_image/58 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:18] "GET /api/proxy_image/1caT-xco2Exyxd9EjU6j09_IbesHTh0FL HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:18] "GET /api/find_image/59 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:19] "GET /api/proxy_image/1FoU9knx58doQE6OvkQ9zJssC7IZ9g87c HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:20] "GET /api/find_image/60 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:21] "GET /api/proxy_image/1pmBFsJob8KjamU0ztSkMQVw0h5uHnzzY HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:21] "GET /api/find_image/61 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:22] "GET /api/proxy_image/11CiCCh6R7jEMdfYx5I_XKqeV_PUZ26EA HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:22] "GET /api/find_image/62 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:23] "GET /api/proxy_image/1TvO2iAVJfs6GZVctx72KReIPMhSvUIjw HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:24] "GET /api/find_image/63 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:25] "GET /api/proxy_image/1WoCcKRKIZj9Mw9ub-jI3Q-MOlcj_oc4D HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:25] "GET /api/find_image/64 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:26] "GET /api/proxy_image/1rqWujYt5FR3fTxSuRtqGm4oqRQceMYH2 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:26] "GET /api/find_image/65 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:27] "GET /api/proxy_image/1uue4jS6m28Y55ZOO58B6rBpyMpxVXLz3 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:28] "GET /api/find_image/66 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:29] "GET /api/proxy_image/1oLkdxDBC6UWgUVs6w4RGWXm9x1iajKzr HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:29] "GET /api/find_image/67 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:30] "GET /api/proxy_image/1JNggye659v9ODiTgr0btEpczAVwT28VU HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:30] "GET /api/find_image/68 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:31] "GET /api/proxy_image/1wTVFykxEostfwqK97ive8LFI-84Wl_dH HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:31] "GET /api/find_image/69 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:32] "GET /api/proxy_image/1TSCM8edrRquOETT3hsvNKE90TdwyIq0K HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:32] "GET /api/find_image/70 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:33] "GET /api/proxy_image/1EH0xPpJ_1Ia1Bt7cqFBiMEAEJdWj-AAV HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:34] "GET /api/find_image/71 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:35] "GET /api/proxy_image/1WuOnq8qn7r9Y8OqjkrcQNpJmqlkHTlES HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:35] "GET /api/find_image/72 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:36] "GET /api/proxy_image/16vnaLA_cM0BZsfolvI5TF4OcQuzzBUU1 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:36] "GET /api/find_image/73 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:37] "GET /api/proxy_image/1toKptZw6sGPdAgQOQ3FfOarFAHET50ae HTTP/1.1" 200 -
+[2026-02-28 15:12:37,597] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603031950269087834","quoteToken":"viQuDplv52A585k2hW0wuoetNHrtlgpU_eJ7OHXLJOkV4bY2DAuUxEAts3jyS8CE4-eQrfBl4ATDoQyBHdrqriL6n2P2ipmSFFxyTiChOekHXncj1USd-4UHXmJexjieu3Lhzb4JnnTxbEJaP1RMvQ","markAsReadToken":"3MES6SXvNm3gPwzi21NxRzXuI_tNPcabMbCcXVP2d72HCyo-a-hSAEg_ikPo2udcGEAIE3UguAkZuuU89FobxZs21km_2lyDLvm1MwRcrGt0FW5sWNm5H1wyVR_B9oSI8nY27Ps_gwjohKWzb1uDw0wzQqYnRAG0xCtk12Lupfzmtn1w7QKr77nU05fofwdaxJmRZIAOdCoa_ckHfTsDaQ","contentProvider":{"type":"line"}},"webhookEventId":"01KJHMWZPNESAGYZZBZYC9V296","deliveryContext":{"isRedelivery":false},"timestamp":1772266356009,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"29607716a1524bd0a75e1a255d21d852","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 15:12:37] "POST /callback HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:37] "GET /api/find_image/74 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:39] "GET /api/proxy_image/1XSvHFfiC0pz_nwDIo8ExakEDSZ1isqrt HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:39] "GET /api/find_image/75 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:40] "GET /api/proxy_image/1YtCtVzIOsgvVu9C9gZP1qL8VN88MiFyL HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:40] "GET /api/find_image/76 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:41] "GET /api/proxy_image/1WDEcHUzn5arnlhftNd1VXTIkeBEvtCoK HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:41] "GET /api/find_image/77 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:42] "GET /api/proxy_image/14sFV9yDqvPKO0NeqYiiqqkp9i3J4SLQk HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:43] "GET /api/find_image/78 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:44] "GET /api/proxy_image/12FkznRWi9vz9_sNxgTg9i_9LGSJNU7Ev HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:44] "GET /api/find_image/79 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:45] "GET /api/proxy_image/1g6xVC_ACuDrW46L7qFo_RidjjG8u34jQ HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:45] "GET /api/find_image/80 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:47] "GET /api/proxy_image/1v45RlQU2Vf0HUKTm6WxdeHbrQjW8FNjx HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:47] "GET /api/find_image/81 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:48] "GET /api/proxy_image/1bWOgMjyVbFmOMENA7uIZAMyGCwUSkXL6 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:48] "GET /api/find_image/82 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:49] "GET /api/proxy_image/1T5SjSAKHcvULcyVxYooWul0KEAfLUTrA HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:50] "GET /api/find_image/83 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:51] "GET /api/proxy_image/13thailoPHI6ZMJuAqwNFLaV8H-IPBKLX HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:51] "GET /api/find_image/84 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:52] "GET /api/proxy_image/1Sf1CuwdDzGhPJ0V-sg4evONCHtpPvIqf HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:52] "GET /api/find_image/85 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:53] "GET /api/proxy_image/1sPM7TqA3QlaVFducWa_Xx8Vs8AGWL-dX HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:54] "GET /api/find_image/86 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:55] "GET /api/proxy_image/13jbNQXhcHUhjHlqP8My2gdQVC3V8k-2x HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:55] "GET /api/find_image/87 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:56] "GET /api/proxy_image/1fQXOjeA5uMkc48keLUZSLigm9Ubkx8kG HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:56] "GET /api/find_image/88 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:57] "GET /api/proxy_image/1xSZ5HZ72laxNGwKMEYj3ztOK7SKQJXW4 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:58] "GET /api/find_image/89 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:58] "GET /api/proxy_image/1TX8kd444F3KC5FHkATjMn_PfJ66bSCMJ HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:12:59] "GET /api/find_image/90 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:00] "GET /api/proxy_image/1H8qlp5jg1CnLMesLrF5o5TKgf-lzzlgv HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:00] "GET /api/find_image/91 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:01] "GET /api/proxy_image/1tUUG1vasgqUMCJhfv9SaNXabXF6P_rGv HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:01] "GET /api/find_image/92 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:02] "GET /api/proxy_image/173h5F26RoteoVQHM_EI7TdeamcIuG-t1 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:03] "GET /api/find_image/93 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:03] "GET /api/proxy_image/1-aiCp8KvzzOplt7y1zcrnxnlxTtFkNi7 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:04] "GET /api/find_image/94 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:04] "GET /api/proxy_image/196vKgJ1G3Un7vGAMzTu97KlG5BsDYDXY HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:05] "GET /api/find_image/95 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:06] "GET /api/proxy_image/13T6ck78taXsFiURN4U7VXIkyAErRB8HX HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:06] "GET /api/find_image/96 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:07] "GET /api/proxy_image/1Mck9dFeBYXmbGNE6kPfdxRmdnzCJH3by HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:07] "GET /api/find_image/97 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:08] "GET /api/proxy_image/1DeSibwjovcGX-kYWbTmCKQ5yt08m5Yhv HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:09] "GET /api/find_image/98 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:09] "GET /api/proxy_image/1rNzz1SkHCOJcWy8N__lH-LNa6BOHWVGQ HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:10] "GET /api/find_image/99 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:11] "GET /api/proxy_image/1IFPsj7vzqBdN_ev27BKm4n1bcJVCmZxS HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:11] "GET /api/find_image/100 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:12] "GET /api/proxy_image/1Sqs6l31d6mIVej7JrguDxI1MjWE4YWuE HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:12] "GET /api/find_image/101 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:13] "GET /api/proxy_image/1xRnDPoauPMXJsPNjQFveLwkRT4Pkm37x HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:13] "GET /api/find_image/102 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:14] "GET /api/proxy_image/1UYKcGvoUWr2IUaUcEPeCEVcA-h7P13AQ HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:14] "GET /api/find_image/103 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:15] "GET /api/proxy_image/1ulX1BvAkFm6wiWW4vDa92mix-oW8hJMe HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:16] "GET /api/find_image/104 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:17] "GET /api/proxy_image/1KAcbuaDS0svXiD4vmGDRmjAdiDXe_wYu HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:17] "GET /api/find_image/105 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:18] "GET /api/proxy_image/18KoFUyPq1Xi053T6NbDcqXcpLgVnvVvq HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:18] "GET /api/find_image/106 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:19] "GET /api/proxy_image/1wv6TD81n0P9-KEKBTTuj6s2j_VkFvtsQ HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:19] "GET /api/find_image/107 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:21] "GET /api/proxy_image/1WJyQeQA2e6UxzCK_C7-58dPT09jX4n7J HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:21] "GET /api/find_image/108 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:22] "GET /api/proxy_image/1Wn4tORRh6i1O4u9HrUnfDky05tX_9R2G HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:23] "GET /api/find_image/109 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:24] "GET /api/proxy_image/1lKxlyELXmuCyPos29h9KULbKejdeQxAK HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:24] "GET /api/find_image/110 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:25] "GET /api/proxy_image/1HVOLCnJG2wZBKvEcbj3PQJx67LXC3nE7 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:25] "GET /api/find_image/111 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:26] "GET /api/proxy_image/1rsvXsI_Vy-RHp0qVo9O5TffaglK0qz33 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:27] "GET /api/find_image/112 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:28] "GET /api/proxy_image/1FQZKx0mmb2cqwx-Cxk4SeoHqxDhYlTBg HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:28] "GET /api/find_image/113 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:29] "GET /api/proxy_image/1Ig__J8pguQlweLsA61dbR9gmKyCx_d2p HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:30] "GET /api/find_image/114 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:31] "GET /api/proxy_image/1BSAvmFOigmEb_gLkowirPqkKYXeg5xPc HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:31] "GET /api/find_image/115 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:32] "GET /api/proxy_image/1odZ_4hh454e_-3V8rq-cQ9szv1XVaqS7 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:32] "GET /api/find_image/116 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:32] "GET / HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:33] "GET /api/proxy_image/1byKAk2SlIK-c-3TvbxOZTlcQfRcylI9d HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:33] "[36mGET /static/css/style_v2.css HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:13:33] "[36mGET /static/img/shopee.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:13:33] "[36mGET /static/img/lazada.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:13:33] "[36mGET /static/img/Amaze.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:13:33] "[36mGET /static/img/tiktok.png HTTP/1.1[0m" 304 -
+127.0.0.1 - - [28/Feb/2026 15:13:33] "[36mGET /static/js/app.js HTTP/1.1[0m" 304 -
+DEBUG: Bot sheet mismatch. Switching from TestBot to เดือน 2/26
+DEBUG: Switched to Sheet: 'เดือน 2/26'
+Extracting data with OpenAI...
+DEBUG: Data appended result: {'spreadsheetId': '16T1rQfmBwdT5_AZf8uaL7Ws6ReW-RuIPgx0nTYbKFe4', 'tableRange': "'เดือน 2/26'!A1:X241", 'updates': {'spreadsheetId': '16T1rQfmBwdT5_AZf8uaL7Ws6ReW-RuIPgx0nTYbKFe4', 'updatedRange': "'เดือน 2/26'!A242:N242", 'updatedRows': 1, 'updatedColumns': 14, 'updatedCells': 14}}
+DEBUG: Index request received
+DEBUG: Fetched 242 formulas.
+DEBUG: Sample Formula (Row 2): 
+DEBUG: Regex failed for Row 1 formula: 
+127.0.0.1 - - [28/Feb/2026 15:13:34] "GET /api/orders HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:35] "GET /api/sheets HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:35] "GET /api/config HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:35] "GET /api/find_image/1 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:36] "GET /api/proxy_image/1Mn13azdUW9KiY4SxJBvU3QrzacmvgyK5 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:36] "GET /api/find_image/2 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:37] "GET /api/proxy_image/1Uq7OjZsIZXQyGwqWvNfAIe7_XmkAy_ym HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:37] "GET /api/find_image/3 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:38] "GET /api/proxy_image/1arUqn903nfXhj22Cxwq2NjAqtQl-fwzO HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:39] "GET /api/proxy_image/1fP3BGjpSeICQH_orf-EFbefZ5PbaBZ4q HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:40] "GET /api/find_image/4 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:41] "GET /api/proxy_image/1FWcVAk_JrE3LgzIr_JWWy-Mrjks5B4vi HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:41] "GET /api/find_image/5 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:42] "GET /api/proxy_image/1fFuPnIyvUqZk3dsJzWMIDY3g4_-lTBnO HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:42] "GET /api/find_image/6 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:43] "GET /api/proxy_image/1SLrubmj-M8oaYQsvry4-oCehsnv9jSM0 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:44] "GET /api/find_image/7 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:44] "GET /api/proxy_image/1K-zfqdA87zDtV41fMUngxBLfoCWn0HIa HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:45] "GET /api/find_image/8 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:45] "GET /api/proxy_image/1U8BhGaZZpl0lr-nmc58--JE1iWYxT757 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:46] "GET /api/find_image/9 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:47] "GET /api/proxy_image/1lLtEH8A1aNeB32CM-wMFdxzJ6UZJnyWa HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:47] "GET /api/find_image/10 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:48] "GET /api/proxy_image/1WmbGvYPSThnnD6nD5tMv7gDbe2w3qyup HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:48] "GET /api/find_image/11 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:49] "GET /api/proxy_image/1T9tWOGArljHmQHC4OQTIO86sLd7nD7N1 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:49] "GET /api/find_image/12 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:50] "GET /api/proxy_image/1gBrWkD_zB_5ISwDRYMe43cWS-bcDGhjU HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:50] "GET /api/find_image/13 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:52] "GET /api/proxy_image/1PPLWODbXxt4IHzqskirajhVdoQNEaeYp HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:52] "GET /api/find_image/14 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:53] "GET /api/proxy_image/1NKR7P1uwQ0Hry9ESA3uOGrsQZVUyYH0o HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:53] "GET /api/find_image/15 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:54] "GET /api/proxy_image/1LMzFmPbK5x9oeg5xXC3U2qGAWMPeczBc HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:54] "GET /api/find_image/16 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:55] "GET /api/proxy_image/1kdAU7z1OgVxLjCaC8qJOEVBvgfkcVozf HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:55] "GET /api/find_image/17 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:56] "GET /api/proxy_image/19LFxls8DHxqaAI18Fg9K0DAeXF3y1Jkm HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:57] "GET /api/find_image/18 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:58] "GET /api/proxy_image/1iRAObbt0ABIglxIt3arpP1LiCimy_xFR HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:58] "GET /api/find_image/19 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:59] "GET /api/proxy_image/1ySEOQ_Gss5SByOWom1FPOSNHpLM0SKCA HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:13:59] "GET /api/find_image/20 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:00] "GET /api/proxy_image/1ue6jD_GidFHEfS1s8skFt3UAuCHBOHF4 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:01] "GET /api/find_image/21 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:02] "GET /api/proxy_image/1RYgNtwffwR-l0tWhNaRPdTlcjeGuh3dG HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:02] "GET /api/find_image/22 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:03] "GET /api/proxy_image/1zU1TPuPolFnv3sKR-3usby_T9zqCGw_b HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:04] "GET /api/find_image/23 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:04] "GET /api/proxy_image/1-kyUCncXDaX0v6fFIhu504k2ae5l9WJh HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:05] "GET /api/find_image/24 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:06] "GET /api/proxy_image/1zNWcfABu85mYTysyTi-vB9yBAe8VDrIs HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:06] "GET /api/find_image/25 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:07] "GET /api/proxy_image/1dN0tfKU7txbYDWYYUFo2pezyAadqOV5B HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:07] "GET /api/find_image/26 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:08] "GET /api/proxy_image/13QHEtR30IZfLgN3Sl5K06VGPIFEIrDkY HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:08] "GET /api/find_image/27 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:09] "GET /api/proxy_image/1KOC7XHY1W1ubIBEwnscKaGCQjASLWl0V HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:10] "GET /api/find_image/28 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:11] "GET /api/proxy_image/1OyJlk98IIXnOY5mYAhkj4fB6RnRZAxrC HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:11] "GET /api/find_image/29 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:12] "GET /api/proxy_image/1kZtoYuC5J17USlyOKDOcEoCUz2Wg_FjH HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:13] "GET /api/find_image/30 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:14] "GET /api/proxy_image/1nynFObfdaOte9Jl6pJeXNXV2fo9jGqOZ HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:14] "GET /api/find_image/31 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:15] "GET /api/proxy_image/1Y7juSRTIZjT9jrL6vtg1j2uJa83ns1z8 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:16] "GET /api/find_image/32 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:17] "GET /api/proxy_image/1ViA_PfFPrG31cK7HxdUJommFXOa0j5KU HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:17] "GET /api/find_image/33 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:18] "GET /api/proxy_image/1uCcpL-tbU8ni5c9EYYrE_bWE9JeqWxt2 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:19] "GET /api/find_image/34 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:19] "GET /api/proxy_image/13E-sMGVJIytmSD9eeJpAlYgquqnpZQ_A HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:20] "GET /api/find_image/35 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:21] "GET /api/proxy_image/1dhaZmpB3HEqmymdS7C4Fba-ieIm1n3dP HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:21] "GET /api/find_image/36 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:22] "GET /api/proxy_image/11njFTb_UP2oKfO_vtuPJ0g-kMuqkYBjr HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:22] "GET /api/find_image/37 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:23] "GET /api/proxy_image/1p0WZiTm73THCY-8frcERPOFCfoE4scLz HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:24] "GET /api/find_image/38 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:25] "GET /api/proxy_image/1gzhNyb9riS39Kr2T2Jz-vtM9eQlpOOqg HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:25] "GET /api/find_image/39 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:26] "GET /api/proxy_image/1W2tXfJADzUMTmtpka9UlRyr9T-6LUeuc HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:27] "GET /api/find_image/40 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:28] "GET /api/proxy_image/1NAYnrNZniC6TOPGqP-ICynZaWz2a1XYh HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:29] "GET /api/find_image/41 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:30] "GET /api/proxy_image/1znKZ6c3opPJKSRQ2DLrIJSiK6Ljzd-vu HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:30] "GET /api/find_image/42 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:31] "GET /api/proxy_image/1icb_WhT-0cnYHV96BkCdVclAzCe0F_sn HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:32] "GET /api/find_image/43 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:32] "GET /api/proxy_image/1TISB_1yTMjrQahMmIfnAMS9sHrFoR2mc HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:33] "GET /api/find_image/44 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:34] "GET /api/proxy_image/1Nki-mE5CKr2z-z8IjnKTPVmkMszHGfrp HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:35] "GET /api/find_image/45 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:36] "GET /api/proxy_image/1tnqEqmt2DWZiMpRLcCSeHQhRL7Xere2v HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:36] "GET /api/find_image/46 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:37] "GET /api/proxy_image/1NDAh2D7ez2oveQNWLQCXeQmPj1bfEJnV HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:38] "GET /api/find_image/47 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:39] "GET /api/proxy_image/1JVrNqRKl611mIotnry3jqorwQBSsvbTN HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:40] "GET /api/find_image/48 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:41] "GET /api/proxy_image/1mc1syX3gOyXoVskJWBL6FMRITC42uXFc HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:41] "GET /api/find_image/49 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:42] "GET /api/proxy_image/1OZ1w1HkC_YWIO-LYTavY1Hq1CSwc3VUW HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:42] "GET /api/find_image/50 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:43] "GET /api/proxy_image/1mbBRVAUKMk6GvEwkuaxchrRSk3LzxWSf HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:43] "GET /api/find_image/51 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:44] "GET /api/proxy_image/1fVF4GAlSNtXlv-ohq6sUWO5jrgsG4H0j HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:45] "GET /api/find_image/52 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:46] "GET /api/proxy_image/18acfDeWGpc70qXiIlIrCSB9RT3hgS-_O HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:46] "GET /api/find_image/53 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:47] "GET /api/proxy_image/1fbBOGUx3_ycXfbE_LHYX_rcEw7FopmPa HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:48] "GET /api/find_image/54 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:49] "GET /api/proxy_image/1eptsuq9ngh07yFj8Nf04qiIZ33TCuCiM HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:49] "GET /api/find_image/55 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:50] "GET /api/proxy_image/1fKnz2pf4_FhFlR_dUWd29v1WHNkfIS-3 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:50] "GET /api/find_image/56 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:51] "GET /api/proxy_image/1tJ95c6GA5WjkeXfx3PNTsPB0ZA7BVRD_ HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:52] "GET /api/find_image/57 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:52] "GET /api/proxy_image/1W40rAtGYYzPy1U4iZ3yyUyy0N-6k2tza HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:53] "GET /api/find_image/58 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:54] "GET /api/proxy_image/1caT-xco2Exyxd9EjU6j09_IbesHTh0FL HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:54] "GET /api/find_image/59 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:55] "GET /api/proxy_image/1FoU9knx58doQE6OvkQ9zJssC7IZ9g87c HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:55] "GET /api/find_image/60 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:56] "GET /api/proxy_image/1pmBFsJob8KjamU0ztSkMQVw0h5uHnzzY HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:56] "GET /api/find_image/61 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:57] "GET /api/proxy_image/11CiCCh6R7jEMdfYx5I_XKqeV_PUZ26EA HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:58] "GET /api/find_image/62 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:59] "GET /api/proxy_image/1TvO2iAVJfs6GZVctx72KReIPMhSvUIjw HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:14:59] "GET /api/find_image/63 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:00] "GET /api/proxy_image/1WoCcKRKIZj9Mw9ub-jI3Q-MOlcj_oc4D HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:00] "GET /api/find_image/64 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:01] "GET /api/proxy_image/1rqWujYt5FR3fTxSuRtqGm4oqRQceMYH2 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:02] "GET /api/find_image/65 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:03] "GET /api/proxy_image/1uue4jS6m28Y55ZOO58B6rBpyMpxVXLz3 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:03] "GET /api/find_image/66 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:04] "GET /api/proxy_image/1oLkdxDBC6UWgUVs6w4RGWXm9x1iajKzr HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:05] "GET /api/find_image/67 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:05] "GET /api/proxy_image/1JNggye659v9ODiTgr0btEpczAVwT28VU HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:06] "GET /api/find_image/68 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:07] "GET /api/proxy_image/1wTVFykxEostfwqK97ive8LFI-84Wl_dH HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:07] "GET /api/find_image/69 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:08] "GET /api/proxy_image/1TSCM8edrRquOETT3hsvNKE90TdwyIq0K HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:09] "GET /api/find_image/70 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:09] "GET /api/proxy_image/1EH0xPpJ_1Ia1Bt7cqFBiMEAEJdWj-AAV HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:10] "GET /api/find_image/71 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:11] "GET /api/proxy_image/1WuOnq8qn7r9Y8OqjkrcQNpJmqlkHTlES HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:11] "GET /api/find_image/72 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:12] "GET /api/proxy_image/16vnaLA_cM0BZsfolvI5TF4OcQuzzBUU1 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:12] "GET /api/find_image/73 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:13] "GET /api/proxy_image/1toKptZw6sGPdAgQOQ3FfOarFAHET50ae HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:14] "GET /api/find_image/74 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:15] "GET /api/proxy_image/1XSvHFfiC0pz_nwDIo8ExakEDSZ1isqrt HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:16] "GET /api/find_image/75 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:16] "GET /api/proxy_image/1YtCtVzIOsgvVu9C9gZP1qL8VN88MiFyL HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:17] "GET /api/find_image/76 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:18] "GET /api/proxy_image/1WDEcHUzn5arnlhftNd1VXTIkeBEvtCoK HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:18] "GET /api/find_image/77 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:19] "GET /api/proxy_image/14sFV9yDqvPKO0NeqYiiqqkp9i3J4SLQk HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:20] "GET /api/find_image/78 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:21] "GET /api/proxy_image/12FkznRWi9vz9_sNxgTg9i_9LGSJNU7Ev HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:21] "GET /api/find_image/79 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:22] "GET /api/proxy_image/1g6xVC_ACuDrW46L7qFo_RidjjG8u34jQ HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:22] "GET /api/find_image/80 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:23] "GET /api/proxy_image/1v45RlQU2Vf0HUKTm6WxdeHbrQjW8FNjx HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:24] "GET /api/find_image/81 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:24] "GET /api/proxy_image/1bWOgMjyVbFmOMENA7uIZAMyGCwUSkXL6 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:25] "GET /api/find_image/82 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:26] "GET /api/proxy_image/1T5SjSAKHcvULcyVxYooWul0KEAfLUTrA HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:26] "GET /api/find_image/83 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:27] "GET /api/proxy_image/13thailoPHI6ZMJuAqwNFLaV8H-IPBKLX HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:28] "GET /api/find_image/84 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:28] "GET /api/proxy_image/1Sf1CuwdDzGhPJ0V-sg4evONCHtpPvIqf HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:29] "GET /api/find_image/85 HTTP/1.1" 200 -
+127.0.0.1 - - [28/Feb/2026 15:15:30] "GET /api/proxy_image/1sPM7TqA3QlaVFducWa_Xx8Vs8AGWL-dX HTTP/1.1" 200 -
+[2026-02-28 17:15:09,609] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603044286170923029","quoteToken":"b3OEwhAiIDmBoE1ADhucCvZEOVhZO6j55CM6ZUsi2JBUTWh2HFO2MDinRFCN_1_oXEm9FnMoYVaZsADotIOPerUzlGcBCTksHSlBcdQtY1zvHM5ghxMJU3kLDBXsUi58GZvkcFosodTTEgCX2G6sQw","markAsReadToken":"0vIY-MnYtVtndgbckhXvYeH0y193LSOZFVI_92lx9jqeUEws6Ij7In-Eh7HaymjS0pro0DiiaAybFnEzfklEDEQ0l7JZK-J3RzSmuGhUMsHFkwo7EyvoZ2lbXyFA_n9OKVH7llhGpxz4g6TcS8HCeuO9QMlNL7qn3VZ_EslfuvFZp1BIL0yntdgfPbttt0Db5Ryqxc33VafZ9frt79Vqyg","contentProvider":{"type":"line"}},"webhookEventId":"01KJHVXC8J4A8WWBC0NPYHV0MS","deliveryContext":{"isRedelivery":false},"timestamp":1772273708824,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"46919093fc0f4f108cef49fc51b188c4","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 17:15:09] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:03:47,106] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049181174824983","quoteToken":"vAh00HI_TfLciOWV3Cah_1WA5ZeEl5yYM-bdWi2vyMUoV3KIY_r7V8rf8X1S149D7uCrdBSIqCyYe-lxqlG3cgA6sJUG1jEhfSyOiz5cTN-eQB5g1vUJkn5wuGDTlDPXqy5OiCbFi4LG23IOs2NuTA","markAsReadToken":"1V2ah_QNTgt8N2IM-AXIfS6J-AxWJKYY8IKX48GQkZM_KSIS8U1vaDw1_fNT-O8lbqFwE8ydaEWqo6Dc3PEtxmKYKC0V_wFxhaiqnmIlItiZXyfrb2unUKz7fcEaL_PUDt9vg2Gn_e1Flmn9om3ry9sxWV8MHwwEynoUPyxb_LzRxLjxWZLNbGx1WLofmvMDGCZVphjINzFhzioqS-aQaQ","contentProvider":{"type":"line"}},"webhookEventId":"01KJHYPDCKDQ1809717V08R3GM","deliveryContext":{"isRedelivery":false},"timestamp":1772276626567,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"06f193f920114d91bff02dddf4b06daf","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:03:47] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:04:13,477] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049225114353858","quoteToken":"6L6Hi93hSm1mUjvObrJ0Ly9r5rWHbs8iSVclf4rJJ3u92ynS2OzRmC7SpOBObiOiMMz_cejGvY2hZegZDXp5fa6O_b-MvRK5HwhAeB_s2rG2B6kJCPTNMpjivJhPmlNU_je9gcyQPWjDFuhzQwGiTA","markAsReadToken":"uryud1uFDOY4ZEV-qAB1hPR5coODkjGUsackXjOcDZMSoFZAbFkm7aC8VX7PZoKAoJDpOGerkhJRr2-ACjf3Va7AItnIBI8KCWtUczBAXbcKae_4_WoBNFnWfzDHEkssx61yjIzb4XvFcZqa3rQpIGfHhAzo4cSyKcj9qInb_rgZ0gqpUVH47hTUXDWQ9131rUIJhfp9QngpoH3FuAyt5w","contentProvider":{"type":"line"}},"webhookEventId":"01KJHYQ75NHSYF4WXQKYM0DFNR","deliveryContext":{"isRedelivery":false},"timestamp":1772276652727,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"ff111890d6bb4921b8fa315da36df48c","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:04:13] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:04:57,684] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049299471237377","quoteToken":"SpK08fE0GV21frQI2JLAzU_hBDB_wzWF0JGnPe8Nji7Zro7NfxBGscRsNkvV_OnR31hgy3r67UfRyqDrCGLdWjj4eCaSaun94ZphD6iD4doRcGpieS-sZe1uyDBNsN0JKwd0vzEAc9WkZUg3MgP59A","markAsReadToken":"9LiKkqIetytAfRnOa4G7QQzXn8XLqhkYstwmcJd1_6zyA__Zb3UyAoXtELWwLqC3sU79yl7KicT65FiMxKuPDWRCpDVpgJVDQG8yliv_R5X8xAUS4w91SZx6-4NmeqRfRgwodGjV5UVNZi9nXKPpq4-CmK76jGyGz7D5B18z8YLniApAqOHIzVhW6FDbUf4ebZSYtEWuolbRpR9ofvDK7A","contentProvider":{"type":"line"}},"webhookEventId":"01KJHYRJC3PQ8ZNAVJXHK9GZFS","deliveryContext":{"isRedelivery":false},"timestamp":1772276697141,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"360349813a8440edbabdf92a865ee6e9","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:04:57] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:05:20,878] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049337957908891","quoteToken":"zkrCGr-aMyYfPhq-FgGWFQE7GtVSee_dqg4QhuSTba1zT_4OKpCXS_Hu9OtWfWUoVTLSn2jMXe0GURytpxnJA9Q-4X2wwJpFXNkUKv88XFiKpHJ9qsewOJwujIxC0104zonr4YArwN8JhPPNBzkeCg","markAsReadToken":"EAE6tGKuP2liaqcbdF_ijRaI4RZYLhW2F_Sm6eeGqr3jb6LOSNvHknR2TRgQAwjHaaM57HSTwj6DGXpetLil89sgZ1Pud-kiMtqAwjRMgtM99RmUMlMPnz-QFNStk3KLWaLYN6QJqylI9hlGnbV4MPmbYs2rPDZKr1cHTiiTkOzfTW2wTPyPUrT5aoRdhn6wRw1EklOotmHjAGFpd6tVsQ","contentProvider":{"type":"line"}},"webhookEventId":"01KJHYS92T8YWGR3RP8F1S9CCD","deliveryContext":{"isRedelivery":false},"timestamp":1772276720230,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"ac0cdf57065b47fca99674c30127040a","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:05:20] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:05:38,167] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049368005640465","quoteToken":"oS1QV4YnFnLp-E-PsGbH5bqFwYyRdCwEDLIp9FzY73lqqUsWLdKxtfqSZVc00xMAj9qsGirSkbk19x2GGfIX-JzVv_f_HPgpeeXiVAdBcJ4j0wR1G9Zvw4XZA9cXNZTOy5LEnfYQjtCmxIFD8a_8vg","markAsReadToken":"90X1XrPlVexzM71qHO4NQfPLCq74E4xWdZYIBBdYuQeaeiewUJUOlM6iZ_5UIU7DIkJcmvnr1d_EN_NmFWIP-gtIYy8GZhaHF-DYhol61BZW93fG0CA6Ji3N-1i_YuYHFVll5wx4ioEuvN6AZVxPzwNzt5EKOilTojFlQDCMFPvXW7WYL0GeeJg4Jr9s36_IZpk_LjlFhs2weCPFHc2CGw","contentProvider":{"type":"line"}},"webhookEventId":"01KJHYSSYQNWWZYMM9THFK88AW","deliveryContext":{"isRedelivery":false},"timestamp":1772276737882,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"adfa6fb907d14f9382087ab45ceb1566","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:05:38] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:07:38,522] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049569265385909","quoteToken":"O6qI_ZUSGIRpT7umdKy0Ug6W3N_2TJYHhy4UU0uJ57WUsONG0Y7FlB4zsGxdxs4n6ouqU7D6o4WNuxm_12pxRIk3EdBtIqrf9sf_NbxmYJByeoezFg6-WQ-dPKwg6tM_noQz95Vbc9yqrSEBIlNhhA","markAsReadToken":"clWiPFlyLBJTWYf7J8zQyD3xHcObOKKeNaCb8DAUAtyw0xUXKAdl6QxK78P8mHi6rsGfyz0hujEH7frOxhJrvbVBgbtUEDJDEwdot2qK9PmjZ3Wax8zngOMJlSHSevWqJCeAU-XX-q09gvufGoeiia3sPz5wiGozJ87hK33Oac7owf3Wh3B_TjgydPBhWJxEtB5INJ37Ht0yPy3hhE1STw","contentProvider":{"type":"line"}},"webhookEventId":"01KJHYXFDVCSHDGDV5M8FVWYX9","deliveryContext":{"isRedelivery":false},"timestamp":1772276857970,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"4a17ff1dacb0415abd57293efb6414be","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:07:38] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:08:05,044] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049614144438274","quoteToken":"THT7UmOOJfL3Ib0GL_V1dmn0PUfP1A1nTCQThLBkF2FLaLD9kk6BTP6vSmcNl-0RP8alYaH6bY7fu2g3n1q8Zv29xj9PvSNv4MrHp2GOY7i03KDxEQ-fb5J2Kq65aHG0_cZ4MbCVgxIbbbtjkgWO1A","markAsReadToken":"CmbcdJFs6VYvT06bbfTeZL9_VeZcCkVBSyFtR0Ah8cQNZhotR6gJ5D5eBVxGbatfGawPk6S166QTKUfoYAgAz1w9TjDOTGCs8i2eKEbuR_cdqsc0XTG2KTo5QLiHkXBCK2Osewq_GNOF7CdbOjn-Lsg0jcJQiiKHu3Gk4DHMQg7sVEt7FcHHNXHRkNpYq-FkpKLsicLzaCeVt3SFYO3YgQ","contentProvider":{"type":"line"}},"webhookEventId":"01KJHYY9BNN6WGJMRJCGVWCM0C","deliveryContext":{"isRedelivery":false},"timestamp":1772276884662,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"e5846decc36a47bd815a307f131a8345","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:08:05] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:08:22,678] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049643470749817","quoteToken":"6JY49997aQdtQ7uAfE-k3nPG94U5BWHrs9VuFk3HIPp2dNyrxXlwz8YO4z6Bk7TNEIuQMu1LyBxmpbJVeiX0JQjGBUAgqpeMuNb30IApiEcaJAAGFjUjsKDCWcrlv-wPv4JkQ4-N-zIVCqUBtK_nbA","markAsReadToken":"QIgjTsDppNMutsUoftcZoRgFexEtuN4_A_Mz9B1yslRBIaCrrVdUsa_TgcqKo86BHiUF6Y_h5Frlr6V2SDUOWwitN_mxMXi6ovptRf9iHBZgeRSRdF5k4rDbf6oPU08WdsRlnXPDWYoBOTSY60iGEKt1c6jXWTT010p0l-BogsbX3zm66XgrI8AdtooQL-lr58YGobGnjyH2SGlosVoALA","contentProvider":{"type":"line"}},"webhookEventId":"01KJHYYTJGSCCPMCWC04DCXY62","deliveryContext":{"isRedelivery":false},"timestamp":1772276902101,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"1d9070b12dfb4537b614e9c7627ae93b","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:08:22] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:09:16,625] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049734403784827","quoteToken":"YqfjMy7CwnSvTYrc6ATJFXvcvLW6Xbd3bfIVvOW4KWHr_HNcgr4CP9wxYto8RB9JoaUB021oyWLMq2BNC_F4uIGq0axmnmEWFl6PEKwxDy77y4CaB_hFWIpzby97oY7G6AdVFFJnRIrETMV1Gv8Ndw","markAsReadToken":"8Jwdq88Rsj07kGoCS3wM7BtY8Gz6--H3lE2W73Lrlg_Eh4fycy5_2c8O0i9_QwyJ67pOrA4ne_eEJogKZROT_4bTHgcuGlPDWJ1S_Bb3B1OaEUdRWdeRr_0YmZCLYi5z3wfQ-j3wEedzvs-D3fY15iHcUObI26bTOSgKo3-Ski5IHswYxKNmCuygEt-WGwZFVmYryz00TgP6UoAJiZr13A","contentProvider":{"type":"line"}},"webhookEventId":"01KJHZ0F8PJB9K6MWM9K3Q66TX","deliveryContext":{"isRedelivery":false},"timestamp":1772276956318,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"a0cd675a91d2417ab1ff53895fb436a5","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:09:16] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:09:33,266] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049762219884822","quoteToken":"xy_Vr-7_f_2MROODpaXuhezT4mkNMa8pculLqMOai4owDGjGrlKO7FyXx8-aAzK1-Ek1mB0oBcDUCgnUMCpnpBoqSObL2PatboJNTWSPU7582yseMLQSo4mAQSfDKwBmokV2BaRLKSZVnM1fXTsQzw","markAsReadToken":"qc8HE-jJM4N6zPhpht4PjiQWiLr9gWz_oMHL_fxcbieCl5A1LAmiBSWHUunM76NnTfllgbwXwjqR_k_CTWsQQXD2D_R4Sc1ObfW3e7dSxG-oCWUT7F4tR_stA3Dfkv05t9052jfezzYs9w85-y1fRRTj0ONTRMmWUznw1_5ZUnJtbsVriIkCicjBXl6LTRuUnooGIgipylNQQo1IvZwKyA","contentProvider":{"type":"line"}},"webhookEventId":"01KJHZ0ZH0YQ56JPKQK97RR6NQ","deliveryContext":{"isRedelivery":false},"timestamp":1772276972908,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"45d493f8bf80487685eddbddcc713b30","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:09:33] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:09:47,916] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049786631520378","quoteToken":"OV0PpLuGHGcplI4nmOgegrromu4jusSy9bIbiaxQuiq1R00Pgh7dw08UWlrcm-88tjJbx_xdMuEP1kWwOyhszqlZ0cAbIfGIQMxnHYOCdR8SKOKqriWT-Adn-HzhLr2jW_kC0L61WG3OotHfZQcp3A","markAsReadToken":"HpZtGQk5Cwnh6x3ibtUkb3AFJ977hqVZLBr6fNT8fEXvJOMVXfRO2lT6NC8JQL_UWrEmG7C0ojj02yzpoVjvym6S0niZ2lxgsPIDCe4_Khe0UPLAHGC4Kaa3vNHVzVDXQGdcSMbsccmcYM8Lz6KHhyPFVupjnP93rL5jdslWz_PkE9642z8LhLuIePuC_-yQ3vsN5YSD_Bs0mrs5DktepA","contentProvider":{"type":"line"}},"webhookEventId":"01KJHZ1DSD7GVTGT8NVWRD7F87","deliveryContext":{"isRedelivery":false},"timestamp":1772276987505,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"f6d8d3e84cf54fbeafbfb4b1ea6c3f07","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:09:47] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:10:04,910] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049814766649621","quoteToken":"Ta2CP9ZIlhysgxK6z5_7mEPy65TUqteD_saP6Bmh9fNwvA5SFMjrb7m4DDuWjNfaYmrDe6xvE9cMumN1GKwXNqrtn0pQ9PrMlnDlX0_4MuPGQ7P8Qyp2WfE1p921gFnJN761KXMQUqRtk93ZEXJlTg","markAsReadToken":"ArwieKzICdY0YAYBlmFRcXF_-yjqxnxrTY0ZtzFjmPLy5qkwfXQNjH36xdmYob0zuUrRhCCWaX2N13udhDwzz7bUWEujQOcR_X-JGKh9iVDVMrzqXgJTwH-0Lxov1taHtr6uThs3u-Hy4eBmJCzfZlFlVIgZTvT8t5YdE45wdhfOPqvFqdDliikRcr-jm85t5UwNFOoLBNBsz2AFMplydQ","contentProvider":{"type":"line"}},"webhookEventId":"01KJHZ1YBWX5RMHE624E7N6DQ8","deliveryContext":{"isRedelivery":false},"timestamp":1772277004252,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"9f24b5cfabe54b30be44117d2f9b92ad","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:10:04] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:10:19,476] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603049839093874724","quoteToken":"6ldF_oV_u15u5v32FS5yNAFneJY4_xp2RTUbpd1FBdz1So1tGPgXnznknfE8qVSKcuJKLbRVd5b0slYaaJg7UOk2FNMwCvB7YN1FqPUrYEWYWhAMe3WwP0f3pnJ_oFGDSoXEtma_dLRAgOxnPE6tFA","markAsReadToken":"qbqYk4vSJzQpdi_88YyxThs129Cx9rUxa-5BM_tyvFwx_6NR6CfSArsvh4IjQVsy7D26mfwaZL42L6NAbLYi4FuAkBWqaWYo3ufkKWsw7vPVFNAriZpL_DTcinrdjNSkI86ZTxXAnGkF9wtZ0me0JfYkQzGE6jLuqSijgUMQD1K9PxJcSmR-SnDB5q9g5l1IMvMV9pscw83paHIr6-BAXA","contentProvider":{"type":"line"}},"webhookEventId":"01KJHZ2CMAG36WCFB1GN47H2Y8","deliveryContext":{"isRedelivery":false},"timestamp":1772277018769,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"f876957386b84c3f82e880dcb364a355","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:10:19] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:17:19,073] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603050543954264150","quoteToken":"BOgbLobPV4ZE_Obegmq5nuX-6VAOOBe2IgXGTbNO5ZXsdKxahuKTXD-VY2Zfv0o-V-Z5fWVSz48sBAefuTYQb1gBoo14VVqiEJSwy_BicD7kwBzgZ--ZIFnZy-RfpBA7j2uU6cRYUpt2YH-cDg6Vfw","markAsReadToken":"f58Our2AMqwOOpiliGq6M8l9nO0IGvZACFvUcvwj-xYPjvJGeW6uUxo4XUr0Lb0WHJdUUYyAopXmP9KKVtWaY83nCff6vgc4VuOelFp5uga6vqjdHJZtXsJGfYGKpfmRcBSsJPE2yc24cDIChKyr07VUFGMPtx49vgEq1zNK1r_qeASyPx-ppDsN1WZvKG9u7zrUt7c_YpwjzxmuAMvqTA","contentProvider":{"type":"line"},"imageSet":{"id":"810EF4E40648A302F75C2DEA7557C895E8188C0552AF571DAA70179D7BB765AF","index":1,"total":2}},"webhookEventId":"01KJHZF6BYKHHY2R7TVTGPKHWC","deliveryContext":{"isRedelivery":false},"timestamp":1772277438707,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"14c84be557ef4255802926ada6f36482","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:17:19] "POST /callback HTTP/1.1" 200 -
+[2026-02-28 18:17:19,314] INFO in bot: Request body: {"destination":"Ude12214a07a412a7013342dd4d42dbaf","events":[{"type":"message","message":{"type":"image","id":"603050544156115456","quoteToken":"opX9CpgwBy9MAMViOdGEZ7JHnI4rqGCRG1o9bvKuMK42HO4DjCqFQCOtFqUn3M_nvod_IiI5k-bq_AFI8fFWsp74Fo1CMDW1GiRwVu-n8j2ThqMd-u6YF8HsQx7mHtiUu0x1oXM8nGpbvBsqJsb7jA","markAsReadToken":"fZjcZu87T5zBlMCBCDjBo65z95vEtje96IIAYw3MXVGepyomkG8QzsuQ-62S28qf2VH4DDq1_SI_OobsOwsmYQPbZZ5jnRT1SjMjJMKEqXTqexQv42xpda18-2rOG6XHKvCqKghZ7wfKC92_29OvTvRJ_zUTEk4Ub5X22b8Jh5Ndxf_vVLlLHRsuCyxUZw5Jw2763jz44Ezurz3dwZnWGw","contentProvider":{"type":"line"},"imageSet":{"id":"810EF4E40648A302F75C2DEA7557C895E8188C0552AF571DAA70179D7BB765AF","index":2,"total":2}},"webhookEventId":"01KJHZF6GX5YACB9PNPNT1GSTF","deliveryContext":{"isRedelivery":false},"timestamp":1772277438906,"source":{"type":"user","userId":"U0d291422f8a11c6ab9de4fb599af4efa"},"replyToken":"0c1e2b30dc194673a342f93f140dad88","mode":"active"}]}
+127.0.0.1 - - [28/Feb/2026 18:17:19] "POST /callback HTTP/1.1" 200 -
+/Library/Frameworks/Python.framework/Versions/3.13/lib/python3.13/multiprocessing/resource_tracker.py:276: UserWarning: resource_tracker: There appear to be 1 leaked semaphore objects to clean up at shutdown: {'/mp-evp_7pl4'}
+  warnings.warn(
