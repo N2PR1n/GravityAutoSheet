@@ -226,7 +226,7 @@ def process_images_thread(user_id):
     reply_token = state['reply_token']
 
     # Lazy Load Services
-    image_service, drive_service, openai_service, sheet_service, _ = get_services()
+    image_service, drive_service, ai_service, sheet_service, _ = get_services()
 
     try:
         # Notify Start
@@ -239,7 +239,7 @@ def process_images_thread(user_id):
                 )
             )
         except Exception as e:
-            print(f"Reply token expired? {e}")
+            print(f"Reply token expired (normal for batched images): {e}")
 
         # 1. Download
         headers = {'Authorization': f'Bearer {LINE_CHANNEL_ACCESS_TOKEN}'}
@@ -255,9 +255,9 @@ def process_images_thread(user_id):
             image_service.stitch_images(downloaded_paths[0], downloaded_paths[1], final_image_path)
             print("Stitched images.")
 
-        # 3. OpenAI
-        print("Extracting data with OpenAI...")
-        data = openai_service.extract_data_from_image(final_image_path)
+        # 3. AI Extraction
+        print(f"Extracting data with {ai_service.__class__.__name__}...")
+        data = ai_service.extract_data_from_image(final_image_path)
         
         if not data:
              messaging_api.push_message(
