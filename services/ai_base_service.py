@@ -24,7 +24,30 @@ class AIBaseService:
         "Sixteenphone": ["sixteenphone", "ซิกซ์ทีนโฟน"],
         "dtac": ["dtac", "ดีแทค"],
         "Power Buy": ["power buy", "เพาเวอร์บาย", "powerbuy"],
-        "IT City": ["it city", "ไอที ซิตี้", "itcity"]
+        "IT city": ["it city", "ไอที ซิตี้", "itcity"],
+        "iSudio by copperwired": ["isudio by copperwired", "copperwired"],
+        "iStudio by copperwired": ["istudio by copperwired"],
+        "Studio7": ["studio7", "สตูดิโอเจ็ด"],
+        "โปรเน็ตฟาร์ม": ["โปรเน็ตฟาร์ม"],
+        "TWO IN ONE": ["two in one"],
+        "XIAOMI OFFICIAL STORE TH": ["xiaomi official store th", "xiaomi"],
+        "WAVEmobilembk": ["wavemobilembk", "wavemobile"],
+        "TWOSIS MBK": ["twosis mbk", "twosis"],
+        "Rally Moment": ["rally moment"],
+        "Xiaomi Mall TH": ["xiaomi mall th"],
+        "Allyour_Store": ["allyour_store", "allyour store"],
+        "MOBILE CORNER": ["mobile corner"],
+        "SuperTphone": ["supertphone"],
+        "TWO IN ONE Mobile & Sim": ["two in one mobile & sim"],
+        "jin ja": ["jin ja"],
+        "Tinzshop": ["tinzshop"],
+        "True 5G": ["true 5g", "true"],
+        "NET PLUS MALL": ["net plus mall"],
+        "TG Shop_TH": ["tg shop_th", "tg shop"],
+        "LazMall Mobiles": ["lazmall mobiles"],
+        "Namkangmobile": ["namkangmobile"],
+        "ความสุขเทเลคอม": ["ความสุขเทเลคอม"],
+        "U shop": ["u shop"]
     }
 
     def __init__(self, api_key):
@@ -84,7 +107,7 @@ class AIBaseService:
     - shop_name: **กฎเหล็กเรื่อง LazMall / Amall**: 
       - คำว่า "LazMall" ย่อมาจากแพลตฟอร์ม ไม่ใช่ชื่อร้าน
       - คำว่า "Amall Official shop" ไม่ใช่ชื่อร้าน (แต่เป็นตัวบงบอกว่านี่คือแพลตฟอร์ม Amaze)
-      - ให้ดึงเฉพาะชื่อร้านหลัก เช่น "เลค คอมมูนิเคชั่น", "บลูสโตร์", "Oppo", "IT City" เท่านั้น (ระวังอย่าแปลงชื่อร้านไทยเป็นอังกฤษเอง)
+      - ให้ดึงเฉพาะชื่อร้านหลัก เช่น "เลค คอมมูนิเคชั่น", "บลูสโตร์", "Oppo", "IT city" เท่านั้น (ระวังอย่าแปลงชื่อร้านไทยเป็นอังกฤษเอง)
       - ถ้าเจอชื่อร้านยาวๆ ให้ตัดเหลือแค่ชื่อแบรนด์หรือชื่อร้านหลัก สั้นๆ
     - item_name: ตัด [ ] หรือ ( ) ด้านหน้าออก เอาเฉพาะชื่อสินค้าหลัก ไม่เกิน 30 ตัวอักษร
       - **ถ้าจำนวน > 1**: ให้ต่อท้ายด้วย "xจำนวน" (เช่น "iPhone 16 x2")
