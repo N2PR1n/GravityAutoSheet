@@ -1,8 +1,52 @@
 import base64
 
 class AIBaseService:
+    SHOP_MAPPING = {
+        "blue_store": ["blue_store", "บลูสโตร์", "blue store"],
+        "995 โฟน": ["995 โฟน", "995 phone", "995โฟน"],
+        "Apple Flagship Store": ["apple flagship store", "apple", "แอปเปิ้ล"],
+        "POCO": ["poco", "โพโค่"],
+        "Thesun Shine": ["thesun shine", "thesun", "เดอะซัน"],
+        "Superiphone": ["superiphone", "ซูเปอร์ไอโฟน"],
+        "Geniusmobile": ["geniusmobile", "จีเนียสโมบาย"],
+        "Jaymart": ["jaymart", "เจมาร์ท"],
+        "Thorasap": ["thorasap", "โทรศัพท์"],
+        "Nintendo Official Store": ["nintendo official store", "nintendo", "นินเทนโด"],
+        "Mobile Max": ["mobile max", "โมบายแม็กซ์"],
+        "OPPO Official Store": ["oppo official store", "oppo", "ออปโป้"],
+        "samsung_thailand": ["samsung_thailand", "samsung", "ซัมซุง"],
+        "Moneytalk_mobile": ["moneytalk_mobile", "moneytalk", "มันนี่ทอล์ค"],
+        "Arm_share": ["arm_share", "arm share", "อาร์มแชร์"],
+        "iStudio by SPVi": ["istudio by spvi", "spvi"],
+        "vivo": ["vivo", "วีโว่"],
+        "mobilestation": ["mobilestation", "โมบายสเตชั่น"],
+        "iStudio_UFicon": ["istudio_uficon", "uficon"],
+        "Sixteenphone": ["sixteenphone", "ซิกซ์ทีนโฟน"],
+        "dtac": ["dtac", "ดีแทค"],
+        "Power Buy": ["power buy", "เพาเวอร์บาย", "powerbuy"]
+    }
+
     def __init__(self, api_key):
         self.api_key = api_key
+
+    @classmethod
+    def map_shop_name(cls, raw_name):
+        """Standardize shop name based on keywords."""
+        if not raw_name:
+            return raw_name
+            
+        raw_name_lower = raw_name.lower().strip()
+        print(f"DEBUG: Processing Raw Shop Name: '{raw_name}'")
+        
+        # Check for exact matches and keyword contains
+        for standard_name, keywords in cls.SHOP_MAPPING.items():
+            for kw in keywords:
+                if kw in raw_name_lower:
+                    print(f"DEBUG: Mapped '{raw_name}' -> '{standard_name}' (Match found for keyword '{kw}')")
+                    return standard_name
+        
+        print(f"DEBUG: No mapping found for '{raw_name}'. Returning original.")
+        return raw_name
 
     def encode_image(self, image_path):
         """Standard utility to encode image to base64."""

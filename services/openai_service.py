@@ -43,7 +43,10 @@ class OpenAIService(AIBaseService):
                 text = text[7:]
             if text.endswith("```"):
                 text = text[:-3]
-            return json.loads(text.strip())
+            data = json.loads(text.strip())
+            if data and 'shop_name' in data:
+                data['shop_name'] = self.map_shop_name(data['shop_name'])
+            return data
             
         except Exception as e:
             print(f"Error calling OpenAI: {e}")
