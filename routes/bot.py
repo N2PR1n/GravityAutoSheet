@@ -225,130 +225,138 @@ def process_images_thread(user_id):
     image_ids = state['images']
     reply_token = state['reply_token']
 
-    # Lazy Load Services
-    image_service, drive_service, ai_service, sheet_service, _ = get_services()
+    # Initial Progress Notification
+    try:
+        cfg = ConfigService()
+        ai_provider = cfg.get('AI_PROVIDER', 'openai').upper()
+        messaging_api.reply_message(
+            ReplyMessageRequest(
+                replyToken=reply_token,
+                messages=[TextMessage(text=f"📦 ได้รับ {len(image_ids)} รูปภาพ กำลังเริ่มประมวลผล... ({ai_provider})")]
+            )
+        )
+    except Exception as e:
+        print(f"DEBUG: Reply token status: {e}")
 
     try:
-        # Notify Start
-        try:
-            ai_provider = _config_service.get('AI_PROVIDER', 'openai').upper()
-            messaging_api.reply_message(
-                ReplyMessageRequest(
-                    replyToken=reply_token,
-                    messages=[TextMessage(text=f"ได้รับ {len(image_ids)} รูปภาพ กำลังประมวลผล ({ai_provider}/v3)...")]
-                )
-            )
-        except Exception as e:
-            print(f"Reply token expired (normal for batched images): {e}")
-
-        # 1. Download
+        # 1. Initialize Services inside try-block
+        print("DEBUG: Initializing services...")
+        image_service, drive_service, ai_service, sheet_service, _ = get_services()
+        
+        # 2. Download Images
+        print(f"DEBUG: Downloading {len(image_ids)} images...")
         headers = {'Authorization': f'Bearer {LINE_CHANNEL_ACCESS_TOKEN}'}
         downloaded_paths = []
         for msg_id in image_ids:
             path = image_service.download_image(msg_id, headers)
-            downloaded_paths.append(path)
+            if path:
+                downloaded_paths.append(path)
         
-        # 2. Stitch
+        if not downloaded_paths:
+            raise Exception("ดาวน์โหลดรูปภาพไม่สำเร็จ")
+
+        # 3. Stitch or Select Image
         final_image_path = downloaded_paths[0]
         if len(downloaded_paths) >= 2:
-            final_image_path = f"temp_images/stitched_{image_ids[0]}.jpg"
+            print(f"DEBUG: Stitching {len(downloaded_paths)} images...")
+            # Use unique name for stitched image
+            final_image_path = os.path.join("temp_images", f"stitched_{int(time.time())}_{user_id[:5]}.jpg")
+            # Always ensure directory exists
+            os.makedirs("temp_images", exist_ok=True)
             image_service.stitch_images(downloaded_paths[0], downloaded_paths[1], final_image_path)
-            print("Stitched images.")
-
-        # 3. AI Extraction
-        print(f"Extracting data with {ai_service.__class__.__name__}...")
+            
+        # 4. AI Extraction
+        print(f"DEBUG: Extracting data with {ai_service.__class__.__name__}...")
         data = ai_service.extract_data_from_image(final_image_path)
         
         if not data:
+             raise Exception("AI ไม่สามารถสกัดข้อมูลจากรูปภาพได้ (อาจเป็นเพราะภาพไม่ชัดหรือรูปแบบไม่ถูกต้อง)")
+
+        # 5. Duplicate Check
+        order_id = data.get('order_id')
+        if not order_id:
+            raise Exception("ไม่พบเลขออเดอร์ในรูปภาพ")
+            
+        if sheet_service.check_duplicate(order_id):
              messaging_api.push_message(
                  PushMessageRequest(
-                     to=user_id,
-                     messages=[TextMessage(text=f"❌ AI อ่านข้อมูลไม่ได้ครับ")]
+                      to=user_id,
+                      messages=[TextMessage(text=f"⚠️ พบเลขออเดอร์ {order_id} ซ้ำในระบบแล้วค่ะ (ไม่บันทึก)")]
                  )
              )
              return
 
-        # 4. Duplicate Check
-        if sheet_service.check_duplicate(data.get('order_id')):
-             messaging_api.push_message(
-                 PushMessageRequest(
-                     to=user_id,
-                     messages=[TextMessage(text=f"⚠️ Order {data.get('order_id')} ซ้ำครับ! (ไม่บันทึก)")]
-                 )
-             )
-             return
-
-        # 5. Upload to Drive
+        # 6. Drive Upload
         next_run_no = sheet_service.get_next_run_no()
         target_filename = f"{next_run_no}.jpg"
         
         drive_link = ""
-        drive_error = ""
-        folder_display_name = "ไม่ทราบชื่อโฟลเดอร์"
         try:
-            sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
-            folder_id = _config_service.get_folder_for_sheet(sheet_name)
+            sheet_name = cfg.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+            folder_id = cfg.get_folder_for_sheet(sheet_name)
             folder_display_name = drive_service.get_folder_name(folder_id)
-            print(f"DEBUG: Drive Upload -> Sheet: {sheet_name}, Folder: {folder_id} ({folder_display_name}), File: {target_filename}", flush=True)
+            print(f"DEBUG: Uploading to Drive -> {target_filename} in {folder_display_name}")
+            
             drive_file = drive_service.upload_file(final_image_path, folder_id, target_filename)
             if drive_file:
                 drive_link = drive_file.get('webViewLink', '')
-            else:
-                drive_error = "Upload failed (Check Service Account access)"
         except Exception as e:
-            print(f"Drive Upload Error: {e}")
-            drive_error = str(e)
-
+            print(f"DEBUG: Drive Upload Error: {e}")
+            # Don't fail the whole process if only upload fails
+        
         data['image_link'] = drive_link
 
-        # 6. Save to Sheet
+        # 7. Save to Sheet
+        print(f"DEBUG: Saving to Sheet: {order_id}")
         if sheet_service.append_data(data, next_run_no):
-            # Invalidate Cache
-            try:
-                from app import order_cache
-                order_cache['data'] = None
-            except:
-                pass
+            # Success Summary
+            tracking_info = f"\n📦 Tracking: {data.get('tracking_number')}" if data.get('tracking_number') and data.get('tracking_number') != '-' else ""
             
-            # Success
-            tracking_info = f"\nTracking: {data.get('tracking_number')}" if data.get('tracking_number') and data.get('tracking_number') != '-' else ""
-            
-            drive_status = f"\n📁 บันทึกรูปไปที่: {folder_display_name}" if drive_link else f"\n⚠️ **เซฟรูปลง Drive ไม่สำเร็จ!**\n(โฟลเดอร์: {folder_display_name})\nสาเหตุ: {drive_error}"
+            folder_info = f"\n📁 บันทึกรูปไปที่: {folder_display_name}" if drive_link else "\n⚠️ บันทึกรูปไม่สำเร็จ"
             
             summary = (
-                f"✅ บันทึกแล้ว! (No. {next_run_no})\n"
-                f"ชื่อ: {data.get('receiver_name', '-')}\n"
-                f"ที่อยู่: {data.get('location', '-')}\n"
-                f"ร้าน: {data.get('shop_name', '-')}\n"
-                f"ยอด: {data.get('price', '-')}\n"
-                f"เหรียญ: {data.get('coins', '0')}\n"
-                f"Platform: {data.get('platform', '-')}\n"
-                f"Order: {data.get('order_id', '-')}"
+                f"✅ บันทึกข้อมูลเรียบร้อยแล้วค่ะ! (ลำดับที่ {next_run_no})\n\n"
+                f"👤 ชื่อผู้รับ: {data.get('receiver_name', '-')}\n"
+                f"🏠 สถานที่: {data.get('location', '-')}\n"
+                f"🏪 ร้านค้า: {data.get('shop_name', '-')}\n"
+                f"💰 ยอดเงิน: {data.get('price', '-')}\n"
+                f"🪙 เหรียญ: {data.get('coins', '0')}\n"
+                f"🌐 Platform: {data.get('platform', '-')}\n"
+                f"🆔 Order ID: {data.get('order_id', '-')}"
                 f"{tracking_info}"
-                f"{drive_status}"
+                f"{folder_info}"
             )
             messaging_api.push_message(
                  PushMessageRequest(
-                     to=user_id,
-                     messages=[TextMessage(text=summary)]
+                      to=user_id,
+                      messages=[TextMessage(text=summary)]
                  )
              )
         else:
-             messaging_api.push_message(
-                 PushMessageRequest(
-                     to=user_id,
-                     messages=[TextMessage(text=f"❌ บันทึก Sheet ไม่สำเร็จ")]
-                 )
-             )
+             raise Exception("ไม่สามารถบันทึกข้อมูลลง Google Sheet ได้")
 
     except Exception as e:
-        print(f"Process Error: {e}")
+        import traceback
+        error_detail = traceback.format_exc()
+        print(f"❌ CRITICAL ERROR in process_images_thread: {e}\n{error_detail}")
+        
+        error_msg = f"❌ เกิดข้อผิดพลาดในการประมวลผล:\n{str(e)}"
         try:
             messaging_api.push_message(
                  PushMessageRequest(
-                     to=user_id,
-                     messages=[TextMessage(text=f"เกิดข้อผิดพลาด: {str(e)}")]
+                      to=user_id,
+                      messages=[TextMessage(text=error_msg)]
                  )
              )
+        except Exception as push_err:
+            print(f"DEBUG: Failed to send error message: {push_err}")
+    finally:
+        # Cleanup temp files
+        try:
+            if 'downloaded_paths' in locals():
+                for p in downloaded_paths:
+                    if os.path.exists(p): os.remove(p)
+            if 'final_image_path' in locals() and final_image_path not in (downloaded_paths if 'downloaded_paths' in locals() else []):
+                if os.path.exists(final_image_path): os.remove(final_image_path)
         except:
             pass

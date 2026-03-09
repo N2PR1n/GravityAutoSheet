@@ -5,9 +5,10 @@ from io import BytesIO
 
 class ImageService:
     def __init__(self):
-        self.temp_dir = "temp_images"
+        # Use absolute path for temp directory
+        self.temp_dir = os.path.join(os.getcwd(), "temp_images")
         if not os.path.exists(self.temp_dir):
-            os.makedirs(self.temp_dir)
+            os.makedirs(self.temp_dir, exist_ok=True)
 
     def download_image(self, message_id, headers):
         """Downloads image from LINE server."""
@@ -24,40 +25,44 @@ class ImageService:
             raise Exception(f"Failed to download image: {response.status_code}")
 
     def stitch_images(self, image_path1, image_path2, output_path):
-        """Stitches two images together side-by-side (horizontal) or top-down (vertical).
-           Decides based on aspect ratio or fixed strategy.
+        """Stitches two images together side-by-side (horizontal).
+           Optimized: Resizes to a reasonable height first to save memory.
         """
-        img1 = Image.open(image_path1)
-        img2 = Image.open(image_path2)
+        try:
+            img1 = Image.open(image_path1)
+            img2 = Image.open(image_path2)
 
-        # Basic stitching strategy: Horizontal if both are tall, Vertical if both are wide?
-        # For receipts, usually they are tall. Let's try stitching them side-by-side first as requested ("เย็บติดกัน (ซ้ายขวา)")
-        
-        # Resize text to match height
-        # Get dimensions
-        w1, h1 = img1.size
-        w2, h2 = img2.size
-        
-        # Target height = max(h1, h2)
-        target_h = max(h1, h2)
-        
-        # Resize maintaining aspect ratio
-        # img1
-        new_w1 = int(w1 * (target_h / h1))
-        img1_resized = img1.resize((new_w1, target_h))
-        
-        # img2
-        new_w2 = int(w2 * (target_h / h2))
-        img2_resized = img2.resize((new_w2, target_h))
-        
-        # Create new blank image
-        total_width = new_w1 + new_w2
-        new_im = Image.new('RGB', (total_width, target_h))
-        
-        # Paste
-        new_im.paste(img1_resized, (0, 0))
-        new_im.paste(img2_resized, (new_w1, 0))
-        
-        # Save
-        new_im.save(output_path)
-        return output_path
+            # Target height for processing (e.g., 2000px is enough for OCR)
+            max_h = 2000
+            
+            # Resize img1
+            w1, h1 = img1.size
+            if h1 > max_h:
+                new_w1 = int(w1 * (max_h / h1))
+                img1 = img1.resize((new_w1, max_h), Image.LANCZOS)
+                w1, h1 = new_w1, max_h
+            
+            # Resize img2 to match img1 height
+            w2, h2 = img2.size
+            if h2 != h1:
+                new_w2 = int(w2 * (h1 / h2))
+                img2 = img2.resize((new_w2, h1), Image.LANCZOS)
+                w2, h2 = new_w2, h1
+            
+            # Create new blank image
+            total_width = w1 + w2
+            new_im = Image.new('RGB', (total_width, h1))
+            
+            # Paste
+            new_im.paste(img1, (0, 0))
+            new_im.paste(img2, (w1, 0))
+            
+            # Save with optimization
+            new_im.save(output_path, "JPEG", quality=85, optimize=True)
+            return output_path
+        except Exception as e:
+            print(f"DEBUG: Stitch Error: {e}")
+            # Fallback: copy first image instead of failing completely if stitch fails
+            import shutil
+            shutil.copy2(image_path1, output_path)
+            return output_path
