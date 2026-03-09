@@ -55,7 +55,13 @@ api_client = ApiClient(configuration)
 messaging_api = MessagingApi(api_client)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
 
-_config_service = ConfigService()
+# Config Service Singleton
+_config_service_instance = None
+def get_config():
+    global _config_service_instance
+    if _config_service_instance is None:
+        _config_service_instance = ConfigService()
+    return _config_service_instance
 
 def get_services():
     # Load Creds
@@ -67,7 +73,8 @@ def get_services():
     
     # AI Service Factory
     from services.ai_factory import AIFactory
-    ai_provider = _config_service.get('AI_PROVIDER', 'openai')
+    cfg = get_config()
+    ai_provider = cfg.get('AI_PROVIDER', 'openai')
     
     gemini_key = os.getenv('GEMINI_API_KEY')
     openai_key = os.getenv('OPENAI_API_KEY')
@@ -75,7 +82,8 @@ def get_services():
     ai_service = AIFactory.get_service(ai_provider, openai_key, gemini_key)
     
     # Always check for the latest sheet name from config
-    sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+    sheet_name = cfg.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+
     
     print(f"DEBUG: Bot connecting to Sheet: {sheet_name} | AI: {ai_provider}")
     sheet_service = SheetService(creds, GOOGLE_SHEET_ID, sheet_name)
@@ -129,8 +137,8 @@ def handle_text_message(event):
             # Run export in background thread
             def run_export():
                 try:
-                    sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
-                    folder_id = _config_service.get_folder_for_sheet(sheet_name)
+                    sheet_name = get_config().get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+                    folder_id = get_config().get_folder_for_sheet(sheet_name)
                     link = accounting_service.export_report(folder_id)
                     if link:
                         msg = f"✅ สร้างไฟล์เสร็จแล้วครับ!\nโหลดได้ที่นี่: {link}"
@@ -161,8 +169,8 @@ def handle_text_message(event):
             # Lazy Load Services
             _, drive_service, _, _, _ = get_services()
             
-            sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
-            folder_id = _config_service.get_folder_for_sheet(sheet_name)
+            sheet_name = get_config().get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+            folder_id = get_config().get_folder_for_sheet(sheet_name)
             
             # Fetch Folder Info
             folder_name = drive_service.get_folder_name(folder_id)
@@ -291,16 +299,22 @@ def process_images_thread(user_id):
         target_filename = f"{next_run_no}.jpg"
         
         drive_link = ""
+        drive_error_msg = ""
+        folder_display_name = "Unknown"
+        
         try:
-            sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
-            folder_id = _config_service.get_folder_for_sheet(sheet_name)
+            sheet_name = get_config().get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+            folder_id = get_config().get_folder_for_sheet(sheet_name)
             folder_display_name = drive_service.get_folder_name(folder_id)
             print(f"DEBUG: Uploading to Drive -> {target_filename} in {folder_display_name}")
             
             drive_file = drive_service.upload_file(final_image_path, folder_id, target_filename)
             if drive_file:
                 drive_link = drive_file.get('webViewLink', '')
+            else:
+                drive_error_msg = "Google Drive API returned None (Unknown Error)"
         except Exception as e:
+            drive_error_msg = str(e)
             print(f"DEBUG: Drive Upload Error: {e}")
             # Don't fail the whole process if only upload fails
         
@@ -313,7 +327,10 @@ def process_images_thread(user_id):
             tracking_info = f"\nTracking: {data.get('tracking_number')}" if data.get('tracking_number') and data.get('tracking_number') != '-' else ""
             
             # Using the format requested by user
-            folder_info = f"\n📁 บันทึกรูปไปที่: {folder_display_name}" if drive_link else "\n⚠️ บันทึกรูปไม่สำเร็จ โปรดตรวจสอบว่าแชร์โฟลเดอร์ให้ Bot Service Account หรือยัง"
+            if drive_link:
+                folder_info = f"\n📁 บันทึกรูปไปที่: {folder_display_name}"
+            else:
+                folder_info = f"\n⚠️ บันทึกรูปไม่สำเร็จ\nสาเหตุ: {drive_error_msg[:100]}\nโปรดแชร์โฟลเดอร์ให้ Bot Service Account ด้วยนะคะ"
             
             summary = (
                 f"✅ บันทึกแล้ว! (No. {next_run_no})\n"
