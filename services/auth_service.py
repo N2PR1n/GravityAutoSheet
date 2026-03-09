@@ -7,28 +7,53 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapi
 
 def get_google_credentials():
     creds = None
+    token_path = None
 
-    # Priority 1: Check Environment Variable first (Best for Render/Cloud)
-    creds_env = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', '')
+    # Priority 1: Check for User Auth Token (token.json) in common paths
+    paths_to_check = [
+        'token.json',
+        '/etc/secrets/token.json',
+        os.getenv('GOOGLE_TOKEN_PATH', '')
+    ]
     
-    # Priority 2: Fallback to local token.json
-    if not creds_env and os.path.exists('token.json'):
-        creds_env = 'token.json'
-    
-    # Check if it's a JSON string instead of a path
-    clean_creds = creds_env.strip()
-    if clean_creds.startswith('{') and clean_creds.endswith('}'):
-        try:
-            import json
-            from google.oauth2 import service_account
-            creds_data = json.loads(clean_creds)
-            if creds_data.get('type') == 'service_account':
-                print("DEBUG: Using Service Account from environment JSON")
-                return service_account.Credentials.from_service_account_info(creds_data, scopes=SCOPES)
-        except Exception as e:
-            print(f"Error parsing GOOGLE_APPLICATION_CREDENTIALS as JSON: {e}")
+    for path in paths_to_check:
+        if path and os.path.exists(path):
+            try:
+                import json
+                with open(path, 'r') as f:
+                    data = json.load(f)
+                
+                # Check if it is a User Token (Authorized User)
+                if 'refresh_token' in data or 'token' in data:
+                    print(f"DEBUG: Found User Token at {path}")
+                    creds = Credentials.from_authorized_user_file(path, SCOPES)
+                    token_path = path
+                    break
+            except Exception as e:
+                print(f"Warning: Failed to load user token at {path}: {e}")
 
-    token_path = creds_env
+    # Priority 2: Fallback to Service Account if no valid user token found
+    if not creds:
+        creds_env = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', '')
+        
+        # Check if it's a JSON string instead of a path
+        clean_creds = creds_env.strip()
+        if clean_creds.startswith('{') and clean_creds.endswith('}'):
+            try:
+                import json
+                from google.oauth2 import service_account
+                creds_data = json.loads(clean_creds)
+                if creds_data.get('type') == 'service_account':
+                    print("DEBUG: Using Service Account from environment JSON")
+                    return service_account.Credentials.from_service_account_info(creds_data, scopes=SCOPES)
+            except Exception as e:
+                print(f"Error parsing GOOGLE_APPLICATION_CREDENTIALS as JSON: {e}")
+        
+        token_path = creds_env if creds_env else 'credentials.json'
+        
+    if not token_path:
+        token_path = 'token.json' # Final fallback path for saving update tokens
+
     # Infer client_secret_path from token_path directory
     secret_dir = os.path.dirname(token_path) if os.path.dirname(token_path) else '.'
     client_secret_path = os.path.join(secret_dir, 'client_secret.json')
