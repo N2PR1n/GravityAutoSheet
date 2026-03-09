@@ -292,8 +292,8 @@ def process_images_thread(user_id):
         
         drive_link = ""
         try:
-            sheet_name = cfg.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
-            folder_id = cfg.get_folder_for_sheet(sheet_name)
+            sheet_name = _config_service.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+            folder_id = _config_service.get_folder_for_sheet(sheet_name)
             folder_display_name = drive_service.get_folder_name(folder_id)
             print(f"DEBUG: Uploading to Drive -> {target_filename} in {folder_display_name}")
             
