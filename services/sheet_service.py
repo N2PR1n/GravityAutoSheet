@@ -1,6 +1,6 @@
 import gspread
-from google.oauth2 import service_account
 import socket
+
 import requests.packages.urllib3.util.connection as urllib3_cn
 
 # Removed monkey patch
@@ -16,32 +16,10 @@ class SheetService:
         self.all_data_cache = None
         self.last_fetch_time = 0
         try:
-            from google.oauth2.credentials import Credentials as OAuth2Credentials
-            from google.oauth2 import service_account as google_service_account
-            
-            # Robust Credential Detection
-            if hasattr(credentials_source, 'token') or hasattr(credentials_source, 'service_account_email'):
-                self.creds = credentials_source
-            elif isinstance(credentials_source, dict):
-                if credentials_source.get('type') == 'service_account':
-                    self.creds = google_service_account.Credentials.from_service_account_info(
-                        credentials_source, scopes=self.scopes)
-                else:
-                    self.creds = OAuth2Credentials.from_authorized_user_info(credentials_source, self.scopes)
-            elif isinstance(credentials_source, str) and os.path.exists(credentials_source):
-                import json
-                with open(credentials_source, 'r') as f:
-                    data = json.load(f)
-                if data.get('type') == 'service_account':
-                    self.creds = google_service_account.Credentials.from_service_account_file(
-                        credentials_source, scopes=self.scopes)
-                else:
-                    self.creds = OAuth2Credentials.from_authorized_user_file(credentials_source, self.scopes)
-            else:
-                # Direct object fallback if not detected above
-                self.creds = credentials_source
-            
+            # We now exclusively expect Credentials from User Authentication
+            self.creds = credentials_source
             self.client = gspread.authorize(self.creds)
+
             
             if sheet_name:
                 try:

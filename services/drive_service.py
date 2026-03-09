@@ -1,48 +1,20 @@
-from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 import os
 
 class DriveService:
-    def __init__(self, credentials_source=None):
+    def __init__(self, credentials=None):
         self.service = None
         self.scopes = ['https://www.googleapis.com/auth/drive']
         
-        if not credentials_source:
-            print("Warning: No credentials source provided to DriveService.")
+        if not credentials:
+            print("Warning: No credentials provided to DriveService.")
             return
 
         try:
-            from google.oauth2.credentials import Credentials as OAuth2Credentials
-            from google.oauth2 import service_account as google_service_account
-            creds = None
-            
-            # 1. Direct object check
-            if hasattr(credentials_source, 'token') or hasattr(credentials_source, 'service_account_email'):
-                creds = credentials_source
-            # 2. Dict check
-            elif isinstance(credentials_source, dict):
-                if credentials_source.get('type') == 'service_account':
-                    creds = google_service_account.Credentials.from_service_account_info(
-                        credentials_source, scopes=self.scopes)
-                else:
-                    creds = OAuth2Credentials.from_authorized_user_info(credentials_source, self.scopes)
-            # 3. File Path check
-            elif isinstance(credentials_source, str) and os.path.exists(credentials_source):
-                import json
-                with open(credentials_source, 'r') as f:
-                    data = json.load(f)
-                if data.get('type') == 'service_account':
-                    creds = google_service_account.Credentials.from_service_account_file(
-                        credentials_source, scopes=self.scopes)
-                else:
-                    creds = OAuth2Credentials.from_authorized_user_file(credentials_source, self.scopes)
-            
-            if not creds:
-                raise ValueError("Could not determine credential type from source")
-
-            self.service = build('drive', 'v3', credentials=creds)
-            print("DEBUG: Drive Service Initialized!")
+            # Directly use the authorized user credentials
+            self.service = build('drive', 'v3', credentials=credentials)
+            print("DEBUG: Drive Service Initialized (User Identity)")
         except Exception as e:
             print(f"Warning: DriveService init failed: {e}")
             self.service = None
@@ -67,7 +39,7 @@ class DriveService:
                 supportsAllDrives=True
             ).execute()
             
-            # Make public so we don't need auth to view
+            # Make public so we don't need auth to view in front-end
             self.make_public(file['id'])
             
             return file
@@ -90,37 +62,16 @@ class DriveService:
         except Exception as e:
             print(f"Permission Error: {e}")
 
-    def transfer_ownership(self, file_id, email_address):
-        if not self.service: return
-        try:
-            user_permission = {
-                'type': 'user',
-                'role': 'owner',
-                'emailAddress': email_address
-            }
-            self.service.permissions().create(
-                fileId=file_id,
-                body=user_permission,
-                transferOwnership=True,
-                fields='id',
-            ).execute()
-        except Exception as e:
-            print(f"Ownership Transfer Error: {e}")
-
     def find_files_by_name(self, name_query, folder_id=None):
         """Search for files in Drive. Optional: Restrict to folder."""
         if not self.service: return []
         
         try:
-            # Prioritize exact match for stability
-            # If folder_id is provided, limit scope
             query_parts = [f"name = '{name_query}'", "trashed = false"]
-            
             if folder_id:
                 query_parts.append(f"'{folder_id}' in parents")
             
             query = " and ".join(query_parts)
-            
             results = self.service.files().list(
                 q=query,
                 pageSize=1,
@@ -128,18 +79,13 @@ class DriveService:
                 supportsAllDrives=True
             ).execute()
             
-            files = results.get('files', [])
-            if files: return files
-
-            # Fallback: Contains (only if no folder strictness or if exact failed?)
-            # For now, let's stick to exact match which is safer for "1.jpg"
-            return []
+            return results.get('files', [])
         except Exception as e:
             print(f"Search Error: {e}")
             return []
 
     def list_images_in_folder(self, folder_id):
-        """Lists all image files in a specific folder with pagination support."""
+        """Lists all image files in a specific folder."""
         if not self.service or not folder_id: return []
         try:
             query = f"'{folder_id}' in parents and trashed = false and mimeType contains 'image/'"
@@ -197,4 +143,3 @@ class DriveService:
             return about.get('user', {}).get('emailAddress', 'Unknown User')
         except:
             return "Unable to fetch identity"
-

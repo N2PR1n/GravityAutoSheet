@@ -336,7 +336,7 @@ def process_images_thread(user_id):
             if drive_link:
                 folder_info = f"\n📁 บันทึกรูปไปที่: {folder_display_name}"
             else:
-                folder_info = f"\n⚠️ บันทึกรูปไม่สำเร็จ\nสาเหตุ: {drive_error_msg[:100]}\nโปรดแชร์โฟลเดอร์ให้ Bot Service Account ด้วยนะคะ"
+                folder_info = f"\n⚠️ บันทึกรูปไม่สำเร็จ\nสาเหตุ: {drive_error_msg[:100]}\nโปรดตรวจสอบว่าโฟลเดอร์ถูกต้องและ Token ยังใช้งานได้อยู่นะคะ"
             
             summary = (
                 f"✅ บันทึกแล้ว! (No. {next_run_no})\n"
