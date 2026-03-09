@@ -229,12 +229,17 @@ def process_images_thread(user_id):
     try:
         cfg = ConfigService()
         ai_provider = cfg.get('AI_PROVIDER', 'openai').upper()
-        # We cannot reply immediately if we want to reply at the end (can only reply once per token)
-        # However, for UX, we might need a push message here, OR we just let the final reply handle everything.
-        # Since push messages are limited, we will omit the "processing" message and just reply with the final result.
+        
+        # Notify Start using Reply Token
+        messaging_api.reply_message(
+            ReplyMessageRequest(
+                replyToken=reply_token,
+                messages=[TextMessage(text=f"ได้รับ {len(image_ids)} รูปภาพ กำลังประมวลผล ({ai_provider}/v3)...")]
+            )
+        )
         print(f"DEBUG: Processing {len(image_ids)} images for user {user_id}")
     except Exception as e:
-        print(f"DEBUG: config status: {e}")
+        print(f"DEBUG: config status/reply error: {e}")
 
     final_messages = []
 
@@ -282,10 +287,10 @@ def process_images_thread(user_id):
         if sheet_service.check_duplicate(order_id):
              final_messages.append(TextMessage(text=f"⚠️ พบเลขออเดอร์ {order_id} ซ้ำในระบบแล้วค่ะ (ไม่บันทึก)"))
              
-             # Send the reply now since we are returning early
-             messaging_api.reply_message(
-                 ReplyMessageRequest(
-                      replyToken=reply_token,
+             # Send via push_message since replyToken was consumed
+             messaging_api.push_message(
+                 PushMessageRequest(
+                      to=user_id,
                       messages=final_messages
                  )
              )
@@ -315,28 +320,29 @@ def process_images_thread(user_id):
         print(f"DEBUG: Saving to Sheet: {order_id}")
         if sheet_service.append_data(data, next_run_no):
             # Success Summary
-            tracking_info = f"\n📦 Tracking: {data.get('tracking_number')}" if data.get('tracking_number') and data.get('tracking_number') != '-' else ""
+            tracking_info = f"\nTracking: {data.get('tracking_number')}" if data.get('tracking_number') and data.get('tracking_number') != '-' else ""
             
-            folder_info = f"\n📁 บันทึกรูปไปที่: {folder_display_name}" if drive_link else "\n⚠️ บันทึกรูปไม่สำเร็จ"
+            # Using the format requested by user
+            folder_info = f"\n📁 บันทึกรูปไปที่: {folder_display_name}" if drive_link else "\n⚠️ บันทึกรูปไม่สำเร็จ โปรดตรวจสอบว่าแชร์โฟลเดอร์ให้ Bot Service Account หรือยัง"
             
             summary = (
-                f"✅ บันทึกข้อมูลเรียบร้อยแล้วค่ะ! (ลำดับที่ {next_run_no})\n\n"
-                f"👤 ชื่อผู้รับ: {data.get('receiver_name', '-')}\n"
-                f"🏠 สถานที่: {data.get('location', '-')}\n"
-                f"🏪 ร้านค้า: {data.get('shop_name', '-')}\n"
-                f"💰 ยอดเงิน: {data.get('price', '-')}\n"
-                f"🪙 เหรียญ: {data.get('coins', '0')}\n"
-                f"🌐 Platform: {data.get('platform', '-')}\n"
-                f"🆔 Order ID: {data.get('order_id', '-')}"
+                f"✅ บันทึกแล้ว! (No. {next_run_no})\n"
+                f"ชื่อ: {data.get('receiver_name', '-')}\n"
+                f"ที่อยู่: {data.get('location', '-')}\n"
+                f"ร้าน: {data.get('shop_name', '-')}\n"
+                f"ยอด: {data.get('price', '-')}\n"
+                f"เหรียญ: {data.get('coins', '0')}\n"
+                f"Platform: {data.get('platform', '-')}\n"
+                f"Order: {data.get('order_id', '-')}"
                 f"{tracking_info}"
                 f"{folder_info}"
             )
             final_messages.append(TextMessage(text=summary))
             
-            # Send Final Reply
-            messaging_api.reply_message(
-                 ReplyMessageRequest(
-                      replyToken=reply_token,
+            # Send Final Result via Push Message
+            messaging_api.push_message(
+                 PushMessageRequest(
+                      to=user_id,
                       messages=final_messages
                  )
              )
@@ -351,9 +357,9 @@ def process_images_thread(user_id):
         error_msg = f"❌ เกิดข้อผิดพลาดในการประมวลผล:\n{str(e)}"
         final_messages.append(TextMessage(text=error_msg))
         try:
-            messaging_api.reply_message(
-                 ReplyMessageRequest(
-                      replyToken=reply_token,
+            messaging_api.push_message(
+                 PushMessageRequest(
+                      to=user_id,
                       messages=final_messages
                  )
              )

@@ -204,7 +204,7 @@ def get_orders():
             'Shop': 'Shop', 'shop': 'Shop', 'shop_name': 'Shop', 'ชื่อร้าน': 'Shop',
             'Status': 'Status', 'status': 'Status', 'สถานะ': 'Status',
             'Order ID': 'Order ID', 'order_id': 'Order ID', 'เลขออเดอร์': 'Order ID', 'เลขอเดอร์': 'Order ID',
-            'Image Link': 'Image Link', 'image_link': 'Image Link', 'Link รูป': 'Image Link',
+            'Image Link': 'Image Link', 'image_link': 'Image Link', 'Link รูป': 'Image Link', 'Link Ima.': 'Image Link',
             'Tracking Number': 'Tracking', 'tracking_number': 'Tracking', 'เลขพัสดุ': 'Tracking',
             'Platform': 'Platform', 'platform': 'Platform',
             'Coins': 'Coins', 'coins': 'Coins', 'เหรียญ': 'Coins',
