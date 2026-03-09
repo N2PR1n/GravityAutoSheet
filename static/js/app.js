@@ -136,7 +136,7 @@ function renderOrders(orders) {
     }
 
     const html = orders.map(order => {
-        const rawStatus = (order['Status'] || 'Pending').toLowerCase().trim();
+        const rawStatus = ((order['Status'] !== null && order['Status'] !== undefined) ? order['Status'] : 'Pending').toString().toLowerCase().trim();
         let statusClass = 'status-pending';
         let statusLabel = order['Status'] || 'Pending';
 
@@ -275,7 +275,7 @@ function filterOrders(query) {
 
         // 2. Status Filter
         if (currentFilterStatus !== 'all') {
-            const rawStatus = (o['Status'] || 'pending').toLowerCase().trim();
+            const rawStatus = ((o['Status'] !== null && o['Status'] !== undefined) ? o['Status'] : 'pending').toString().toLowerCase().trim();
             const statusLabel = rawStatus; // Simplified for check
 
             let statusMatch = false;
@@ -291,7 +291,7 @@ function filterOrders(query) {
 
         // 3. Platform Filter
         if (selectedPlatforms.length > 0) {
-            const orderPlatform = (o['Platform'] || '').toLowerCase();
+            const orderPlatform = ((o['Platform'] !== null && o['Platform'] !== undefined) ? o['Platform'] : '').toString().toLowerCase();
             const matchesPlatform = selectedPlatforms.some(p => orderPlatform.includes(p));
             if (!matchesPlatform) return false;
         }

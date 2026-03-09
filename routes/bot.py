@@ -229,14 +229,14 @@ def process_images_thread(user_id):
     try:
         cfg = ConfigService()
         ai_provider = cfg.get('AI_PROVIDER', 'openai').upper()
-        messaging_api.reply_message(
-            ReplyMessageRequest(
-                replyToken=reply_token,
-                messages=[TextMessage(text=f"📦 ได้รับ {len(image_ids)} รูปภาพ กำลังเริ่มประมวลผล... ({ai_provider})")]
-            )
-        )
+        # We cannot reply immediately if we want to reply at the end (can only reply once per token)
+        # However, for UX, we might need a push message here, OR we just let the final reply handle everything.
+        # Since push messages are limited, we will omit the "processing" message and just reply with the final result.
+        print(f"DEBUG: Processing {len(image_ids)} images for user {user_id}")
     except Exception as e:
-        print(f"DEBUG: Reply token status: {e}")
+        print(f"DEBUG: config status: {e}")
+
+    final_messages = []
 
     try:
         # 1. Initialize Services inside try-block
@@ -280,10 +280,13 @@ def process_images_thread(user_id):
             raise Exception("ไม่พบเลขออเดอร์ในรูปภาพ")
             
         if sheet_service.check_duplicate(order_id):
-             messaging_api.push_message(
-                 PushMessageRequest(
-                      to=user_id,
-                      messages=[TextMessage(text=f"⚠️ พบเลขออเดอร์ {order_id} ซ้ำในระบบแล้วค่ะ (ไม่บันทึก)")]
+             final_messages.append(TextMessage(text=f"⚠️ พบเลขออเดอร์ {order_id} ซ้ำในระบบแล้วค่ะ (ไม่บันทึก)"))
+             
+             # Send the reply now since we are returning early
+             messaging_api.reply_message(
+                 ReplyMessageRequest(
+                      replyToken=reply_token,
+                      messages=final_messages
                  )
              )
              return
@@ -328,10 +331,13 @@ def process_images_thread(user_id):
                 f"{tracking_info}"
                 f"{folder_info}"
             )
-            messaging_api.push_message(
-                 PushMessageRequest(
-                      to=user_id,
-                      messages=[TextMessage(text=summary)]
+            final_messages.append(TextMessage(text=summary))
+            
+            # Send Final Reply
+            messaging_api.reply_message(
+                 ReplyMessageRequest(
+                      replyToken=reply_token,
+                      messages=final_messages
                  )
              )
         else:
@@ -343,15 +349,16 @@ def process_images_thread(user_id):
         print(f"❌ CRITICAL ERROR in process_images_thread: {e}\n{error_detail}")
         
         error_msg = f"❌ เกิดข้อผิดพลาดในการประมวลผล:\n{str(e)}"
+        final_messages.append(TextMessage(text=error_msg))
         try:
-            messaging_api.push_message(
-                 PushMessageRequest(
-                      to=user_id,
-                      messages=[TextMessage(text=error_msg)]
+            messaging_api.reply_message(
+                 ReplyMessageRequest(
+                      replyToken=reply_token,
+                      messages=final_messages
                  )
              )
-        except Exception as push_err:
-            print(f"DEBUG: Failed to send error message: {push_err}")
+        except Exception as reply_err:
+            print(f"DEBUG: Failed to send error message via reply: {reply_err}")
     finally:
         # Cleanup temp files
         try:

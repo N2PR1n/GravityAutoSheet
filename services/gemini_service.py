@@ -1,19 +1,19 @@
 import json
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from PIL import Image
 from .ai_base_service import AIBaseService
 
 class GeminiService(AIBaseService):
     def __init__(self, api_key):
         super().__init__(api_key)
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel('gemini-flash-latest')
-        # Debug: confirm model name
-        print(f"DEBUG: Gemini initialized with model: gemini-flash-latest")
+        self.client = genai.Client(api_key=api_key)
+        self.model = 'gemini-2.5-flash'
+        print(f"DEBUG: Gemini initialized with new SDK model: {self.model}")
 
     def extract_data_from_image(self, image_path):
         """
-        Sends image to Gemini 1.5 Flash and extracts data as JSON.
+        Sends image to Gemini and extracts data as JSON.
         """
         prompt = self.get_prompt()
         
@@ -22,8 +22,10 @@ class GeminiService(AIBaseService):
             img = Image.open(image_path)
             
             # Call Gemini
-            # Gemini 1.5 Flash supports image objects directly
-            response = self.model.generate_content([prompt, img])
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=[prompt, img]
+            )
             
             text = response.text.strip()
             
@@ -39,5 +41,5 @@ class GeminiService(AIBaseService):
             return data
             
         except Exception as e:
-            print(f"Error calling Gemini: {e}")
+            print(f"Error calling Gemini via new SDK: {e}")
             return None
