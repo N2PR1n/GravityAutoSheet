@@ -240,11 +240,12 @@ def process_images_thread(user_id):
 
     try:
         # 1. Initialize Services inside try-block
-        print("DEBUG: Initializing services...")
+        print("DEBUG: [1] Initializing services...", flush=True)
         image_service, drive_service, ai_service, sheet_service, _ = get_services()
+        print("DEBUG: [2] Services initialized successfully", flush=True)
         
         # 2. Download Images
-        print(f"DEBUG: Downloading {len(image_ids)} images...")
+        print(f"DEBUG: [3] Downloading {len(image_ids)} images...", flush=True)
         headers = {'Authorization': f'Bearer {LINE_CHANNEL_ACCESS_TOKEN}'}
         downloaded_paths = []
         for msg_id in image_ids:
@@ -254,23 +255,24 @@ def process_images_thread(user_id):
         
         if not downloaded_paths:
             raise Exception("ดาวน์โหลดรูปภาพไม่สำเร็จ")
+        print(f"DEBUG: [4] Downloaded {len(downloaded_paths)} images", flush=True)
 
         # 3. Stitch or Select Image
         final_image_path = downloaded_paths[0]
         if len(downloaded_paths) >= 2:
-            print(f"DEBUG: Stitching {len(downloaded_paths)} images...")
-            # Use unique name for stitched image
+            print(f"DEBUG: [5] Stitching {len(downloaded_paths)} images...", flush=True)
             final_image_path = os.path.join("temp_images", f"stitched_{int(time.time())}_{user_id[:5]}.jpg")
-            # Always ensure directory exists
             os.makedirs("temp_images", exist_ok=True)
             image_service.stitch_images(downloaded_paths[0], downloaded_paths[1], final_image_path)
+            print("DEBUG: [6] Stitching complete", flush=True)
             
         # 4. AI Extraction
-        print(f"DEBUG: Extracting data with {ai_service.__class__.__name__}...")
+        print(f"DEBUG: [7] Extracting data with {ai_service.__class__.__name__}...", flush=True)
         data = ai_service.extract_data_from_image(final_image_path)
+        print(f"DEBUG: [8] AI Extraction complete. Data: {data}", flush=True)
         
         if not data:
-             raise Exception("AI ไม่สามารถสกัดข้อมูลจากรูปภาพได้ (อาจเป็นเพราะภาพไม่ชัดหรือรูปแบบไม่ถูกต้อง)")
+             raise Exception("AI ไม่สามารถสกัดข้อมูลจากรูปภาพได้")
 
         # 5. Duplicate Check
         order_id = data.get('order_id')
