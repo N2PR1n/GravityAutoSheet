@@ -103,10 +103,10 @@ h6 {
 }
 
 .status-pending {
-    background-color: #fff9c4;
-    color: #000000 !important;
-    /* Black Text */
-    border: 1px solid #fff176;
+    background-color: #e9ecef;
+    color: #495057 !important;
+    /* Grey Text */
+    border: 1px solid #ced4da;
 }
 
 .status-checked {

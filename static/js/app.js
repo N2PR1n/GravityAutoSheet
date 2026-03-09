@@ -221,6 +221,7 @@ function renderOrders(orders) {
                         </div>
                         <div class="col-8">
                             <div class="detail-row"><b>👤 Name:</b> ${order['Name'] || '-'}</div>
+                            <div class="detail-row"><b>🏪 Shop:</b> ${order['Shop'] || '-'}</div>
                             <div class="detail-row"><b>📍 Loc:</b> ${order['Location'] || '-'}</div>
                             <div class="detail-row"><b>📦 Item:</b> ${order['Item'] || '-'}</div>
                             <div class="detail-row text-truncate"><b>💰 Price:</b> <b style="color: #ff4500; font-size: 1.05em;">${order['Price']}</b> | <b style="color: #daa520;">🪙 ${order['Coins']}</b></div>
@@ -261,12 +262,14 @@ function filterOrders(query) {
         const runNo = (o['Run No'] || '').toString().toLowerCase();
         const track = (o['Tracking'] || '').toString().toLowerCase();
         const item = (o['Item'] || '').toString().toLowerCase();
+        const shop = (o['Shop'] || '').toString().toLowerCase();
 
         const matchesText = name.includes(query) ||
             oid.includes(query) ||
             runNo.includes(query) ||
             track.includes(query) ||
-            item.includes(query);
+            item.includes(query) ||
+            shop.includes(query);
 
         if (!matchesText) return false;
 
