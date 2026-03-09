@@ -16,12 +16,14 @@ def get_google_credentials():
         creds_env = 'token.json'
     
     # Check if it's a JSON string instead of a path
-    if creds_env.strip().startswith('{'):
+    clean_creds = creds_env.strip()
+    if clean_creds.startswith('{') and clean_creds.endswith('}'):
         try:
             import json
             from google.oauth2 import service_account
-            creds_data = json.loads(creds_env)
+            creds_data = json.loads(clean_creds)
             if creds_data.get('type') == 'service_account':
+                print("DEBUG: Using Service Account from environment JSON")
                 return service_account.Credentials.from_service_account_info(creds_data, scopes=SCOPES)
         except Exception as e:
             print(f"Error parsing GOOGLE_APPLICATION_CREDENTIALS as JSON: {e}")
