@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import re
 import json
 import socket
+print("DEBUG: app.py is being imported")
 
 
 
@@ -33,8 +34,10 @@ from routes.bot import bot_bp
 
 # --- CONFIG & INIT ---
 app = Flask(__name__)
+print("DEBUG: Registering bot blueprint...")
 try:
     app.register_blueprint(bot_bp)
+    print("DEBUG: Blueprint registered successfully")
 except Exception as e:
     print(f"❌ Error registering blueprint: {e}")
 

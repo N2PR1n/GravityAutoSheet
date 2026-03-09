@@ -50,10 +50,16 @@ def get_credentials():
     return auth_service.get_google_credentials()
 
 # LINE SDK
+print(f"DEBUG: Initializing LINE SDK (Token first 10 chars: {str(LINE_CHANNEL_ACCESS_TOKEN)[:10]})")
+if not LINE_CHANNEL_ACCESS_TOKEN or not LINE_CHANNEL_SECRET:
+    print("WARNING: LINE Credentials missing from environment variables!")
+
 configuration = Configuration(access_token=LINE_CHANNEL_ACCESS_TOKEN)
 api_client = ApiClient(configuration)
 messaging_api = MessagingApi(api_client)
 handler = WebhookHandler(LINE_CHANNEL_SECRET)
+print("DEBUG: LINE SDK initialized successfully")
+
 
 # Config Service Singleton
 _config_service_instance = None
