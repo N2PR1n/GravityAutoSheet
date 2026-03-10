@@ -84,6 +84,35 @@ class AIBaseService:
         """
         raise NotImplementedError("Subclasses must implement extract_data_from_image")
 
+    def extract_with_retry(self, image_path, max_retries=1, delay=2):
+        """
+        Wrapper ที่เพิ่ม retry logic ให้ extract_data_from_image
+        - ถ้าครั้งแรก fail หรือ return None → รอ delay วิ แล้ว retry อีกครั้ง
+        - ถ้า retry แล้วยัง fail → return None
+        """
+        import time
+
+        for attempt in range(max_retries + 1):
+            try:
+                print(f"DEBUG: AI extract attempt {attempt + 1}/{max_retries + 1}")
+                result = self.extract_data_from_image(image_path)
+                if result is not None:
+                    if attempt > 0:
+                        print(f"DEBUG: AI extract succeeded on retry attempt {attempt + 1}")
+                    return result
+                else:
+                    print(f"DEBUG: AI returned None on attempt {attempt + 1}")
+            except Exception as e:
+                print(f"DEBUG: AI extract error on attempt {attempt + 1}: {e}")
+
+            if attempt < max_retries:
+                print(f"DEBUG: Retrying in {delay}s...")
+                time.sleep(delay)
+
+        print("DEBUG: All AI extract attempts failed. Returning None.")
+        return None
+
+
     def get_prompt(self):
         """Centralized prompt to ensure consistency across models."""
         return """
@@ -123,6 +152,8 @@ class AIBaseService:
       - **Shopee**: ให้หาบรรทัดคำว่า **"Shopee Coins"** (เช่น "ใช้ 2 Shopee Coins -฿2")
       - **Lazada**: ให้หาบรรทัดคำว่า **"เหรียญ"** ที่เป็นส่วนลดติดลบ (เช่น "เหรียญ -฿26.00")
       - **Amaze**: ให้หาบรรทัดคำว่า **"ใช้พอยท์แทนเงินสด"** เป็นหลักเท่านั้น (เช่น "ใช้พอยท์แทนเงินสด - ฿1,200.00")
+        - **🚨 กฎเหล็ก Amaze ExtraPoint**: ตัวเลขที่ตามหลังไอคอน 🔥 หรือคำว่า "ExtraPoint" หรือ "+702" หรือ "XP" หรือ "อเมซพอยท์ที่จะได้รับ" **ห้ามนำมาใส่ coin เด็ดขาด** — นั่นคือแต้มสะสมที่จะได้รับในอนาคต ไม่ใช่ส่วนลด
+        - **🚨 กฎเหล็กเพิ่มเติม**: ห้ามนำตัวเลขพอยท์ที่แสดงเป็น "X,XXX พอยท์" มาใส่ในช่อง coins เพราะนั่นคือ ExtraPoint ไม่ใช่การแลกพอยท์เป็นเงิน
       - **กฎเหล็ก**: ห้ามเอา "คูปองอเมซ", "คูปองจัดส่ง", "ส่วนลดร้านค้า" มาใส่เด็ดขาด และห้ามดึง "อเมซพอยท์ ที่จะได้รับ" หรือ "เหรียญที่จะได้รับ" มาใส่ (นั่นคือแต้มสะสม ไม่ใช่ส่วนลด)
       - **ถ้าไม่มีส่วนลดตามคำหลัก 3 ข้อด้านบน**: ให้ตอบ 0.00 เสมอ
     - date: รูปแบบ **"DD/MM"** เท่านั้น 

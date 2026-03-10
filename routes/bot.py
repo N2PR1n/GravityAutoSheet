@@ -170,7 +170,7 @@ def handle_text_message(event):
         except Exception as e:
             print(f"Text Handle Error: {e}")
 
-    elif text in ["status", "เช็คชีท", "ชีทไหน", "เช็ค"]:
+    elif text in ["status", "เช็กชีท", "ชีทไหน", "เช็ก"]:
         try:
             # Lazy Load Services
             _, drive_service, _, _, _ = get_services()
@@ -273,9 +273,9 @@ def process_images_thread(user_id):
             image_service.stitch_images(downloaded_paths[0], downloaded_paths[1], final_image_path)
             print("DEBUG: [6] Stitching complete", flush=True)
             
-        # 4. AI Extraction
+        # 4. AI Extraction (with auto-retry if failed)
         print(f"DEBUG: [7] Extracting data with {ai_service.__class__.__name__}...", flush=True)
-        data = ai_service.extract_data_from_image(final_image_path)
+        data = ai_service.extract_with_retry(final_image_path)
         print(f"DEBUG: [8] AI Extraction complete. Data: {data}", flush=True)
         
         if not data:
