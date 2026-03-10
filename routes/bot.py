@@ -224,8 +224,8 @@ def handle_image_message(event):
         if user_states[user_id]['timer']:
             user_states[user_id]['timer'].cancel()
         
-        # Start new timer (2.0s)
-        timer = threading.Timer(2.0, process_images_thread, args=[user_id])
+        # Start new timer (1.0s) — รอ batch รูปหลายรูป แต่ให้สั้นพอเพื่อ process ได้ทันใน 30 วินาที
+        timer = threading.Timer(1.0, process_images_thread, args=[user_id])
         user_states[user_id]['timer'] = timer
         timer.start()
 
@@ -239,11 +239,9 @@ def process_images_thread(user_id):
     image_ids = state['images']
     reply_token = state['reply_token']
 
-    # Initial Progress Notification
-    # We cannot reply immediately if we want to reply at the end (can only reply once per token)
-    # Since push messages quota is exhausted (429 Too Many Requests), we must omit the "processing" message
-    # and use the reply_token ONLY for the final result.
-    print(f"DEBUG: Processing {len(image_ids)} images for user {user_id}")
+    # ไม่ส่งข้อความ "กำลังประมวลผล" เพราะ reply token ใช้ได้แค่ครั้งเดียว
+    # เก็บ token ไว้ใช้กับผลลัพธ์สุดท้าย (reply_message = ฟรี ไม่เสีย quota)
+    print(f"DEBUG: Processing {len(image_ids)} image(s) for user {user_id}")
 
     final_messages = []
 
