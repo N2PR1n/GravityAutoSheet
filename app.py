@@ -82,6 +82,13 @@ def get_services():
     try:
         g.sheet_service = SheetService(creds_source, sheet_id, sheet_name)
         g.drive_service = DriveService(creds_source)
+
+        # Sync folder mapping from Google Sheets (persistent across deploys)
+        try:
+            cfg.sync_from_gsheets(g.sheet_service.client, sheet_id)
+        except Exception as sync_err:
+            print(f"DEBUG: sync_from_gsheets skipped: {sync_err}")
+
         return g.sheet_service, g.drive_service
     except Exception as e:
         print(f"❌ Service Init Failed: {e}")
@@ -388,7 +395,18 @@ def update_config():
             sheet_name = cfg.get('ACTIVE_SHEET_NAME', os.getenv("GOOGLE_SHEET_NAME"))
         
         cfg.set_folder_for_sheet(sheet_name, folder_id)
-        # Also ensure it's globally updated if it's the current sheet
+
+        # Persist to Google Sheets so it survives Render deploys
+        import threading
+        def do_sync():
+            try:
+                sheet_service, _ = get_services()
+                if sheet_service and sheet_service.client:
+                    cfg.sync_to_gsheets(sheet_service.client, os.getenv('GOOGLE_SHEET_ID'))
+            except Exception as e:
+                print(f"DEBUG: sync_to_gsheets background error: {e}")
+        threading.Thread(target=do_sync, daemon=True).start()
+
         return jsonify({'success': True})
     return jsonify({'error': 'Invalid data'}), 400
 
