@@ -43,30 +43,11 @@ class SheetService:
             self.sheet = None
 
     def get_worksheets(self):
-        """Returns a list of all visible worksheet titles."""
-        if not self.client or not self.spreadsheet: return []
+        """Returns a list of all worksheet titles (Showing all as requested)."""
+        if not self.client or not self.spreadsheet:
+            return [self.sheet.title] if self.sheet else []
         try:
-            # Safer way to check hidden status (handles cases where attr is missing)
-            visible_sheets = []
-            for ws in self.spreadsheet.worksheets():
-                # Check properties or attribute
-                is_hidden = False
-                try:
-                    # gspread 6.0+ uses .hidden attribute
-                    is_hidden = getattr(ws, 'hidden', False)
-                except:
-                    # Fallback for older versions or unexpected structures
-                    is_hidden = False
-                
-                if not is_hidden:
-                    visible_sheets.append(ws.title)
-            
-            # If for some reason we filtered everything out but are connected, 
-            # at least return the current sheet name
-            if not visible_sheets and self.sheet:
-                visible_sheets = [self.sheet.title]
-                
-            return visible_sheets
+            return [ws.title for ws in self.spreadsheet.worksheets()]
         except Exception as e:
             print(f"Error getting worksheets: {e}")
             return [self.sheet.title] if self.sheet else []

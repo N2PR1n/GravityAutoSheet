@@ -45,30 +45,26 @@ def get_google_credentials():
                 creds = None
         
         if not creds:
-            # Look for client_secret.json in the same directory as token_path or root
-            secret_dir = os.path.dirname(token_path) if (token_path and os.path.dirname(token_path)) else '.'
-            client_secret_path = os.path.join(secret_dir, 'client_secret.json')
-            
-            if not os.path.exists(client_secret_path) and not os.path.exists('client_secret.json'):
-                 # On Render, we can't do interactive auth
-                 if os.environ.get('RENDER'):
-                     raise Exception("❌ [AUTH ERROR] token.json is missing or expired on Render. Please update it in the Dashboard.")
+             # On Render, we can't do interactive auth
+             if os.environ.get('RENDER'):
+                 raise Exception("❌ [AUTH ERROR] token.json is missing or expired on Render. Please update it in the Dashboard.")
+             else:
+                 # Local fallback (need client_secret.json for this part)
+                 client_secret_path = 'client_secret.json'
+                 if os.path.exists(client_secret_path):
+                    from google_auth_oauthlib.flow import InstalledAppFlow
+                    print("INFO: Token missing or invalid. Starting browser authentication...")
+                    flow = InstalledAppFlow.from_client_secrets_file(client_secret_path, SCOPES)
+                    creds = flow.run_local_server(port=0)
+                    # Save the new token
+                    try:
+                        save_path = token_path if token_path else 'token.json'
+                        with open(save_path, 'w') as token:
+                            token.write(creds.to_json())
+                        print(f"INFO: Saved new token to {save_path}")
+                    except:
+                        pass
                  else:
-                     raise FileNotFoundError("❌ client_secret.json not found. Place it in the root to perform initial login.")
-
-            # If local and missing token, trigger browser login
-            print("INFO: Token missing or invalid. Starting browser authentication...")
-            actual_secret = client_secret_path if os.path.exists(client_secret_path) else 'client_secret.json'
-            flow = InstalledAppFlow.from_client_secrets_file(actual_secret, SCOPES)
-            creds = flow.run_local_server(port=0)
-            
-            # Save the new token (if writable)
-            try:
-                save_path = token_path if token_path else 'token.json'
-                with open(save_path, 'w') as token:
-                    token.write(creds.to_json())
-                print(f"INFO: Saved new token to {save_path}")
-            except:
-                print("WARNING: Could not save new token. Using only for this session.")
+                    raise FileNotFoundError("❌ client_secret.json not found locally. Place it in the root to perform initial login.")
 
     return creds
