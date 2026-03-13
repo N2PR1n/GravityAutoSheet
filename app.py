@@ -78,13 +78,18 @@ def get_services():
     try:
         creds_source = auth_service.get_google_credentials()
     except Exception as e:
-        print(f"❌ Auth Error: {e}")
+        g.last_error = f"Auth Error: {str(e)}"
+        print(f"❌ {g.last_error}")
         return None, None
     sheet_id = os.getenv('GOOGLE_SHEET_ID')
 
     try:
         g.sheet_service = SheetService(creds_source, sheet_id, sheet_name)
         g.drive_service = DriveService(creds_source)
+
+        if not g.sheet_service.sheet:
+            g.last_error = "SheetService failed to connect to any worksheet."
+            return None, None
 
         # Sync folder mapping from Google Sheets (persistent across deploys)
         try:
@@ -94,7 +99,8 @@ def get_services():
 
         return g.sheet_service, g.drive_service
     except Exception as e:
-        print(f"❌ Service Init Failed: {e}")
+        g.last_error = f"Service Init Failed: {str(e)}"
+        print(f"❌ {g.last_error}")
         import traceback
         traceback.print_exc()
         return None, None
@@ -220,7 +226,8 @@ def get_orders():
 
     sheet_service, _ = get_services()
     if not sheet_service:
-        return jsonify({'error': 'Services not initialized'}), 500
+        error_detail = getattr(g, 'last_error', 'Unknown Initialization Error')
+        return jsonify({'error': 'Services not initialized', 'detail': error_detail}), 500
 
     try:
         data = sheet_service.get_all_data()
@@ -363,7 +370,8 @@ def get_sheets():
     try:
         sheet_service, _ = get_services()
         if not sheet_service:
-            return jsonify({'error': 'Service unavailable (Init Failed)'}), 500
+            error_detail = getattr(g, 'last_error', 'Unknown Initialization Error')
+            return jsonify({'error': 'Service unavailable (Init Failed)', 'detail': error_detail}), 500
         
         sheets = sheet_service.get_worksheets()
         current = sheet_service.sheet.title if sheet_service and sheet_service.sheet else ""

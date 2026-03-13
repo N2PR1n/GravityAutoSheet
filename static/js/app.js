@@ -47,6 +47,10 @@ async function fetchOrders() {
         const res = await fetch('/api/orders');
         const data = await res.json();
 
+        if (data.error) {
+            throw new Error(data.detail || data.error);
+        }
+
         allOrders = data;
         applyFilters();
 
@@ -55,7 +59,12 @@ async function fetchOrders() {
 
     } catch (e) {
         console.error(e);
-        listEl.innerHTML = `<div class="col-12 text-center text-danger">Failed to load orders. <button class="btn btn-sm btn-outline-danger" onclick="fetchOrders()">Retry</button></div>`;
+        listEl.innerHTML = `
+            <div class="col-12 text-center text-danger border border-danger rounded p-3 bg-danger-subtle">
+                <h5 class="mb-1">Failed to load orders</h5>
+                <p class="small mb-2">${e.message}</p>
+                <button class="btn btn-sm btn-outline-danger" onclick="fetchOrders()">Retry</button>
+            </div>`;
     }
 }
 
@@ -505,6 +514,9 @@ async function fetchSheets(isFirstLoad = false) {
                 `;
                 listEl.appendChild(li);
             });
+        } else if (data.error) {
+           document.getElementById('current-sheet-name').innerText = "Error Loading";
+           console.error("Sheet Error:", data.detail);
         }
     } catch (e) {
         console.error("Error fetching sheets:", e);
