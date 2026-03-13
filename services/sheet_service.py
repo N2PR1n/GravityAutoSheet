@@ -43,22 +43,29 @@ class SheetService:
             self.sheet = None
 
     def get_worksheets(self):
-        """Returns a list of all worksheet titles."""
+        """Returns a list of all visible worksheet titles."""
         if not self.client or not self.spreadsheet: return []
         try:
-            # Use cached spreadsheet object
-            return [ws.title for ws in self.spreadsheet.worksheets()]
+            # Filter worksheets where hidden is False
+            return [ws.title for ws in self.spreadsheet.worksheets() if not ws.hidden]
         except Exception as e:
             print(f"Error getting worksheets: {e}")
             return []
 
     def set_worksheet(self, sheet_name):
-        """Switches the active worksheet."""
+        """Switches the active worksheet and clears cache."""
         if not self.client or not self.sheet_id: return False
         try:
             spreadsheet = self.client.open_by_key(self.sheet_id)
             self.sheet = spreadsheet.worksheet(sheet_name)
-            print(f"DEBUG: Switched to Sheet: '{self.sheet.title}'")
+            
+            # Clear cache for the new worksheet
+            self.all_rows_raw = None
+            self.all_data_cache = None
+            self.row_index_map = {}
+            self.last_fetch_time = 0
+            
+            print(f"DEBUG: Switched to Sheet: '{self.sheet.title}' and cleared cache")
             return True
         except Exception as e:
             print(f"Error switching worksheet: {e}")

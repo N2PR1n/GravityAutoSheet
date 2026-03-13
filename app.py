@@ -206,11 +206,16 @@ def get_orders():
     import time
     now = time.time()
     
-    # Check Cache
-    if (order_cache['data'] is not None and 
-        order_cache['sheet_name'] == current_sheet and 
-        (now - order_cache['timestamp']) < CACHE_TTL):
-        print(f"DEBUG: Returning cached orders for {current_sheet}")
+    # Force reload if data is empty (likely initial load or error)
+    should_refresh = (
+        order_cache['data'] is None or 
+        len(order_cache['data']) == 0 or
+        order_cache['sheet_name'] != current_sheet or 
+        (now - order_cache['timestamp']) > CACHE_TTL
+    )
+
+    if not should_refresh:
+        print(f"DEBUG: Returning cached orders for {current_sheet} ({len(order_cache['data'])} records)")
         return jsonify(order_cache['data'])
 
     sheet_service, _ = get_services()
@@ -219,6 +224,7 @@ def get_orders():
 
     try:
         data = sheet_service.get_all_data()
+        print(f"DEBUG: Fetched {len(data) if data else 0} records from sheet_service")
         if not data:
             return jsonify([])
         
