@@ -14,6 +14,7 @@ class SheetService:
         self.row_index_map = {} # Cache for Order ID -> Row Number
         self.status_col = None  # Cache for Status Column Index
         self.all_data_cache = None
+        self.all_rows_raw = None # Raw list of lists
         self.last_fetch_time = 0
         try:
             # We now exclusively expect Credentials from User Authentication
@@ -63,43 +64,37 @@ class SheetService:
             print(f"Error switching worksheet: {e}")
             return False
 
-    def check_duplicate(self, order_id):
-        """Checks if order_id already exists using local map or API fallback."""
-        if not self.sheet or not order_id: return False
-        
-        order_id_str = str(order_id)
-        # Use local row map if available (populated by get_all_data)
-        if self.row_index_map:
-            return order_id_str in self.row_index_map
-            
-        try:
-            # Fallback to API if map is empty
-            order_ids = self.sheet.col_values(12)  # Column L = 12
-            return order_id_str in order_ids
-        except Exception as e:
-            print(f"Warning: Duplicate check failed: {e}")
-            return False
+    def _ensure_data_loaded(self, force=False):
+        """Ensures that sheet data is loaded into memory. Returns raw rows."""
+        import time
+        now = time.time()
+        # Cache for 30 seconds to stay fresh but reduce calls
+        if not force and self.all_rows_raw and (now - self.last_fetch_time < 30):
+            return self.all_rows_raw
 
-    def get_all_data(self):
-        """Fetches all records from the sheet, handling duplicate or empty headers."""
         if not self.sheet: return []
+        
         try:
-            # Use get_values() to get raw data
-            rows = self.sheet.get_values()
+            print(f"DEBUG: Fetching all values from Sheet '{self.sheet.title}' for optimization...")
+            rows = self.sheet.get_all_values()
             if not rows:
+                self.all_rows_raw = []
+                self.all_data_cache = []
+                self.row_index_map = {}
                 return []
+
+            self.all_rows_raw = rows
+            self.last_fetch_time = now
             
+            # Re-process cache and index map
             headers = rows[0]
             data_rows = rows[1:]
             
-            # Sanitize headers to handle duplicates and empties
             clean_headers = []
             header_counts = {}
             for i, h in enumerate(headers):
                 h = str(h).strip()
-                if not h:
-                    h = f"unnamed_{i}"
-                
+                if not h: h = f"unnamed_{i}"
                 if h in header_counts:
                     header_counts[h] += 1
                     clean_headers.append(f"{h}_{header_counts[h]}")
@@ -107,29 +102,34 @@ class SheetService:
                     header_counts[h] = 0
                     clean_headers.append(h)
             
-            # Convert to list of dicts
             records = []
             self.row_index_map = {}
             for i, row in enumerate(data_rows):
-                # Pad row with empty strings if it's shorter than headers
                 row_extended = row + [""] * (len(clean_headers) - len(row))
                 record = dict(zip(clean_headers, row_extended))
                 records.append(record)
                 
-                # Build Row Map (Index starts at 1, Header is row 1, Data is row 2+)
+                # Column L (Order ID) is index 11
                 order_id = str(record.get('Order ID') or record.get('order_id') or record.get('เลขออเดอร์') or "")
                 if order_id:
                     self.row_index_map[order_id] = i + 2
-                
+            
             self.all_data_cache = records
-            import time
-            self.last_fetch_time = time.time()
-            return records
+            return self.all_rows_raw
         except Exception as e:
-            print(f"Error fetching data: {e}")
-            import traceback
-            traceback.print_exc()
-            return []
+            print(f"Error in _ensure_data_loaded: {e}")
+            return self.all_rows_raw or []
+
+    def check_duplicate(self, order_id):
+        """Checks if order_id already exists using local map."""
+        if not order_id: return False
+        self._ensure_data_loaded()
+        return str(order_id) in self.row_index_map
+
+    def get_all_data(self):
+        """Returns the dictionary-style records from memory cache."""
+        self._ensure_data_loaded()
+        return self.all_data_cache or []
 
     def get_image_links(self):
         """Fetches Column A formulas to extract real links."""
@@ -142,33 +142,17 @@ class SheetService:
             return []
 
     def get_next_run_no(self):
-        """Calculates next Run No. by finding the first missing integer starting from 1."""
-        if not self.sheet: return 1
-        
-        import time
+        """Calculates next Run No. from memory cache."""
+        self._ensure_data_loaded()
         run_nos_set = set()
+        for r in (self.all_data_cache or []):
+            val = r.get('Run No') or r.get('run_no') or r.get('ลำดับ') or r.get('Run No.')
+            if val and str(val).isdigit():
+                run_nos_set.add(int(val))
         
-        # Try to use cache if it's fresh (< 60s)
-        if self.all_data_cache and (time.time() - self.last_fetch_time < 60):
-            for r in self.all_data_cache:
-                val = r.get('Run No') or r.get('run_no') or r.get('ลำดับ') or r.get('Run No.')
-                if val and str(val).isdigit():
-                    run_nos_set.add(int(val))
-        else:
-            try:
-                # Column D is index 4
-                col_values = self.sheet.col_values(4) 
-                for val in col_values:
-                    if str(val).isdigit():
-                        run_nos_set.add(int(val))
-            except Exception as e:
-                print(f"Error getting run nos from API: {e}")
-        
-        # Find first missing number starting from 1
         next_no = 1
         while next_no in run_nos_set:
             next_no += 1
-            
         return next_no
 
     def append_data(self, data_dict, run_no=None):
@@ -229,22 +213,14 @@ class SheetService:
         # O: Status (New Default: Pending)
         row[14] = "Pending"
 
-        # NEW LOGIC: Find FIRST EMPTY ROW (Gap Filling)
-        # Column D (index 4) is 'Run No'. If it's empty, we fill that row.
+        # OPTIMIZED: Use cached all_rows_raw to find gap
         target_row_idx = None
-        try:
-            # We already have data in cache or can fetch it
-            all_rows = self.sheet.get_values()
-            # Start looking from row 2 (index 1)
-            for i in range(1, len(all_rows)):
-                row_data = all_rows[i]
-                # If row is shorter than 4 columns or Column D (index 3) is empty
-                if len(row_data) < 4 or not str(row_data[3]).strip():
-                    target_row_idx = i + 1 # gspread is 1-indexed
-                    print(f"DEBUG: Found empty gap at row {target_row_idx}")
-                    break
-        except Exception as e:
-            print(f"Error searching for gap: {e}")
+        all_rows = self._ensure_data_loaded()
+        for i in range(1, len(all_rows)):
+            row_data = all_rows[i]
+            if len(row_data) < 4 or not str(row_data[3]).strip():
+                target_row_idx = i + 1
+                break
 
         # IMPORTANT: Use value_input_option='USER_ENTERED' to parse formulas
         try:
@@ -276,22 +252,13 @@ class SheetService:
             self.get_all_data()
             
         row_idx = self.row_index_map.get(order_id_str)
-        if not row_idx:
-            # Final fallback: search API
-            try:
-                cell = self.sheet.find(order_id_str)
-                if cell:
-                    row_idx = cell.row
-                else:
-                    return None, None
-            except:
-                return None, None
+        if not row_idx: return None, None
 
         try:
-            row_data = self.sheet.row_values(row_idx)
+            row_data = self.all_rows_raw[row_idx - 1]
             return row_idx, row_data
         except Exception as e:
-            print(f"Error fetching existing row: {e}")
+            print(f"Error fetching existing row from cache: {e}")
             return row_idx, None
 
     def update_existing_data(self, row_idx, data_dict, run_no):
@@ -311,9 +278,8 @@ class SheetService:
                 return str(val)
 
         try:
-            # Construct update list for Column A-M (1-13)
-            # Fetch current row to preserve some columns if needed
-            current_row = self.sheet.row_values(row_idx)
+            # Fetch current row from cache
+            current_row = self.all_rows_raw[row_idx - 1]
             # Ensure it's at least 15 columns
             row = current_row + [""] * (15 - len(current_row))
 
