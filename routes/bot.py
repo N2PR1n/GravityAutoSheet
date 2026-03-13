@@ -52,13 +52,18 @@ def get_credentials():
 # LINE SDK
 print(f"DEBUG: Initializing LINE SDK (Token first 10 chars: {str(LINE_CHANNEL_ACCESS_TOKEN)[:10]})")
 if not LINE_CHANNEL_ACCESS_TOKEN or not LINE_CHANNEL_SECRET:
-    print("WARNING: LINE Credentials missing from environment variables!")
+    print("WARNING: LINE Credentials missing from environment variables! Bot features will be disabled.")
+    configuration = None
+    api_client = None
+    messaging_api = None
+    handler = None
+else:
+    configuration = Configuration(access_token=LINE_CHANNEL_ACCESS_TOKEN)
+    api_client = ApiClient(configuration)
+    messaging_api = MessagingApi(api_client)
+    handler = WebhookHandler(LINE_CHANNEL_SECRET)
+    print("DEBUG: LINE SDK initialized successfully")
 
-configuration = Configuration(access_token=LINE_CHANNEL_ACCESS_TOKEN)
-api_client = ApiClient(configuration)
-messaging_api = MessagingApi(api_client)
-handler = WebhookHandler(LINE_CHANNEL_SECRET)
-print("DEBUG: LINE SDK initialized successfully")
 
 
 # Config Service Singleton
@@ -114,120 +119,132 @@ def callback():
 
     # handle webhook body
     try:
-        handler.handle(body, signature)
+        if handler:
+            handler.handle(body, signature)
+        else:
+            current_app.logger.warning("Webhook received but handler is not initialized")
     except InvalidSignatureError:
         current_app.logger.error("Invalid signature. Please check your channel access token/channel secret.")
         abort(400)
 
     return 'OK'
 
-@handler.add(MessageEvent, message=TextMessageContent)
-def handle_text_message(event):
-    text = event.message.text.lower()
-    user_id = event.source.user_id
-    reply_token = event.reply_token
+if handler:
+    @handler.add(MessageEvent, message=TextMessageContent)
+    def handle_text_message(event):
+        text = event.message.text.lower()
+        user_id = event.source.user_id
+        reply_token = event.reply_token
 
-    if text in ["export", "ขอไฟล์เบิกเงิน", "ทำบัญชี"]:
-        try:
-            # Lazy Load Services
-            _, _, _, _, accounting_service = get_services()
-            
-            # Notify processing
-            messaging_api.reply_message(
-                ReplyMessageRequest(
-                    replyToken=reply_token,
-                    messages=[TextMessage(text="📊 กำลังสร้างไฟล์เบิกเงินและส่งเข้า Drive... รอสักครู่ครับ")]
-                )
-            )
-            
-            # Run export in background thread
-            def run_export():
-                try:
-                    sheet_name = get_config().get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
-                    folder_id = get_config().get_folder_for_sheet(sheet_name)
-                    link = accounting_service.export_report(folder_id)
-                    if link:
-                        msg = f"✅ สร้างไฟล์เสร็จแล้วครับ!\nโหลดได้ที่นี่: {link}"
-                    else:
-                        msg = "❌ ไม่พบข้อมูลใน Sheet หรือเกิดข้อผิดพลาดในการสร้างไฟล์"
-                    
-                    messaging_api.push_message(
-                        PushMessageRequest(
-                            to=user_id,
-                            messages=[TextMessage(text=msg)]
+        if text in ["export", "ขอไฟล์เบิกเงิน", "ทำบัญชี"]:
+            try:
+                # Lazy Load Services
+                _, _, _, _, accounting_service = get_services()
+                
+                # Notify processing
+                if messaging_api:
+                    messaging_api.reply_message(
+                        ReplyMessageRequest(
+                            replyToken=reply_token,
+                            messages=[TextMessage(text="📊 กำลังสร้างไฟล์เบิกเงินและส่งเข้า Drive... รอสักครู่ครับ")]
                         )
                     )
-                except Exception as e:
-                    print(f"Export Error: {e}")
-                    messaging_api.push_message(
-                        PushMessageRequest(
-                            to=user_id,
-                            messages=[TextMessage(text=f"เกิดข้อผิดพลาด: {str(e)}")]
+                
+                # Run export in background thread
+                def run_export():
+                    try:
+                        sheet_name = get_config().get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+                        folder_id = get_config().get_folder_for_sheet(sheet_name)
+                        link = accounting_service.export_report(folder_id)
+                        if link:
+                            msg = f"✅ สร้างไฟล์เสร็จแล้วครับ!\nโหลดได้ที่นี่: {link}"
+                        else:
+                            msg = "❌ ไม่พบข้อมูลใน Sheet หรือเกิดข้อผิดพลาดในการสร้างไฟล์"
+                        
+                        if messaging_api:
+                            messaging_api.push_message(
+                                PushMessageRequest(
+                                    to=user_id,
+                                    messages=[TextMessage(text=msg)]
+                                )
+                            )
+                    except Exception as e:
+                        print(f"Export Error: {e}")
+                        if messaging_api:
+                            messaging_api.push_message(
+                                PushMessageRequest(
+                                    to=user_id,
+                                    messages=[TextMessage(text=f"เกิดข้อผิดพลาด: {str(e)}")]
+                                )
+                            )
+
+                threading.Thread(target=run_export).start()
+            except Exception as e:
+                print(f"Text Handle Error: {e}")
+
+        elif text in ["status", "เช็กชีท", "ชีทไหน", "เช็ก"]:
+            try:
+                # Lazy Load Services
+                _, drive_service, _, _, _ = get_services()
+                
+                sheet_name = get_config().get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+                folder_id = get_config().get_folder_for_sheet(sheet_name)
+                
+                # Fetch Folder Info
+                folder_name = drive_service.get_folder_name(folder_id)
+                
+                status_msg = (
+                    f"🤖 สถานะบอทปัจจุบัน:\n"
+                    f"📁 ชีทที่ใช้งาน: {sheet_name}\n"
+                    f"📂 โฟลเดอร์: {folder_name}\n"
+                    f"🆔 ID: {folder_id[:5]}...{folder_id[-5:]}\n\n"
+                    f"💡 หากต้องการเปลี่ยนชีท ให้ไปที่หน้าเว็บแล้วเลือกใหม่นะครับ"
+                )
+                
+                if messaging_api:
+                    messaging_api.reply_message(
+                        ReplyMessageRequest(
+                            replyToken=reply_token,
+                            messages=[TextMessage(text=status_msg)]
+                        )
+                    )
+            except Exception as e:
+                print(f"Status Check Error: {e}")
+                if messaging_api:
+                    messaging_api.reply_message(
+                        ReplyMessageRequest(
+                            replyToken=reply_token,
+                            messages=[TextMessage(text=f"เกิดข้อผิดพลาดในการเช็คสถานะ: {str(e)}")]
                         )
                     )
 
-            threading.Thread(target=run_export).start()
-        except Exception as e:
-            print(f"Text Handle Error: {e}")
+if handler:
+    @handler.add(MessageEvent, message=ImageMessageContent)
+    def handle_image_message(event):
 
-    elif text in ["status", "เช็กชีท", "ชีทไหน", "เช็ก"]:
-        try:
-            # Lazy Load Services
-            _, drive_service, _, _, _ = get_services()
-            
-            sheet_name = get_config().get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
-            folder_id = get_config().get_folder_for_sheet(sheet_name)
-            
-            # Fetch Folder Info
-            folder_name = drive_service.get_folder_name(folder_id)
-            
-            status_msg = (
-                f"🤖 สถานะบอทปัจจุบัน:\n"
-                f"📁 ชีทที่ใช้งาน: {sheet_name}\n"
-                f"📂 โฟลเดอร์: {folder_name}\n"
-                f"🆔 ID: {folder_id[:5]}...{folder_id[-5:]}\n\n"
-                f"💡 หากต้องการเปลี่ยนชีท ให้ไปที่หน้าเว็บแล้วเลือกใหม่นะครับ"
-            )
-            
-            messaging_api.reply_message(
-                ReplyMessageRequest(
-                    replyToken=reply_token,
-                    messages=[TextMessage(text=status_msg)]
-                )
-            )
-        except Exception as e:
-            print(f"Status Check Error: {e}")
-            messaging_api.reply_message(
-                ReplyMessageRequest(
-                    replyToken=reply_token,
-                    messages=[TextMessage(text=f"เกิดข้อผิดพลาดในการเช็คสถานะ: {str(e)}")]
-                )
-            )
+        user_id = event.source.user_id
+        message_id = event.message.id
+        reply_token = event.reply_token
 
-@handler.add(MessageEvent, message=ImageMessageContent)
-def handle_image_message(event):
-    user_id = event.source.user_id
-    message_id = event.message.id
-    reply_token = event.reply_token
+        with user_states_lock:
+            if user_id not in user_states:
+                user_states[user_id] = {'images': [], 'timer': None, 'reply_token': reply_token}
+            
+            # Update reply token
+            user_states[user_id]['reply_token'] = reply_token
+            
+            # Add image
+            user_states[user_id]['images'].append(message_id)
+            
+            # Cancel old timer
+            if user_states[user_id]['timer']:
+                user_states[user_id]['timer'].cancel()
+            
+            # Start new timer (1.0s) — รอ batch รูปหลายรูป แต่ให้สั้นพอเพื่อ process ได้ทันใน 30 วินาที
+            timer = threading.Timer(1.0, process_images_thread, args=[user_id])
+            user_states[user_id]['timer'] = timer
+            timer.start()
 
-    with user_states_lock:
-        if user_id not in user_states:
-            user_states[user_id] = {'images': [], 'timer': None, 'reply_token': reply_token}
-        
-        # Update reply token
-        user_states[user_id]['reply_token'] = reply_token
-        
-        # Add image
-        user_states[user_id]['images'].append(message_id)
-        
-        # Cancel old timer
-        if user_states[user_id]['timer']:
-            user_states[user_id]['timer'].cancel()
-        
-        # Start new timer (1.0s) — รอ batch รูปหลายรูป แต่ให้สั้นพอเพื่อ process ได้ทันใน 30 วินาที
-        timer = threading.Timer(1.0, process_images_thread, args=[user_id])
-        user_states[user_id]['timer'] = timer
-        timer.start()
 
 def process_images_thread(user_id):
     # Retrieve and clear state
@@ -290,12 +307,13 @@ def process_images_thread(user_id):
              final_messages.append(TextMessage(text=f"⚠️ พบเลขออเดอร์ {order_id} ซ้ำในระบบแล้วค่ะ (ไม่บันทึก)"))
              
              # Send via reply_message
-             messaging_api.reply_message(
-                 ReplyMessageRequest(
-                      replyToken=reply_token,
-                      messages=final_messages
+             if messaging_api:
+                 messaging_api.reply_message(
+                     ReplyMessageRequest(
+                          replyToken=reply_token,
+                          messages=final_messages
+                     )
                  )
-             )
              return
 
         # 6. Drive Upload
@@ -351,12 +369,13 @@ def process_images_thread(user_id):
             final_messages.append(TextMessage(text=summary))
             
             # Send Final Result via Reply Message
-            messaging_api.reply_message(
-                 ReplyMessageRequest(
-                      replyToken=reply_token,
-                      messages=final_messages
+            if messaging_api:
+                messaging_api.reply_message(
+                     ReplyMessageRequest(
+                          replyToken=reply_token,
+                          messages=final_messages
+                     )
                  )
-             )
         else:
              raise Exception("ไม่สามารถบันทึกข้อมูลลง Google Sheet ได้")
 
@@ -367,15 +386,16 @@ def process_images_thread(user_id):
         
         error_msg = f"❌ เกิดข้อผิดพลาดในการประมวลผล:\n{str(e)}"
         final_messages.append(TextMessage(text=error_msg))
-        try:
-            messaging_api.reply_message(
-                 ReplyMessageRequest(
-                      replyToken=reply_token,
-                      messages=final_messages
+        if messaging_api:
+            try:
+                messaging_api.reply_message(
+                     ReplyMessageRequest(
+                          replyToken=reply_token,
+                          messages=final_messages
+                     )
                  )
-             )
-        except Exception as reply_err:
-            print(f"DEBUG: Failed to send error message via reply: {reply_err}")
+            except Exception as reply_err:
+                print(f"DEBUG: Failed to send error message via reply: {reply_err}")
     finally:
         # Cleanup temp files
         try:

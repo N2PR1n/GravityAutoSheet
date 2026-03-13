@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 import re
 import json
 import socket
+import threading
+import time
+import requests
 print("DEBUG: app.py is being imported")
 
 
@@ -106,6 +109,33 @@ def handle_exception(e):
         "error": "Internal Server Error",
         "message": str(e)
     }), 500
+
+# --- KEEP ALIVE ---
+def keep_alive_ping():
+    """Background thread to ping the server and prevent it from sleeping on Render."""
+    time.sleep(30) # Wait for server to start
+    url = os.getenv('RENDER_EXTERNAL_URL')
+    if not url:
+        # Fallback if URL is missing
+        url = "https://gravity-check-box.onrender.com"
+        print(f"DEBUG: RENDER_EXTERNAL_URL missing, using fallback: {url}")
+    
+    health_url = f"{url.rstrip('/')}/health"
+    print(f"DEBUG: Keep-alive thread started. Target: {health_url}")
+    
+    while True:
+        try:
+            resp = requests.get(health_url, timeout=10)
+            print(f"DEBUG: Keep-alive ping to {health_url} - Status: {resp.status_code}")
+        except Exception as e:
+            print(f"DEBUG: Keep-alive ping failed: {e}")
+        
+        # Ping every 10 minutes (Render sleep starts after 15m of inactivity)
+        time.sleep(600)
+
+# Start keep-alive thread if on Render
+if os.getenv('RENDER') or os.getenv('KEEP_ALIVE'):
+    threading.Thread(target=keep_alive_ping, daemon=True).start()
 
 # ...
 

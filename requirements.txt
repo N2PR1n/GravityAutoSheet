@@ -12,3 +12,5 @@ requests
 certifi
 gspread
 google-genai
+openpyxl
+
