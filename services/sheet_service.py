@@ -263,6 +263,97 @@ class SheetService:
             print(f"Error saving data to sheet: {e}")
             return False
 
+    def find_row_by_order_id(self, order_id):
+        """
+        Returns (row_index, current_row_data) for a given order_id.
+        row_index is 1-indexed for gspread.
+        """
+        if not self.sheet or not order_id: return None, None
+        
+        order_id_str = str(order_id)
+        # Ensure cache is populated
+        if not self.row_index_map:
+            self.get_all_data()
+            
+        row_idx = self.row_index_map.get(order_id_str)
+        if not row_idx:
+            # Final fallback: search API
+            try:
+                cell = self.sheet.find(order_id_str)
+                if cell:
+                    row_idx = cell.row
+                else:
+                    return None, None
+            except:
+                return None, None
+
+        try:
+            row_data = self.sheet.row_values(row_idx)
+            return row_idx, row_data
+        except Exception as e:
+            print(f"Error fetching existing row: {e}")
+            return row_idx, None
+
+    def update_existing_data(self, row_idx, data_dict, run_no):
+        """
+        Updates specific columns in an existing row.
+        Targeting: A (Image), B (Receiver), C (Location), F (Platform), G (Date), 
+                  H (Shop), I (Price), J (Coins), K (Item), M (Tracking).
+        """
+        if not self.sheet or not row_idx: return False
+
+        def fmt_float(val):
+            try:
+                if isinstance(val, str): val = val.replace(',', '')
+                if val == '-' or val == '': return "0.00"
+                return "{:,.2f}".format(float(val))
+            except:
+                return str(val)
+
+        try:
+            # Construct update list for Column A-M (1-13)
+            # Fetch current row to preserve some columns if needed
+            current_row = self.sheet.row_values(row_idx)
+            # Ensure it's at least 15 columns
+            row = current_row + [""] * (15 - len(current_row))
+
+            # A: Image Link
+            link = data_dict.get('image_link', '')
+            label = f"Check Order {run_no}" if run_no else "Check Order"
+            row[0] = f'=HYPERLINK("{link}", "{label}")' if link else row[0]
+
+            # B, C
+            row[1] = data_dict.get('receiver_name', row[1])
+            row[2] = data_dict.get('location', row[2])
+
+            # D (Run No): Should NOT change usually, but we ensure it's set if missing
+            if not row[3]: row[3] = run_no if run_no else ""
+
+            # F-K
+            row[5] = data_dict.get('platform', row[5])
+            row[6] = data_dict.get('date', row[6])
+            row[7] = data_dict.get('shop_name', row[7])
+            row[8] = fmt_float(data_dict.get('price', row[8]))
+            row[9] = fmt_float(data_dict.get('coins', row[9]))
+            row[10] = data_dict.get('item_name', row[10])
+
+            # M (Tracking)
+            new_tracking = data_dict.get('tracking_number')
+            if new_tracking:
+                row[12] = str(new_tracking)
+
+            # O: Reset Status to Pending for re-verification
+            row[14] = "Pending"
+
+            # Update Range A-O
+            range_label = f"A{row_idx}:O{row_idx}"
+            self.sheet.update(range_name=range_label, values=[row], value_input_option='USER_ENTERED')
+            print(f"DEBUG: Successfully updated row {row_idx} for order {data_dict.get('order_id')}")
+            return True
+        except Exception as e:
+            print(f"Error updating existing data: {e}")
+            return False
+
     def update_order_status(self, order_id, status="Checked"):
         """Updates the status of an order using optimized row mapping."""
         if not self.sheet: return False

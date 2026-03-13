@@ -298,26 +298,27 @@ def process_images_thread(user_id):
         if not data:
              raise Exception("AI ไม่สามารถสกัดข้อมูลจากรูปภาพได้")
 
-        # 5. Duplicate Check
+        # 5. Duplicate Check & Update Logic
         order_id = data.get('order_id')
         if not order_id:
             raise Exception("ไม่พบเลขออเดอร์ในรูปภาพ")
             
-        if sheet_service.check_duplicate(order_id):
-             final_messages.append(TextMessage(text=f"⚠️ พบเลขออเดอร์ {order_id} ซ้ำในระบบแล้วค่ะ (ไม่บันทึก)"))
-             
-             # Send via reply_message
-             if messaging_api:
-                 messaging_api.reply_message(
-                     ReplyMessageRequest(
-                          replyToken=reply_token,
-                          messages=final_messages
-                     )
-                 )
-             return
+        is_duplicate = sheet_service.check_duplicate(order_id)
+        existing_run_no = None
+        target_row_idx = None
+
+        if is_duplicate:
+            print(f"DEBUG: Duplicate order {order_id} found. Fetching row info for update.")
+            target_row_idx, existing_row_data = sheet_service.find_row_by_order_id(order_id)
+            if existing_row_data and len(existing_row_data) >= 4:
+                try:
+                    existing_run_no = int(existing_row_data[3]) # Column D index 3
+                except:
+                    existing_run_no = None
 
         # 6. Drive Upload
-        next_run_no = sheet_service.get_next_run_no()
+        # Use existing Run No if updating, otherwise get new one
+        next_run_no = existing_run_no if existing_run_no else sheet_service.get_next_run_no()
         target_filename = f"{next_run_no}.jpg"
         
         drive_link = ""
@@ -328,7 +329,6 @@ def process_images_thread(user_id):
             sheet_name = get_config().get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
             folder_id = get_config().get_folder_for_sheet(sheet_name)
             folder_display_name = drive_service.get_folder_name(folder_id)
-            print(f"DEBUG: Uploading to Drive -> {target_filename} in {folder_display_name}")
             
             drive_file = drive_service.upload_file(final_image_path, folder_id, target_filename)
             if drive_file:
@@ -338,24 +338,31 @@ def process_images_thread(user_id):
         except Exception as e:
             drive_error_msg = str(e)
             print(f"DEBUG: Drive Upload Error: {e}")
-            # Don't fail the whole process if only upload fails
         
         data['image_link'] = drive_link
 
-        # 7. Save to Sheet
-        print(f"DEBUG: Saving to Sheet: {order_id}")
-        if sheet_service.append_data(data, next_run_no):
+        # 7. Save or Update Sheet Data
+        success = False
+        if is_duplicate and target_row_idx:
+            print(f"DEBUG: Updating existing row {target_row_idx} for order {order_id}")
+            success = sheet_service.update_existing_data(target_row_idx, data, next_run_no)
+            status_prefix = "✅ อัปเดตแล้ว!"
+        else:
+            print(f"DEBUG: Appending new row for order {order_id}")
+            success = sheet_service.append_data(data, next_run_no)
+            status_prefix = "✅ บันทึกแล้ว!"
+
+        if success:
             # Success Summary
             tracking_info = f"\nTracking: {data.get('tracking_number')}" if data.get('tracking_number') and data.get('tracking_number') != '-' else ""
             
-            # Using the format requested by user
             if drive_link:
                 folder_info = f"\n📁 บันทึกรูปไปที่: {folder_display_name}"
             else:
                 folder_info = f"\n⚠️ บันทึกรูปไม่สำเร็จ\nสาเหตุ: {drive_error_msg[:100]}\nโปรดตรวจสอบว่าโฟลเดอร์ถูกต้องและ Token ยังใช้งานได้อยู่นะคะ"
             
             summary = (
-                f"✅ บันทึกแล้ว! (No. {next_run_no})\n"
+                f"{status_prefix} (No. {next_run_no})\n"
                 f"ชื่อ: {data.get('receiver_name', '-')}\n"
                 f"ที่อยู่: {data.get('location', '-')}\n"
                 f"ร้าน: {data.get('shop_name', '-')}\n"
@@ -378,6 +385,7 @@ def process_images_thread(user_id):
                  )
         else:
              raise Exception("ไม่สามารถบันทึกข้อมูลลง Google Sheet ได้")
+
 
     except Exception as e:
         import traceback
