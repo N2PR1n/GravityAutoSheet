@@ -14,23 +14,7 @@ def get_google_credentials():
     """
     creds = None
     
-    # --- PHASE 1: SERVICE ACCOUNT (Most Stable for Render) ---
-    sa_paths = [
-        os.getenv('GOOGLE_APPLICATION_CREDENTIALS', ''),
-        '/etc/secrets/credentials.json',
-        'credentials.json'
-    ]
-    
-    for path in sa_paths:
-        if path and os.path.exists(path):
-            try:
-                creds = service_account.Credentials.from_service_account_file(path, scopes=SCOPES)
-                print(f"DEBUG: Successfully loaded Service Account from {path}")
-                return creds
-            except Exception as e:
-                print(f"Warning: Failed to load Service Account from {path}: {e}")
-
-    # --- PHASE 2: USER TOKEN (Fallback) ---
+    # --- PHASE 1: USER TOKEN (Preferred by User) ---
     token_paths = [
         os.getenv('GOOGLE_TOKEN_PATH', ''),
         '/etc/secrets/token.json',
@@ -47,19 +31,38 @@ def get_google_credentials():
         try:
             creds = Credentials.from_authorized_user_file(token_path, SCOPES)
             print(f"DEBUG: Successfully loaded User Token from {token_path}")
+            
+            # Refresh User Token if needed
+            if creds and not creds.valid:
+                if creds.expired and creds.refresh_token:
+                    try:
+                        creds.refresh(Request())
+                        print("DEBUG: Refreshed User Token successfully")
+                    except Exception as e:
+                        print(f"Warning: Failed to refresh user token: {e}")
+                        creds = None
+            
+            if creds and creds.valid:
+                return creds
         except Exception as e:
             print(f"Warning: Failed to load User Token from {token_path}: {e}")
             creds = None
 
-    # Refresh User Token if needed
-    if creds and not creds.valid:
-        if creds.expired and creds.refresh_token:
+    # --- PHASE 2: SERVICE ACCOUNT (Secondary Fallback) ---
+    sa_paths = [
+        os.getenv('GOOGLE_APPLICATION_CREDENTIALS', ''),
+        '/etc/secrets/credentials.json',
+        'credentials.json'
+    ]
+    
+    for path in sa_paths:
+        if path and os.path.exists(path):
             try:
-                creds.refresh(Request())
-                print("DEBUG: Refreshed User Token successfully")
+                creds = service_account.Credentials.from_service_account_file(path, scopes=SCOPES)
+                print(f"DEBUG: Successfully loaded Service Account from {path}")
+                return creds
             except Exception as e:
-                print(f"Warning: Failed to refresh user token: {e}")
-                creds = None
+                print(f"Warning: Failed to load Service Account from {path}: {e}")
 
     if creds:
         return creds
