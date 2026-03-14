@@ -422,7 +422,15 @@ def process_images_thread(user_id):
                      )
                  )
         else:
-             raise Exception("ไม่สามารถบันทึกข้อมูลลง Google Sheet ได้")
+             # Try to get more detail if available
+             detail = ""
+             try:
+                 # Check if we can extract more info from sheet_service state or recent errors
+                 # For now, we rely on the Exception block below to catch most things, 
+                 # but we raise a slightly more descriptive local error.
+                 pass
+             except: pass
+             raise Exception("ไม่สามารถบันทึกข้อมูลลง Google Sheet ได้ (โปรดตรวจสอบสิทธิ์การเข้าถึงหรือชื่อชีทอีกครั้ง)")
 
 
     except Exception as e:

@@ -12,9 +12,13 @@ def retry_on_429(func):
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                if "429" in str(e) and i < 2:
+                # Check for 429 in message or status code for gspread.exceptions.APIError
+                msg = str(e)
+                is_429 = "429" in msg or (hasattr(e, 'response') and getattr(e.response, 'status_code', 0) == 429)
+                
+                if is_429 and i < 2:
                     wait = (i + 1) * 2
-                    print(f"DEBUG: Quota 429 hit. Retrying in {wait}s... (Attempt {i+1}/3)")
+                    print(f"DEBUG: Quota 429 hit in {func.__name__}. Retrying in {wait}s... (Attempt {i+1}/3)")
                     time.sleep(wait)
                 else:
                     raise e
@@ -81,10 +85,13 @@ class SheetService:
     @retry_on_429
     def set_worksheet(self, sheet_name):
         """Switches the active worksheet and clears cache."""
-        if not self.client or not self.sheet_id: return False
+        # Use spreadsheet getter to ensure connection
+        ss = self.spreadsheet
+        if not ss: return False
+        
         try:
-            spreadsheet = self.client.open_by_key(self.sheet_id)
-            self.sheet = spreadsheet.worksheet(sheet_name)
+            self._sheet = ss.worksheet(sheet_name)
+            self.sheet_name = sheet_name # Sync current name
             
             # Clear cache for the new worksheet
             self.all_rows_raw = None
@@ -92,10 +99,10 @@ class SheetService:
             self.row_index_map = {}
             self.last_fetch_time = 0
             
-            print(f"DEBUG: Switched to Sheet: '{self.sheet.title}' and cleared cache")
+            print(f"DEBUG: Switched to Sheet: '{self._sheet.title}' and cleared cache")
             return True
         except Exception as e:
-            print(f"Error switching worksheet: {e}")
+            print(f"Error switching worksheet to {sheet_name}: {e}")
             return False
 
     @retry_on_429
