@@ -283,7 +283,12 @@ class SheetService:
                 # Update existing empty row
                 # Range A[idx]:O[idx]
                 range_label = f"A{target_row_idx}:O{target_row_idx}"
-                self.sheet.update(range_name=range_label, values=[row], value_input_option='USER_ENTERED')
+                # Ensure row is exactly 15 columns to avoid 400 errors
+                trimmed_row = row[:15]
+                if len(trimmed_row) < 15:
+                    trimmed_row += [""] * (15 - len(trimmed_row))
+                
+                self.sheet.update(range_name=range_label, values=[trimmed_row], value_input_option='USER_ENTERED')
                 print(f"DEBUG: Data updated in gap at row {target_row_idx}")
             else:
                 # Append to bottom if no gap found
@@ -335,10 +340,11 @@ class SheetService:
                 return str(val)
 
         try:
-            # Fetch current row from cache
-            current_row = self.all_rows_raw[row_idx - 1]
-            # Ensure it's at least 15 columns
-            row = current_row + [""] * (15 - len(current_row))
+            # Ensure row is exactly 15 columns (A-O)
+            # This prevents 400 errors if the sheet has hidden/extra columns like Column P
+            row = current_row[:15]
+            if len(row) < 15:
+                row += [""] * (15 - len(row))
 
             # A: Image Link
             link = data_dict.get('image_link', '')
