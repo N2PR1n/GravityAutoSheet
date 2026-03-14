@@ -39,6 +39,7 @@ class SheetService:
         self.all_rows_raw = None # Raw list of lists
         self.last_fetch_time = 0
         self.creds = credentials_source
+        self.last_error = None
 
     def _get_client(self):
         if self.client is None:
@@ -279,6 +280,7 @@ class SheetService:
                 print(f"DEBUG: Data appended to bottom: {result}")
             return True
         except Exception as e:
+            self.last_error = str(e)
             print(f"Error saving data to sheet: {e}")
             return False
 
@@ -361,6 +363,7 @@ class SheetService:
             print(f"DEBUG: Successfully updated row {row_idx} for order {data_dict.get('order_id')}")
             return True
         except Exception as e:
+            self.last_error = str(e)
             print(f"Error updating existing data: {e}")
             return False
 

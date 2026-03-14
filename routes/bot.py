@@ -33,13 +33,13 @@ bot_bp = Blueprint('bot', __name__)
 import json
 
 # Config
-LINE_CHANNEL_ACCESS_TOKEN = os.getenv('LINE_CHANNEL_ACCESS_TOKEN')
-LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET')
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-GOOGLE_CREDENTIALS_SOURCE = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-GOOGLE_SHEET_ID = os.getenv('GOOGLE_SHEET_ID')
-GOOGLE_SHEET_NAME = os.getenv('GOOGLE_SHEET_NAME')
-GOOGLE_DRIVE_FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID')
+LINE_CHANNEL_ACCESS_TOKEN = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', '').strip()
+LINE_CHANNEL_SECRET = os.getenv('LINE_CHANNEL_SECRET', '').strip()
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '').strip()
+GOOGLE_CREDENTIALS_SOURCE = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', '').strip()
+GOOGLE_SHEET_ID = os.getenv('GOOGLE_SHEET_ID', '').strip()
+GOOGLE_SHEET_NAME = os.getenv('GOOGLE_SHEET_NAME', '').strip()
+GOOGLE_DRIVE_FOLDER_ID = os.getenv('GOOGLE_DRIVE_FOLDER_ID', '').strip()
 
 # Ensure certs
 os.environ['SSL_CERT_FILE'] = certifi.where()
@@ -430,7 +430,7 @@ def process_images_thread(user_id):
                  # but we raise a slightly more descriptive local error.
                  pass
              except: pass
-             raise Exception("ไม่สามารถบันทึกข้อมูลลง Google Sheet ได้ (โปรดตรวจสอบสิทธิ์การเข้าถึงหรือชื่อชีทอีกครั้ง)")
+             raise Exception(f"ไม่สามารถบันทึกข้อมูลลง Google Sheet ได้: {getattr(sheet_service, 'last_error', 'โปรดตรวจสอบชื่อชีทหรือสิทธิ์การเข้าถึง')}")
 
 
     except Exception as e:
