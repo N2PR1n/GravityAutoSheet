@@ -40,6 +40,7 @@ app = Flask(__name__)
 print("DEBUG: Registering bot blueprint...")
 try:
     app.register_blueprint(bot_bp)
+    app.secret_key = os.getenv('FLASK_SECRET_KEY', 'gravity-secret-7788') # For sessions
     print("DEBUG: Blueprint registered successfully")
 except Exception as e:
     print(f"❌ Error registering blueprint: {e}")
@@ -193,6 +194,68 @@ def proxy_image(file_id):
 def index():
     print("DEBUG: Index request received")
     return render_template('index_v2.html')
+
+@app.route('/login')
+def login():
+    import services.auth_service as auth_service
+    from flask import session, url_for
+    
+    # Render externally accessible URL
+    base_url = os.getenv('RENDER_EXTERNAL_URL')
+    if not base_url:
+        base_url = request.host_url.rstrip('/')
+        if 'onrender.com' in base_url:
+             base_url = base_url.replace('http://', 'https://')
+    
+    redirect_uri = f"{base_url.rstrip('/')}/oauth2callback"
+    print(f"DEBUG: Starting login redirect to: {redirect_uri}")
+    
+    try:
+        flow = auth_service.get_auth_flow(redirect_uri)
+        authorization_url, state = flow.authorization_url(
+            access_type='offline',
+            include_granted_scopes='true',
+            prompt='consent'
+        )
+        session['state'] = state
+        return redirect(authorization_url)
+    except Exception as e:
+        print(f"Login Error: {e}")
+        return jsonify({"error": "Auth Initiation Failed", "message": str(e)}), 500
+
+@app.route('/oauth2callback')
+def oauth2callback():
+    import services.auth_service as auth_service
+    from flask import session
+    
+    state = session.get('state')
+    
+    # Use standard host_url if external not set, but ensure https on render
+    base_url = os.getenv('RENDER_EXTERNAL_URL')
+    if not base_url:
+        base_url = request.host_url.rstrip('/')
+        if 'onrender.com' in base_url:
+             base_url = base_url.replace('http://', 'https://')
+
+    redirect_uri = f"{base_url.rstrip('/')}/oauth2callback"
+    
+    try:
+        # On Render/Production, OAUTHLIB_INSECURE_TRANSPORT is usually 0
+        # but locally it might need to be 1. 
+        # We try to handle both.
+        if 'http://localhost' in request.url or 'http://127.0.0.1' in request.url:
+             os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+        
+        url = request.url
+        if 'onrender.com' in url and url.startswith('http://'):
+             url = url.replace('http://', 'https://', 1)
+
+        auth_service.save_token_from_response(url, state, redirect_uri)
+        return "<h1>Login Successful!</h1><p>คุณรินทร์สามารถกลับไปใช้งานบอทได้แล้วนะคะ 😊</p><a href='/'>กลับหน้าหลัก</a>"
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": "Auth Callback Failed", "message": str(e)}), 500
 
 @app.route('/health')
 def health():

@@ -79,3 +79,39 @@ def get_google_credentials():
                     raise FileNotFoundError("❌ [AUTH ERROR] token.json, credentials.json, or client_secret.json not found.")
 
     return creds
+
+def get_auth_flow(redirect_uri, state=None):
+    """
+    Creates a Flow object for web-based OAuth.
+    Requires client_secret.json (OAuth 2.0 Client IDs).
+    """
+    client_secret_path = 'client_secret.json'
+    if not os.path.exists(client_secret_path):
+        # Fallback to check if it's named credentials.json but contains client secrets
+        client_secret_path = 'credentials.json'
+    
+    if os.path.exists(client_secret_path):
+        from google_auth_oauthlib.flow import Flow
+        flow = Flow.from_client_secrets_file(
+            client_secret_path,
+            scopes=SCOPES,
+            state=state
+        )
+        flow.redirect_uri = redirect_uri
+        return flow
+    else:
+        raise FileNotFoundError("❌ [AUTH ERROR] client_secret.json not found. Required for web login.")
+
+def save_token_from_response(url, state, redirect_uri):
+    """
+    Exchanges code for token and saves to token.json.
+    """
+    flow = get_auth_flow(redirect_uri, state=state)
+    flow.fetch_token(authorization_response=url)
+    creds = flow.credentials
+    
+    # Save the token
+    token_path = 'token.json'
+    with open(token_path, 'w') as token:
+        token.write(creds.to_json())
+    return creds
