@@ -323,7 +323,7 @@ class SheetService:
             return row_idx, None
 
     @retry_on_429
-    def update_existing_data(self, row_idx, data_dict, run_no):
+    def update_existing_data(self, row_idx, data_dict, run_no, existing_row_data=None):
         """
         Updates specific columns in an existing row.
         Targeting: A (Image), B (Receiver), C (Location), F (Platform), G (Date), 
@@ -340,9 +340,16 @@ class SheetService:
                 return str(val)
 
         try:
+            # If no existing_row_data provided, fetch it from cache
+            if existing_row_data is None:
+                if self.all_rows_raw and row_idx - 1 < len(self.all_rows_raw):
+                    existing_row_data = self.all_rows_raw[row_idx - 1]
+                else:
+                    existing_row_data = [""] * 15
+
             # Ensure row is exactly 15 columns (A-O)
             # This prevents 400 errors if the sheet has hidden/extra columns like Column P
-            row = current_row[:15]
+            row = list(existing_row_data[:15])
             if len(row) < 15:
                 row += [""] * (15 - len(row))
 

@@ -45,7 +45,7 @@ class DriveService:
             return file
         except Exception as e:
             print(f"Upload Error: {e}")
-            return None
+            raise  # Re-raise so caller can report real error to user
 
     def make_public(self, file_id):
         if not self.service: return

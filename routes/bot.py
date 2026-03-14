@@ -392,7 +392,7 @@ def process_images_thread(user_id):
         success = False
         if is_duplicate and target_row_idx:
             print(f"DEBUG: Updating existing row {target_row_idx} for order {order_id}")
-            success = sheet_service.update_existing_data(target_row_idx, data, next_run_no)
+            success = sheet_service.update_existing_data(target_row_idx, data, next_run_no, existing_row_data=existing_row_data)
             status_prefix = "✅ อัปเดตแล้ว!"
         else:
             print(f"DEBUG: Appending new row for order {order_id}")
