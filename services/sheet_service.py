@@ -51,8 +51,12 @@ class SheetService:
         if self._spreadsheet is None:
             try:
                 client = self._get_client()
+                if not self.sheet_id:
+                    self.last_error = "Missing GOOGLE_SHEET_ID"
+                    return None
                 self._spreadsheet = client.open_by_key(self.sheet_id)
             except Exception as e:
+                self.last_error = f"Spreadsheet Lookup Error: {str(e)}"
                 print(f"Warning: Failed to open spreadsheet {self.sheet_id}: {e}")
         return self._spreadsheet
 
@@ -66,9 +70,16 @@ class SheetService:
                     print(f"DEBUG: Connected to Worksheet: '{self._sheet.title}'")
                 except gspread.exceptions.WorksheetNotFound:
                     print(f"Warning: Worksheet '{self.sheet_name}' not found. Falling back to sheet1.")
-                    self._sheet = ss.sheet1
+                    try:
+                        self._sheet = ss.sheet1
+                    except Exception as fallback_err:
+                        self.last_error = f"Worksheet Fallback Error: {str(fallback_err)}"
                 except Exception as e:
+                    self.last_error = f"Worksheet Access Error: {str(e)}"
                     print(f"Warning: Failed to get worksheet '{self.sheet_name}': {e}")
+            else:
+                # last_error is already set by spreadsheet property
+                pass
         return self._sheet
 
 

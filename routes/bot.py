@@ -229,10 +229,11 @@ if handler:
                 
                 status_msg = (
                     f"🤖 สถานะบอทปัจจุบัน:\n"
-                    f"📁 ชีทที่ใช้งาน: {sheet_name}\n"
-                    f"📂 โฟลเดอร์: {folder_name}\n"
-                    f"🆔 ID: {folder_id[:5]}...{folder_id[-5:]}\n\n"
-                    f"💡 หากต้องการเปลี่ยนชีท ให้ไปที่หน้าเว็บแล้วเลือกใหม่นะครับ"
+                    f"📊 ชีทหลัก (Sheet ID): {GOOGLE_SHEET_ID[:10]}...{GOOGLE_SHEET_ID[-5:]}\n"
+                    f"📄 หน้าที่ใช้งาน: {sheet_name}\n"
+                    f"📂 โฟลเดอร์ Drive (Folder ID): {folder_id[:5]}...{folder_id[-5:]}\n"
+                    f"📁 ชื่อโฟลเดอร์: {folder_name}\n\n"
+                    f"💡 หากต้องการเปลี่ยนชีท ให้ไปที่หน้าเว็บเพื่อเลือกใหม่ได้เลยนะคะ"
                 )
                 
                 if messaging_api:
@@ -430,7 +431,8 @@ def process_images_thread(user_id):
                  # but we raise a slightly more descriptive local error.
                  pass
              except: pass
-             raise Exception(f"ไม่สามารถบันทึกข้อมูลลง Google Sheet ได้: {getattr(sheet_service, 'last_error', 'โปรดตรวจสอบชื่อชีทหรือสิทธิ์การเข้าถึง')}")
+             error_detail = getattr(sheet_service, 'last_error', 'โปรดตรวจสอบชื่อหน้าชีท (Worksheet Name) หรือสิทธิ์การเข้าถึงนะคะ')
+             raise Exception(f"ไม่สามารถบันทึกข้อมูลลง Google Sheet ได้: {error_detail}")
 
 
     except Exception as e:
