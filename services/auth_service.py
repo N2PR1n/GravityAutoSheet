@@ -89,16 +89,15 @@ def get_auth_flow(redirect_uri, state=None):
     client_secret = os.getenv('GOOGLE_CLIENT_SECRET', '').strip()
     
     if client_id and client_secret:
-        print(f"DEBUG: Using Client ID from ENV: {client_id[:10]}...{client_id[-10:]} (Len: {len(client_id)})")
         from google_auth_oauthlib.flow import Flow
+        # Use the most standard structure for web applications
         client_config = {
             "web": {
                 "client_id": client_id,
                 "client_secret": client_secret,
                 "auth_uri": "https://accounts.google.com/o/oauth2/auth",
                 "token_uri": "https://oauth2.googleapis.com/token",
-                "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-                "project_id": os.getenv('GOOGLE_PROJECT_ID', 'gravitybotproject')
+                "redirect_uris": [redirect_uri]
             }
         }
         flow = Flow.from_client_config(
