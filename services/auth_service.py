@@ -8,107 +8,92 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapi
 
 def get_google_credentials():
     """
-    Exclusively uses User Authentication (token.json).
-    Prioritizes GOOGLE_TOKEN_JSON env var for persistent storage.
+    Robust credential loader. Prioritizes environment variables (JSON) 
+    to ensure persistence on Render.
     """
-    creds = None
+    from google.oauth2 import service_account
+    from google.oauth2.credentials import Credentials
     
-    # Priority 0: Environment Variable (Persistent across Render deploys)
-    token_json = os.getenv('GOOGLE_TOKEN_JSON', '').strip()
-    if token_json and token_json.startswith('{'):
+    # helper to clean up accidentally wrapped or escaped JSON
+    def clean_json(raw):
+        if not raw: return None
+        raw = raw.strip()
+        if not raw.startswith('{'): return None
         try:
-            info = json.loads(token_json)
-            # If the user pasted the entire debug JSON by mistake
-            if isinstance(info, dict) and "GOOGLE_TOKEN_JSON_VALUE" in info:
-                val = info["GOOGLE_TOKEN_JSON_VALUE"]
-                if isinstance(val, str) and val.startswith('{'):
-                    info = json.loads(val)
-                elif isinstance(val, dict):
-                    info = val
-            
-            creds = Credentials.from_authorized_user_info(info, SCOPES)
-            print("DEBUG: Successfully loaded User Account from GOOGLE_TOKEN_JSON env var")
-            if creds.valid or (creds.expired and creds.refresh_token):
-                # We'll handle refresh below
-                pass
-            else:
-                creds = None
-        except Exception as e:
-            print(f"Warning: Failed to load token from GOOGLE_TOKEN_JSON: {e}")
-            creds = None
+            data = json.loads(raw)
+            # handle wrapped debug JSON
+            if isinstance(data, dict) and "GOOGLE_TOKEN_JSON_VALUE" in data:
+                val = data["GOOGLE_TOKEN_JSON_VALUE"]
+                if isinstance(val, str) and val.startswith('{'): return json.loads(val)
+                if isinstance(val, dict): return val
+            return data
+        except: return None
 
-    if not creds:
-        # Paths to check for the user token
-        paths_to_check = [
-            os.getenv('GOOGLE_TOKEN_PATH', ''), # Manual override
-            '/etc/secrets/token.json',         # Render Secret File
-            'token.json'                       # Local fallback
-        ]
-        
-        token_path = None
-        for path in paths_to_check:
-            if path and os.path.exists(path):
-                token_path = path
-                break
-                
-        if token_path:
+    # 1. Try Service Account JSON (PERMANENT)
+    sa_json = os.getenv('GOOGLE_SERVICE_ACCOUNT_JSON') or os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    if sa_json:
+        data = clean_json(sa_json)
+        if data and data.get('type') == 'service_account':
             try:
-                creds = Credentials.from_authorized_user_file(token_path, SCOPES)
-                print(f"DEBUG: Successfully loaded User Account from {token_path}")
+                creds = service_account.Credentials.from_service_account_info(data, scopes=SCOPES)
+                print("DEBUG: Loaded Service Account from Environment Variable")
+                return creds
             except Exception as e:
-                print(f"Warning: Failed to load token from {token_path}: {e}")
-                creds = None
+                print(f"Warning: Failed to load SA from env: {e}")
 
-    # Handle Expiry or Missing Token
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
+    # 2. Try User Token JSON (RENEWABLE)
+    token_json = os.getenv('GOOGLE_TOKEN_JSON')
+    if token_json:
+        data = clean_json(token_json)
+        if data:
             try:
-                creds.refresh(Request())
-                print("DEBUG: Refreshed User Token successfully")
+                creds = Credentials.from_authorized_user_info(data, SCOPES)
+                if creds.valid or (creds.expired and creds.refresh_token):
+                    # verify/refresh
+                    if not creds.valid:
+                        creds.refresh(Request())
+                    print("DEBUG: Loaded User Account from GOOGLE_TOKEN_JSON")
+                    return creds
             except Exception as e:
-                print(f"Failed to refresh user token: {e}")
-                creds = None
-        
-        if not creds:
-             # Try Service Account Fallback
-             service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'credentials.json')
-             if os.path.exists(service_account_path):
-                 try:
-                     from google.oauth2 import service_account
-                     creds = service_account.Credentials.from_service_account_file(service_account_path, scopes=SCOPES)
-                     print(f"DEBUG: Successfully loaded Service Account from {service_account_path}")
-                     return creds
-                 except Exception as e:
-                     print(f"Warning: Failed to load Service Account from {service_account_path}: {e}")
+                print(f"Warning: Failed to load User Token from env: {e}")
 
-             # On Render, we can't do interactive auth
-             if os.environ.get('RENDER'):
-                 missing = []
-                 if not os.path.exists('token.json'): missing.append('token.json')
-                 service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'credentials.json')
-                 if not os.path.exists(service_account_path): missing.append(f"SA ({service_account_path})")
-                 
-                 raise Exception(f"❌ [AUTH ERROR] Credentials missing on Render: {', '.join(missing)}. Please set GOOGLE_TOKEN_JSON in Dashboard.")
-             else:
-                 # Local fallback (need client_secret.json for this part)
-                 client_secret_path = 'client_secret.json'
-                 if os.path.exists(client_secret_path):
-                    from google_auth_oauthlib.flow import InstalledAppFlow
-                    print("INFO: Token missing or invalid. Starting browser authentication...")
-                    flow = InstalledAppFlow.from_client_secrets_file(client_secret_path, SCOPES)
-                    creds = flow.run_local_server(port=0)
-                    # Save the new token
-                    try:
-                        save_path = token_path if token_path else 'token.json'
-                        with open(save_path, 'w') as token:
-                            token.write(creds.to_json())
-                        print(f"INFO: Saved new token to {save_path}")
-                    except:
-                        pass
-                 else:
-                    raise FileNotFoundError("❌ [AUTH ERROR] token.json, credentials.json, or client_secret.json not found.")
+    # 3. Fallback to Local Files
+    # User Token Files
+    paths = [os.getenv('GOOGLE_TOKEN_PATH', ''), '/etc/secrets/token.json', 'token.json']
+    for p in paths:
+        if p and os.path.exists(p):
+            try:
+                creds = Credentials.from_authorized_user_file(p, SCOPES)
+                if not creds.valid and creds.expired and creds.refresh_token:
+                    creds.refresh(Request())
+                print(f"DEBUG: Loaded User Account from file: {p}")
+                return creds
+            except: pass
 
-    return creds
+    # Service Account File
+    sa_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'credentials.json')
+    if os.path.exists(sa_path):
+        try:
+            creds = service_account.Credentials.from_service_account_file(sa_path, scopes=SCOPES)
+            print(f"DEBUG: Loaded Service Account from file: {sa_path}")
+            return creds
+        except: pass
+
+    # 4. Final failure or interactive local flow
+    if os.environ.get('RENDER'):
+        raise Exception("❌ [AUTH ERROR] No valid credentials found in Render Environment. Please set GOOGLE_TOKEN_JSON or GOOGLE_SERVICE_ACCOUNT_JSON.")
+    
+    # Local Interactive
+    client_secret_path = 'client_secret.json'
+    if os.path.exists(client_secret_path):
+        print("INFO: No credentials found. Starting local auth...")
+        flow = InstalledAppFlow.from_client_secrets_file(client_secret_path, SCOPES)
+        creds = flow.run_local_server(port=0)
+        with open('token.json', 'w') as f:
+            f.write(creds.to_json())
+        return creds
+    
+    raise FileNotFoundError("❌ [AUTH ERROR] No credentials or client_secret.json found.")
 
 def get_auth_flow(redirect_uri, state=None):
     """
