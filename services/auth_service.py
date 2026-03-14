@@ -85,10 +85,11 @@ def get_auth_flow(redirect_uri, state=None):
     Creates a Flow object for web-based OAuth.
     Prioritizes environment variables, then falls back to files.
     """
-    client_id = os.getenv('GOOGLE_CLIENT_ID')
-    client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
+    client_id = os.getenv('GOOGLE_CLIENT_ID', '').strip()
+    client_secret = os.getenv('GOOGLE_CLIENT_SECRET', '').strip()
     
     if client_id and client_secret:
+        print(f"DEBUG: Using Client ID from ENV: {client_id[:10]}...{client_id[-10:]} (Len: {len(client_id)})")
         from google_auth_oauthlib.flow import Flow
         client_config = {
             "web": {
