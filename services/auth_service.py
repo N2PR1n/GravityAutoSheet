@@ -9,30 +9,46 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapi
 def get_google_credentials():
     """
     Exclusively uses User Authentication (token.json).
-    Prioritizes /etc/secrets/token.json for Render.
+    Prioritizes GOOGLE_TOKEN_JSON env var for persistent storage.
     """
     creds = None
     
-    # Paths to check for the user token
-    paths_to_check = [
-        os.getenv('GOOGLE_TOKEN_PATH', ''), # Manual override
-        '/etc/secrets/token.json',         # Render Secret File
-        'token.json'                       # Local fallback
-    ]
-    
-    token_path = None
-    for path in paths_to_check:
-        if path and os.path.exists(path):
-            token_path = path
-            break
-            
-    if token_path:
+    # Priority 0: Environment Variable (Persistent across Render deploys)
+    token_json = os.getenv('GOOGLE_TOKEN_JSON', '').strip()
+    if token_json and token_json.startswith('{'):
         try:
-            creds = Credentials.from_authorized_user_file(token_path, SCOPES)
-            print(f"DEBUG: Successfully loaded User Account from {token_path}")
+            creds = Credentials.from_authorized_user_info(json.loads(token_json), SCOPES)
+            print("DEBUG: Successfully loaded User Account from GOOGLE_TOKEN_JSON env var")
+            if creds.valid or (creds.expired and creds.refresh_token):
+                # We'll handle refresh below
+                pass
+            else:
+                creds = None
         except Exception as e:
-            print(f"Warning: Failed to load token from {token_path}: {e}")
+            print(f"Warning: Failed to load token from GOOGLE_TOKEN_JSON: {e}")
             creds = None
+
+    if not creds:
+        # Paths to check for the user token
+        paths_to_check = [
+            os.getenv('GOOGLE_TOKEN_PATH', ''), # Manual override
+            '/etc/secrets/token.json',         # Render Secret File
+            'token.json'                       # Local fallback
+        ]
+        
+        token_path = None
+        for path in paths_to_check:
+            if path and os.path.exists(path):
+                token_path = path
+                break
+                
+        if token_path:
+            try:
+                creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+                print(f"DEBUG: Successfully loaded User Account from {token_path}")
+            except Exception as e:
+                print(f"Warning: Failed to load token from {token_path}: {e}")
+                creds = None
 
     # Handle Expiry or Missing Token
     if not creds or not creds.valid:
@@ -156,7 +172,12 @@ def save_token_from_response(url, state, redirect_uri, code_verifier=None):
     creds = flow.credentials
     
     # Save the token
+    token_json_str = creds.to_json()
     token_path = 'token.json'
     with open(token_path, 'w') as token:
-        token.write(creds.to_json())
+        token.write(token_json_str)
+    
+    print("--- GOOGLE_TOKEN_JSON START ---")
+    print(token_json_str)
+    print("--- GOOGLE_TOKEN_JSON END ---")
     return creds

@@ -269,6 +269,7 @@ def auth_debug():
     csec = os.getenv('GOOGLE_CLIENT_SECRET', '').strip()
     ojson = os.getenv('GOOGLE_OAUTH_JSON', '').strip()
     sheet_id = os.getenv('GOOGLE_SHEET_ID', '').strip()
+    token_json_env = os.getenv('GOOGLE_TOKEN_JSON', '').strip()
     
     line_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', '').strip()
     line_secret = os.getenv('LINE_CHANNEL_SECRET', '').strip()
@@ -276,6 +277,13 @@ def auth_debug():
     # Check for files
     token_exists = os.path.exists('token.json')
     token_size = os.path.getsize('token.json') if token_exists else 0
+    token_content = ""
+    if token_exists:
+        try:
+            with open('token.json', 'r') as f:
+                token_content = f.read()
+        except:
+            token_content = "UNREADABLE"
     
     creds_json_exists = os.path.exists('credentials.json')
     client_secret_exists = os.path.exists('client_secret.json')
@@ -283,7 +291,7 @@ def auth_debug():
     # Check if blueprint is registered
     blueprints = list(app.blueprints.keys())
     
-    return jsonify({
+    res = {
         "timestamp": time.time(),
         "blueprints_registered": blueprints,
         "line_bot": {
@@ -295,17 +303,25 @@ def auth_debug():
             "client_id_starts": cid[:15] + "..." if cid else "NONE",
             "oauth_json_detected": "YES" if ojson.startswith('{') else "NO",
             "sheet_id": sheet_id[:10] + "..." if sheet_id else "MISSING",
-            "token_file": f"EXISTS ({token_size} bytes)" if token_exists else "MISSING"
+            "token_file": f"EXISTS ({token_size} bytes)" if token_exists else "MISSING",
+            "token_env_set": "YES" if token_json_env else "NO"
         },
         "env_check": {
             "GOOGLE_CLIENT_ID": "SET" if cid else "MISSING",
             "GOOGLE_CLIENT_SECRET": "SET" if csec else "MISSING",
             "GOOGLE_OAUTH_JSON": "SET" if ojson else "MISSING",
             "GOOGLE_SHEET_ID": "SET" if sheet_id else "MISSING",
+            "GOOGLE_TOKEN_JSON": "SET" if token_json_env else "MISSING",
             "LINE_CHANNEL_ACCESS_TOKEN": "SET" if line_token else "MISSING",
             "LINE_CHANNEL_SECRET": "SET" if line_secret else "MISSING"
         }
-    })
+    }
+    
+    # Secret way to see full token for copying to Render
+    if request.args.get('reveal') == '1':
+        res["GOOGLE_TOKEN_JSON_VALUE"] = token_content
+        
+    return jsonify(res)
 
 @app.route('/v2')
 def index_v2():
