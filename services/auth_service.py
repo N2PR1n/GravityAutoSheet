@@ -85,12 +85,33 @@ def get_auth_flow(redirect_uri, state=None):
     Creates a Flow object for web-based OAuth.
     Prioritizes environment variables, then falls back to files.
     """
+    # Priority 1: Full JSON from environment variable (Foolproof)
+    oauth_json = os.getenv('GOOGLE_OAUTH_JSON', '').strip()
+    if oauth_json and oauth_json.startswith('{'):
+        try:
+            from google_auth_oauthlib.flow import Flow
+            client_config = json.loads(oauth_json)
+            # Ensure the redirect_uri we're using is in the list of authorized ones
+            if "web" in client_config and "redirect_uris" in client_config["web"]:
+                if redirect_uri not in client_config["web"]["redirect_uris"]:
+                    client_config["web"]["redirect_uris"].append(redirect_uri)
+            
+            flow = Flow.from_client_config(
+                client_config,
+                scopes=SCOPES,
+                state=state
+            )
+            flow.redirect_uri = redirect_uri
+            return flow
+        except Exception as e:
+            print(f"Warning: Failed to parse GOOGLE_OAUTH_JSON: {e}")
+
+    # Priority 2: Manual environment variables
     client_id = os.getenv('GOOGLE_CLIENT_ID', '').strip()
     client_secret = os.getenv('GOOGLE_CLIENT_SECRET', '').strip()
     
     if client_id and client_secret:
         from google_auth_oauthlib.flow import Flow
-        # Use the most standard structure for web applications
         client_config = {
             "web": {
                 "client_id": client_id,

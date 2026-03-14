@@ -263,18 +263,21 @@ def health():
 
 @app.route('/debug/auth')
 def auth_debug():
-    """Diagnostic route to verify env vars (masked for safety)."""
     cid = os.getenv('GOOGLE_CLIENT_ID', '').strip()
     csec = os.getenv('GOOGLE_CLIENT_SECRET', '').strip()
+    ojson = os.getenv('GOOGLE_OAUTH_JSON', '').strip()
+    
     return jsonify({
-        "client_id_starts": cid[:15] + "...",
-        "client_id_ends": "..." + cid[-15:],
+        "client_id_starts": cid[:15] + "..." if cid else "NONE",
         "client_id_len": len(cid),
-        "client_secret_starts": csec[:5] + "...",
         "client_secret_len": len(csec),
+        "oauth_json_detected": "YES" if ojson.startswith('{') else "NO",
+        "oauth_json_len": len(ojson),
         "env_check": {
-            "GOOGLE_CLIENT_ID": "SET" if os.getenv('GOOGLE_CLIENT_ID') else "MISSING",
-            "GOOGLE_CLIENT_SECRET": "SET" if os.getenv('GOOGLE_CLIENT_SECRET') else "MISSING"
+            "GOOGLE_CLIENT_ID": "SET" if cid else "MISSING",
+            "GOOGLE_CLIENT_SECRET": "SET" if csec else "MISSING",
+            "GOOGLE_OAUTH_JSON": "SET" if ojson else "MISSING",
+            "FLASK_SECRET_KEY": "SET" if os.getenv('FLASK_SECRET_KEY') else "DEFAULT_USED"
         }
     })
 
