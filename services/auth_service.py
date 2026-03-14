@@ -146,12 +146,13 @@ def get_auth_flow(redirect_uri, state=None):
     else:
         raise FileNotFoundError("❌ [AUTH ERROR] GOOGLE_CLIENT_ID/SECRET env vars OR client_secret.json not found.")
 
-def save_token_from_response(url, state, redirect_uri):
+def save_token_from_response(url, state, redirect_uri, code_verifier=None):
     """
     Exchanges code for token and saves to token.json.
+    Includes code_verifier for PKCE support.
     """
     flow = get_auth_flow(redirect_uri, state=state)
-    flow.fetch_token(authorization_response=url)
+    flow.fetch_token(authorization_response=url, code_verifier=code_verifier)
     creds = flow.credentials
     
     # Save the token

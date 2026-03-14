@@ -218,6 +218,7 @@ def login():
             prompt='consent'
         )
         session['state'] = state
+        session['code_verifier'] = flow.code_verifier
         return redirect(authorization_url)
     except Exception as e:
         print(f"Login Error: {e}")
@@ -250,7 +251,8 @@ def oauth2callback():
         if 'onrender.com' in url and url.startswith('http://'):
              url = url.replace('http://', 'https://', 1)
 
-        auth_service.save_token_from_response(url, state, redirect_uri)
+        code_verifier = session.get('code_verifier')
+        auth_service.save_token_from_response(url, state, redirect_uri, code_verifier=code_verifier)
         return "<h1>Login Successful!</h1><p>คุณรินทร์สามารถกลับไปใช้งานบอทได้แล้วนะคะ 😊</p><a href='/'>กลับหน้าหลัก</a>"
     except Exception as e:
         import traceback
