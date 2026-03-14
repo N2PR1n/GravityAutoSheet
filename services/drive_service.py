@@ -19,12 +19,23 @@ class DriveService:
             print(f"Warning: DriveService init failed: {e}")
             self.service = None
 
-    def upload_file(self, file_path, folder_id=None, custom_name=None):
+    def upload_file(self, file_path, folder_id=None, custom_name=None, overwrite=True):
         if not self.service:
             print("Drive service not initialized.")
             return None
 
         file_name = custom_name if custom_name else os.path.basename(file_path)
+        
+        # --- Handle Overwrite Logic ---
+        if overwrite and file_name:
+            try:
+                existing_files = self.find_files_by_name(file_name, folder_id=folder_id)
+                for existing in existing_files:
+                    print(f"DEBUG: Found existing file {file_name} (ID: {existing['id']}). Deleting for overwrite.")
+                    self.delete_file(existing['id'])
+            except Exception as e:
+                print(f"DEBUG: Error during overwrite check: {e}")
+
         file_metadata = {'name': file_name}
         if folder_id:
             file_metadata['parents'] = [folder_id]
@@ -46,6 +57,15 @@ class DriveService:
         except Exception as e:
             print(f"Upload Error: {e}")
             raise  # Re-raise so caller can report real error to user
+
+    def delete_file(self, file_id):
+        """Permanently deletes a file by ID."""
+        if not self.service or not file_id: return
+        try:
+            self.service.files().delete(fileId=file_id, supportsAllDrives=True).execute()
+            print(f"DEBUG: Successfully deleted file {file_id}")
+        except Exception as e:
+            print(f"Delete Error for {file_id}: {e}")
 
     def make_public(self, file_id):
         if not self.service: return
