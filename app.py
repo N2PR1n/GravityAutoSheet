@@ -268,6 +268,14 @@ def auth_debug():
     cid = os.getenv('GOOGLE_CLIENT_ID', '').strip()
     csec = os.getenv('GOOGLE_CLIENT_SECRET', '').strip()
     ojson = os.getenv('GOOGLE_OAUTH_JSON', '').strip()
+    sheet_id = os.getenv('GOOGLE_SHEET_ID', '').strip()
+    
+    # Check for files
+    token_exists = os.path.exists('token.json')
+    token_size = os.path.getsize('token.json') if token_exists else 0
+    
+    creds_json_exists = os.path.exists('credentials.json')
+    client_secret_exists = os.path.exists('client_secret.json')
     
     return jsonify({
         "client_id_starts": cid[:15] + "..." if cid else "NONE",
@@ -275,10 +283,17 @@ def auth_debug():
         "client_secret_len": len(csec),
         "oauth_json_detected": "YES" if ojson.startswith('{') else "NO",
         "oauth_json_len": len(ojson),
+        "sheet_id": sheet_id[:10] + "..." if sheet_id else "MISSING",
+        "files": {
+            "token.json": f"EXISTS ({token_size} bytes)" if token_exists else "MISSING",
+            "credentials.json": "EXISTS" if creds_json_exists else "MISSING",
+            "client_secret.json": "EXISTS" if client_secret_exists else "MISSING"
+        },
         "env_check": {
             "GOOGLE_CLIENT_ID": "SET" if cid else "MISSING",
             "GOOGLE_CLIENT_SECRET": "SET" if csec else "MISSING",
             "GOOGLE_OAUTH_JSON": "SET" if ojson else "MISSING",
+            "GOOGLE_SHEET_ID": "SET" if sheet_id else "MISSING",
             "FLASK_SECRET_KEY": "SET" if os.getenv('FLASK_SECRET_KEY') else "DEFAULT_USED"
         }
     })
