@@ -31,29 +31,45 @@ def get_google_credentials():
     # 1. Try User Token JSON from Environment (for Render)
     token_json = os.getenv('GOOGLE_TOKEN_JSON')
     if token_json:
+        print(f"DEBUG AUTH: GOOGLE_TOKEN_JSON found (length={len(token_json)})")
         data = clean_json(token_json)
         if data:
-            try:
-                creds = Credentials.from_authorized_user_info(data, SCOPES)
-                if creds.valid or (creds.expired and creds.refresh_token):
-                    if not creds.valid:
-                        creds.refresh(Request())
-                    print("DEBUG: Loaded User Account from GOOGLE_TOKEN_JSON")
-                    return creds
-            except Exception as e:
-                print(f"Warning: Failed to load User Token from env: {e}")
+            # Check if it's accidentally a service account
+            if data.get('type') == 'service_account':
+                print("⚠️ AUTH WARNING: GOOGLE_TOKEN_JSON contains a Service Account JSON! This should be a User OAuth Token instead.")
+                print("   Please replace with the content from token.json (has 'token' and 'refresh_token' fields)")
+            else:
+                try:
+                    creds = Credentials.from_authorized_user_info(data, SCOPES)
+                    print(f"DEBUG AUTH: Token created. valid={creds.valid}, expired={creds.expired}, has_refresh={bool(creds.refresh_token)}")
+                    if creds.valid or (creds.expired and creds.refresh_token):
+                        if not creds.valid:
+                            print("DEBUG AUTH: Refreshing expired token...")
+                            creds.refresh(Request())
+                        print("DEBUG AUTH: ✅ Loaded User Account from GOOGLE_TOKEN_JSON")
+                        return creds
+                    else:
+                        print("DEBUG AUTH: Token is not valid and cannot be refreshed")
+                except Exception as e:
+                    print(f"Warning: Failed to load User Token from env: {e}")
+        else:
+            print("DEBUG AUTH: GOOGLE_TOKEN_JSON could not be parsed as JSON")
+    else:
+        print("DEBUG AUTH: GOOGLE_TOKEN_JSON env var not found")
 
     # 2. Fallback to Local Token Files
     paths = [os.getenv('GOOGLE_TOKEN_PATH', ''), '/etc/secrets/token.json', 'token.json']
     for p in paths:
         if p and os.path.exists(p):
+            print(f"DEBUG AUTH: Trying token file: {p}")
             try:
                 creds = Credentials.from_authorized_user_file(p, SCOPES)
                 if not creds.valid and creds.expired and creds.refresh_token:
                     creds.refresh(Request())
-                print(f"DEBUG: Loaded User Account from file: {p}")
+                print(f"DEBUG AUTH: ✅ Loaded User Account from file: {p}")
                 return creds
-            except: pass
+            except Exception as e:
+                print(f"DEBUG AUTH: Failed to load from {p}: {e}")
 
     # 3. Final failure or interactive local flow
     if os.environ.get('RENDER'):
