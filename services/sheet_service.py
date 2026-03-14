@@ -1,47 +1,73 @@
 import gspread
 import socket
+import time
+from functools import wraps
 
 import requests.packages.urllib3.util.connection as urllib3_cn
 
-# Removed monkey patch
+def retry_on_429(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        for i in range(3): # Max 3 retries
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                if "429" in str(e) and i < 2:
+                    wait = (i + 1) * 2
+                    print(f"DEBUG: Quota 429 hit. Retrying in {wait}s... (Attempt {i+1}/3)")
+                    time.sleep(wait)
+                else:
+                    raise e
+        return func(*args, **kwargs)
+    return wrapper
 
 class SheetService:
     def __init__(self, credentials_source, sheet_id, sheet_name=None):
         self.scopes = ['https://www.googleapis.com/auth/spreadsheets', 'https://www.googleapis.com/auth/drive']
         self.client = None
-        self.sheet = None
+        self._spreadsheet = None
+        self._sheet = None
         self.sheet_id = sheet_id
+        self.sheet_name = sheet_name or "Sheet1"
         self.row_index_map = {} # Cache for Order ID -> Row Number
         self.status_col = None  # Cache for Status Column Index
         self.all_data_cache = None
         self.all_rows_raw = None # Raw list of lists
         self.last_fetch_time = 0
-        try:
-            # We now exclusively expect Credentials from User Authentication
-            self.creds = credentials_source
+        self.creds = credentials_source
+
+    def _get_client(self):
+        if self.client is None:
             self.client = gspread.authorize(self.creds)
+        return self.client
 
-            
-            if sheet_name:
+    @property
+    def spreadsheet(self):
+        if self._spreadsheet is None:
+            try:
+                client = self._get_client()
+                self._spreadsheet = client.open_by_key(self.sheet_id)
+            except Exception as e:
+                print(f"Warning: Failed to open spreadsheet {self.sheet_id}: {e}")
+        return self._spreadsheet
+
+    @property
+    def sheet(self):
+        if self._sheet is None:
+            ss = self.spreadsheet
+            if ss:
                 try:
-                    self.spreadsheet = self.client.open_by_key(sheet_id)
-                    self.sheet = self.spreadsheet.worksheet(sheet_name)
-                    print(f"DEBUG: Connected to Sheet (Tab): '{self.sheet.title}'")
+                    self._sheet = ss.worksheet(self.sheet_name)
+                    print(f"DEBUG: Connected to Worksheet: '{self._sheet.title}'")
                 except gspread.exceptions.WorksheetNotFound:
-                    print(f"Warning: Worksheet '{sheet_name}' not found. Falling back to default.")
-                    self.spreadsheet = self.client.open_by_key(sheet_id)
-                    self.sheet = self.spreadsheet.sheet1
-            else:
-                self.spreadsheet = self.client.open_by_key(sheet_id)
-                self.sheet = self.spreadsheet.sheet1 # Default to first sheet
-            
-            print(f"DEBUG: Active Sheet Title: '{self.sheet.title}'")
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            print(f"Warning: SheetService init failed: {e}")
-            self.sheet = None
+                    print(f"Warning: Worksheet '{self.sheet_name}' not found. Falling back to sheet1.")
+                    self._sheet = ss.sheet1
+                except Exception as e:
+                    print(f"Warning: Failed to get worksheet '{self.sheet_name}': {e}")
+        return self._sheet
 
+
+    @retry_on_429
     def get_worksheets(self):
         """Returns a list of all worksheet titles (Showing all as requested)."""
         if not self.client or not self.spreadsheet:
@@ -52,6 +78,7 @@ class SheetService:
             print(f"Error getting worksheets: {e}")
             return [self.sheet.title] if self.sheet else []
 
+    @retry_on_429
     def set_worksheet(self, sheet_name):
         """Switches the active worksheet and clears cache."""
         if not self.client or not self.sheet_id: return False
@@ -71,6 +98,7 @@ class SheetService:
             print(f"Error switching worksheet: {e}")
             return False
 
+    @retry_on_429
     def _ensure_data_loaded(self, force=False):
         """Ensures that sheet data is loaded into memory. Returns raw rows."""
         import time
@@ -162,6 +190,7 @@ class SheetService:
             next_no += 1
         return next_no
 
+    @retry_on_429
     def append_data(self, data_dict, run_no=None):
         """
         Appends a row to the sheet based on the dictionary.
@@ -268,6 +297,7 @@ class SheetService:
             print(f"Error fetching existing row from cache: {e}")
             return row_idx, None
 
+    @retry_on_429
     def update_existing_data(self, row_idx, data_dict, run_no):
         """
         Updates specific columns in an existing row.
@@ -327,6 +357,7 @@ class SheetService:
             print(f"Error updating existing data: {e}")
             return False
 
+    @retry_on_429
     def update_order_status(self, order_id, status="Checked"):
         """Updates the status of an order using optimized row mapping."""
         if not self.sheet: return False

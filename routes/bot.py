@@ -74,34 +74,66 @@ def get_config():
         _config_service_instance = ConfigService()
     return _config_service_instance
 
-def get_services():
-    # Load Creds
-    creds = get_credentials()
-    
-    # Init Services fresh per call for thread safety in background threads/timers
-    image_service = ImageService()
-    drive_service = DriveService(creds)
-    
-    # AI Service Factory
-    from services.ai_factory import AIFactory
-    cfg = get_config()
-    ai_provider = cfg.get('AI_PROVIDER', 'openai')
-    
-    gemini_key = os.getenv('GEMINI_API_KEY')
-    openai_key = os.getenv('OPENAI_API_KEY')
-    
-    ai_service = AIFactory.get_service(ai_provider, openai_key, gemini_key)
-    
-    # Always check for the latest sheet name from config
-    sheet_name = cfg.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+class ServiceProvider:
+    def __init__(self, creds=None):
+        self._creds = creds
+        self._image_service = None
+        self._drive_service = None
+        self._ai_service = None
+        self._sheet_service = None
+        self._accounting_service = None
+        self._cfg = None
 
-    
-    print(f"DEBUG: Bot connecting to Sheet: {sheet_name} | AI: {ai_provider}")
-    sheet_service = SheetService(creds, GOOGLE_SHEET_ID, sheet_name)
-        
-    accounting_service = AccountingService(sheet_service, drive_service)
-    
-    return image_service, drive_service, ai_service, sheet_service, accounting_service
+    @property
+    def creds(self):
+        if self._creds is None:
+            self._creds = get_credentials()
+        return self._creds
+
+    @property
+    def config(self):
+        if self._cfg is None:
+            self._cfg = get_config()
+        return self._cfg
+
+    @property
+    def image_service(self):
+        if self._image_service is None:
+            self._image_service = ImageService()
+        return self._image_service
+
+    @property
+    def drive_service(self):
+        if self._drive_service is None:
+            self._drive_service = DriveService(self.creds)
+        return self._drive_service
+
+    @property
+    def ai_service(self):
+        if self._ai_service is None:
+            from services.ai_factory import AIFactory
+            ai_provider = self.config.get('AI_PROVIDER', 'openai')
+            gemini_key = os.getenv('GEMINI_API_KEY')
+            openai_key = os.getenv('OPENAI_API_KEY')
+            self._ai_service = AIFactory.get_service(ai_provider, openai_key, gemini_key)
+        return self._ai_service
+
+    @property
+    def sheet_service(self):
+        if self._sheet_service is None:
+            sheet_name = self.config.get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
+            print(f"DEBUG: Lazy connecting to Sheet: {sheet_name}")
+            self._sheet_service = SheetService(self.creds, GOOGLE_SHEET_ID, sheet_name)
+        return self._sheet_service
+
+    @property
+    def accounting_service(self):
+        if self._accounting_service is None:
+            self._accounting_service = AccountingService(self.sheet_service, self.drive_service)
+        return self._accounting_service
+
+def get_service_provider():
+    return ServiceProvider()
 
 # State for Image Batching
 # user_id: {'images': [], 'timer': threading.Timer, 'reply_token': str}
@@ -139,7 +171,8 @@ if handler:
         if text in ["export", "ขอไฟล์เบิกเงิน", "ทำบัญชี"]:
             try:
                 # Lazy Load Services
-                _, _, _, _, accounting_service = get_services()
+                provider = get_service_provider()
+                accounting_service = provider.accounting_service
                 
                 # Notify processing
                 if messaging_api:
@@ -185,7 +218,8 @@ if handler:
         elif text in ["status", "เช็กชีท", "ชีทไหน", "เช็ก"]:
             try:
                 # Lazy Load Services
-                _, drive_service, _, _, _ = get_services()
+                provider = get_service_provider()
+                drive_service = provider.drive_service
                 
                 sheet_name = get_config().get('ACTIVE_SHEET_NAME', GOOGLE_SHEET_NAME)
                 folder_id = get_config().get_folder_for_sheet(sheet_name)
@@ -263,10 +297,14 @@ def process_images_thread(user_id):
     final_messages = []
 
     try:
-        # 1. Initialize Services inside try-block
-        print("DEBUG: [1] Initializing services...", flush=True)
-        image_service, drive_service, ai_service, sheet_service, _ = get_services()
-        print("DEBUG: [2] Services initialized successfully", flush=True)
+        # 1. Initialize Services inside try-block (Lazy)
+        print("DEBUG: [1] Initializing service provider...", flush=True)
+        provider = get_service_provider()
+        image_service = provider.image_service
+        drive_service = provider.drive_service
+        ai_service = provider.ai_service
+        sheet_service = provider.sheet_service
+        print("DEBUG: [2] Service references obtained", flush=True)
         
         # 2. Download Images
         print(f"DEBUG: [3] Downloading {len(image_ids)} images...", flush=True)
