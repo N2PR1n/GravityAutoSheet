@@ -83,11 +83,32 @@ def get_google_credentials():
 def get_auth_flow(redirect_uri, state=None):
     """
     Creates a Flow object for web-based OAuth.
-    Requires client_secret.json (OAuth 2.0 Client IDs).
+    Prioritizes environment variables, then falls back to files.
     """
+    client_id = os.getenv('GOOGLE_CLIENT_ID')
+    client_secret = os.getenv('GOOGLE_CLIENT_SECRET')
+    
+    if client_id and client_secret:
+        from google_auth_oauthlib.flow import Flow
+        client_config = {
+            "web": {
+                "client_id": client_id,
+                "client_secret": client_secret,
+                "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+                "token_uri": "https://oauth2.googleapis.com/token"
+            }
+        }
+        flow = Flow.from_client_config(
+            client_config,
+            scopes=SCOPES,
+            state=state
+        )
+        flow.redirect_uri = redirect_uri
+        return flow
+
+    # Fallback to files
     client_secret_path = 'client_secret.json'
     if not os.path.exists(client_secret_path):
-        # Fallback to check if it's named credentials.json but contains client secrets
         client_secret_path = 'credentials.json'
     
     if os.path.exists(client_secret_path):
@@ -100,7 +121,7 @@ def get_auth_flow(redirect_uri, state=None):
         flow.redirect_uri = redirect_uri
         return flow
     else:
-        raise FileNotFoundError("❌ [AUTH ERROR] client_secret.json not found. Required for web login.")
+        raise FileNotFoundError("❌ [AUTH ERROR] GOOGLE_CLIENT_ID/SECRET env vars OR client_secret.json not found.")
 
 def save_token_from_response(url, state, redirect_uri):
     """
