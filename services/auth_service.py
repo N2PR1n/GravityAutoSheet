@@ -36,22 +36,25 @@ def get_google_credentials():
         if data:
             # Check if it's accidentally a service account
             if data.get('type') == 'service_account':
-                print("⚠️ AUTH WARNING: GOOGLE_TOKEN_JSON contains a Service Account JSON! This should be a User OAuth Token instead.")
-                print("   Please replace with the content from token.json (has 'token' and 'refresh_token' fields)")
+                print("⚠️ AUTH WARNING: GOOGLE_TOKEN_JSON contains a Service Account JSON!")
+                print("   Please replace with the content from token.json")
             else:
                 try:
                     creds = Credentials.from_authorized_user_info(data, SCOPES)
                     print(f"DEBUG AUTH: Token created. valid={creds.valid}, expired={creds.expired}, has_refresh={bool(creds.refresh_token)}")
-                    if creds.valid or (creds.expired and creds.refresh_token):
-                        if not creds.valid:
-                            print("DEBUG AUTH: Refreshing expired token...")
-                            creds.refresh(Request())
+                    # Always try to refresh if not valid
+                    if not creds.valid and creds.refresh_token:
+                        print("DEBUG AUTH: Refreshing token...")
+                        creds.refresh(Request())
+                    if creds.valid:
                         print("DEBUG AUTH: ✅ Loaded User Account from GOOGLE_TOKEN_JSON")
                         return creds
                     else:
-                        print("DEBUG AUTH: Token is not valid and cannot be refreshed")
+                        print("DEBUG AUTH: ❌ Token still not valid after refresh attempt")
                 except Exception as e:
                     print(f"Warning: Failed to load User Token from env: {e}")
+                    import traceback
+                    traceback.print_exc()
         else:
             print("DEBUG AUTH: GOOGLE_TOKEN_JSON could not be parsed as JSON")
     else:
@@ -64,12 +67,17 @@ def get_google_credentials():
             print(f"DEBUG AUTH: Trying token file: {p}")
             try:
                 creds = Credentials.from_authorized_user_file(p, SCOPES)
-                if not creds.valid and creds.expired and creds.refresh_token:
+                if not creds.valid and creds.refresh_token:
                     creds.refresh(Request())
-                print(f"DEBUG AUTH: ✅ Loaded User Account from file: {p}")
-                return creds
+                if creds.valid:
+                    print(f"DEBUG AUTH: ✅ Loaded User Account from file: {p}")
+                    return creds
+                else:
+                    print(f"DEBUG AUTH: Token from {p} is not valid")
             except Exception as e:
                 print(f"DEBUG AUTH: Failed to load from {p}: {e}")
+                import traceback
+                traceback.print_exc()
 
     # 3. Final failure or interactive local flow
     if os.environ.get('RENDER'):
