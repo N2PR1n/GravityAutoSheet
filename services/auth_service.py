@@ -17,7 +17,16 @@ def get_google_credentials():
     token_json = os.getenv('GOOGLE_TOKEN_JSON', '').strip()
     if token_json and token_json.startswith('{'):
         try:
-            creds = Credentials.from_authorized_user_info(json.loads(token_json), SCOPES)
+            info = json.loads(token_json)
+            # If the user pasted the entire debug JSON by mistake
+            if isinstance(info, dict) and "GOOGLE_TOKEN_JSON_VALUE" in info:
+                val = info["GOOGLE_TOKEN_JSON_VALUE"]
+                if isinstance(val, str) and val.startswith('{'):
+                    info = json.loads(val)
+                elif isinstance(val, dict):
+                    info = val
+            
+            creds = Credentials.from_authorized_user_info(info, SCOPES)
             print("DEBUG: Successfully loaded User Account from GOOGLE_TOKEN_JSON env var")
             if creds.valid or (creds.expired and creds.refresh_token):
                 # We'll handle refresh below

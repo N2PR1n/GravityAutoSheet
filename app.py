@@ -369,8 +369,23 @@ def auth_debug():
     # Secret way to see full token for copying to Render
     if request.args.get('reveal') == '1':
         res["GOOGLE_TOKEN_JSON_VALUE"] = token_content
+        res["TIPS"] = "ก๊อปปี้รหัสใน GOOGLE_TOKEN_JSON_VALUE ไปใส่ หรือเข้าลิงก์ /debug/raw_token เพื่อก๊อปปี้แบบคลีนๆ ค่ะ"
         
     return jsonify(res)
+
+@app.route('/debug/raw_token')
+def raw_token_debug():
+    token_path = 'token.json'
+    if os.path.exists(token_path):
+        try:
+            with open(token_path, 'r') as f:
+                content = f.read()
+            # Return as plain text so it's easy to Ctrl+A, Ctrl+C
+            from flask import Response
+            return Response(content, mimetype='text/plain')
+        except Exception as e:
+            return f"Error reading token: {e}", 500
+    return "token.json not found. Please login first.", 404
 
 @app.route('/v2')
 def index_v2():
