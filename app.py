@@ -252,8 +252,57 @@ def oauth2callback():
              url = url.replace('http://', 'https://', 1)
 
         code_verifier = session.get('code_verifier')
-        auth_service.save_token_from_response(url, state, redirect_uri, code_verifier=code_verifier)
-        return "<h1>Login Successful!</h1><p>คุณรินทร์สามารถกลับไปใช้งานบอทได้แล้วนะคะ 😊</p><a href='/'>กลับหน้าหลัก</a>"
+        # Exchange code for token and get JSON
+        token_json = ""
+        try:
+            creds = auth_service.save_token_from_response(
+                request.url,
+                state,
+                redirect_uri,
+                code_verifier=code_verifier
+            )
+            token_json = creds.to_json()
+        except Exception as e:
+            print(f"❌ Callback Error: {e}")
+            return f"<h1>Login Failed</h1><p>{str(e)}</p>", 500
+
+        # Success Page with instructions
+        success_html = f"""
+        <html>
+            <head><title>Login Successful</title></head>
+            <body style="font-family: sans-serif; padding: 20px;">
+                <h1 style="color: #28a745;">Login Successful! ✅</h1>
+                <p>คุณรินทร์สามารถก๊อปปี้รหัสกุญแจข้างล่างนี้ ไปใส่ใน <b>Render Dashboard</b> เพื่อให้บอทใช้งานได้ถาวรนะคะ:</p>
+                
+                <div style="background: #f4f4f4; padding: 15px; border-radius: 5px; border: 1px solid #ddd;">
+                    <label><b>ค่าที่ต้องใส่ใน GOOGLE_TOKEN_JSON:</b></label><br/><br/>
+                    <textarea id="tokenArea" style="width: 100%; height: 150px; font-family: monospace; font-size: 12px;" readonly>{token_json}</textarea>
+                    <button onclick="copyToken()" style="margin-top: 10px; padding: 8px 15px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">คัดลอกรหัส (Copy JSON)</button>
+                </div>
+
+                <script>
+                    function copyToken() {{
+                        var copyText = document.getElementById("tokenArea");
+                        copyText.select();
+                        document.execCommand("copy");
+                        alert("คัดลอกรหัสแล้วค่ะ! นำไปวางในช่อง GOOGLE_TOKEN_JSON ของ Render ได้เลยคะ");
+                    }}
+                </script>
+
+                <hr style="margin-top: 30px;"/>
+                <h3>ขั้นตอนต่อไปที่คุณรินทร์ต้องทำ:</h3>
+                <ol>
+                    <li>ไปที่หน้า <b>Render Dashboard > Environment</b></li>
+                    <li>กด <b>Add Environment Variable</b></li>
+                    <li>Key: <code>GOOGLE_TOKEN_JSON</code></li>
+                    <li>Value: <b>วางรหัสที่คุณคัดลอกมาลงไป</b></li>
+                    <li>กด <b>Save Changes</b></li>
+                </ol>
+                <p><a href="/">กลับหน้าหลัก</a></p>
+            </body>
+        </html>
+        """
+        return success_html
     except Exception as e:
         import traceback
         traceback.print_exc()

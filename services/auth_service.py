@@ -74,7 +74,12 @@ def get_google_credentials():
 
              # On Render, we can't do interactive auth
              if os.environ.get('RENDER'):
-                 raise Exception("❌ [AUTH ERROR] Both token.json and credentials.json are missing or invalid on Render. Please update it in the Dashboard.")
+                 missing = []
+                 if not os.path.exists('token.json'): missing.append('token.json')
+                 service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'credentials.json')
+                 if not os.path.exists(service_account_path): missing.append(f"SA ({service_account_path})")
+                 
+                 raise Exception(f"❌ [AUTH ERROR] Credentials missing on Render: {', '.join(missing)}. Please set GOOGLE_TOKEN_JSON in Dashboard.")
              else:
                  # Local fallback (need client_secret.json for this part)
                  client_secret_path = 'client_secret.json'
