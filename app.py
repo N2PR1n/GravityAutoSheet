@@ -412,6 +412,7 @@ def get_config():
     
     return jsonify({
         'GOOGLE_DRIVE_FOLDER_ID': cfg.get_folder_for_sheet(target_sheet),
+        'GOOGLE_SHEET_ID': os.getenv('GOOGLE_SHEET_ID'),
         'ACTIVE_SHEET_NAME': active_sheet,
         'TARGET_SHEET_NAME': target_sheet,
         'AI_PROVIDER': cfg.get('AI_PROVIDER', 'openai')

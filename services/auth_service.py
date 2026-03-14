@@ -45,9 +45,20 @@ def get_google_credentials():
                 creds = None
         
         if not creds:
+             # Try Service Account Fallback
+             service_account_path = os.getenv('GOOGLE_APPLICATION_CREDENTIALS', 'credentials.json')
+             if os.path.exists(service_account_path):
+                 try:
+                     from google.oauth2 import service_account
+                     creds = service_account.Credentials.from_service_account_file(service_account_path, scopes=SCOPES)
+                     print(f"DEBUG: Successfully loaded Service Account from {service_account_path}")
+                     return creds
+                 except Exception as e:
+                     print(f"Warning: Failed to load Service Account from {service_account_path}: {e}")
+
              # On Render, we can't do interactive auth
              if os.environ.get('RENDER'):
-                 raise Exception("❌ [AUTH ERROR] token.json is missing or expired on Render. Please update it in the Dashboard.")
+                 raise Exception("❌ [AUTH ERROR] Both token.json and credentials.json are missing or invalid on Render. Please update it in the Dashboard.")
              else:
                  # Local fallback (need client_secret.json for this part)
                  client_secret_path = 'client_secret.json'
@@ -65,6 +76,6 @@ def get_google_credentials():
                     except:
                         pass
                  else:
-                    raise FileNotFoundError("❌ client_secret.json not found locally. Place it in the root to perform initial login.")
+                    raise FileNotFoundError("❌ [AUTH ERROR] token.json, credentials.json, or client_secret.json not found.")
 
     return creds

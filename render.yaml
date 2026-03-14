@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: GravityAutoSheet
+    name: Gravity Check Box
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt

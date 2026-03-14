@@ -168,6 +168,16 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
+                        <label class="form-label fw-bold">Active Spreadsheet ID</label>
+                        <div class="input-group">
+                            <input type="text" id="sheet-id-display" class="form-control rounded-3 bg-light" readonly>
+                            <button class="btn btn-outline-secondary" type="button" onclick="copySheetId()">📋</button>
+                        </div>
+                        <div class="form-text mt-1 text-muted small">
+                            Check this against your browser URL: <code>/spreadsheets/d/[ID]/edit</code>
+                        </div>
+                    </div>
+                    <div class="mb-3">
                         <label for="folder-id-input" class="form-label fw-bold">Drive Folder ID for: <span
                                 id="settings-sheet-name" class="text-primary">Current Sheet</span></label>
                         <input type="text" id="folder-id-input" class="form-control rounded-3"

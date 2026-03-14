@@ -584,6 +584,11 @@ async function fetchConfig(targetSheet = null) {
             document.getElementById('folder-id-input').value = data.GOOGLE_DRIVE_FOLDER_ID;
         }
 
+        if (data.GOOGLE_SHEET_ID) {
+            const sheetIdEl = document.getElementById('sheet-id-display');
+            if (sheetIdEl) sheetIdEl.value = data.GOOGLE_SHEET_ID;
+        }
+
         // Update the "Drive Folder ID for: [Sheet Name]" label in modal
         const sheetDisplay = data.TARGET_SHEET_NAME || data.ACTIVE_SHEET_NAME;
         if (sheetDisplay) {
@@ -656,4 +661,12 @@ function scrollToBottom() {
         top: document.body.scrollHeight,
         behavior: 'smooth'
     });
+}
+
+function copySheetId() {
+    const el = document.getElementById('sheet-id-display');
+    if (!el) return;
+    el.select();
+    document.execCommand('copy');
+    showToast("Copied to clipboard!");
 }
