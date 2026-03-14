@@ -422,44 +422,63 @@ def process_images_thread(user_id):
             )
             final_messages.append(TextMessage(text=summary))
             
-            # Send Final Result via Reply Message
+            # Send Final Result via Reply Message (Free)
             if messaging_api:
-                messaging_api.reply_message(
-                     ReplyMessageRequest(
-                          replyToken=reply_token,
-                          messages=final_messages
-                     )
-                 )
+                try:
+                    print(f"DEBUG: Attempting reply_message for user {user_id}...")
+                    messaging_api.reply_message(
+                         ReplyMessageRequest(
+                              replyToken=reply_token,
+                              messages=final_messages
+                         )
+                    )
+                    print("DEBUG: reply_message successful")
+                except Exception as e:
+                    print(f"DEBUG: reply_message failed (likely expired token): {e}")
+                    # Fallback to Push Message (Might cost quota but more reliable)
+                    try:
+                        print(f"DEBUG: Attempting fallback push_message for user {user_id}...")
+                        messaging_api.push_message(
+                            PushMessageRequest(
+                                to=user_id,
+                                messages=final_messages
+                            )
+                        )
+                        print("DEBUG: Fallback push_message successful")
+                    except Exception as push_err:
+                        print(f"❌ CRITICAL: Both reply and push failed: {push_err}")
+            else:
+                print("❌ ERROR: messaging_api is None. Cannot reply to user.")
         else:
-             # Try to get more detail if available
-             detail = ""
-             try:
-                 # Check if we can extract more info from sheet_service state or recent errors
-                 # For now, we rely on the Exception block below to catch most things, 
-                 # but we raise a slightly more descriptive local error.
-                 pass
-             except: pass
-             error_detail = getattr(sheet_service, 'last_error', 'โปรดตรวจสอบชื่อหน้าชีท (Worksheet Name) หรือสิทธิ์การเข้าถึงนะคะ')
+             error_detail = getattr(sheet_service, 'last_error', 'โปรดตรวจสอบชื่อหน้าชีท หรือสิทธิ์เข้าถึง')
              raise Exception(f"ไม่สามารถบันทึกข้อมูลลง Google Sheet ได้: {error_detail}")
-
 
     except Exception as e:
         import traceback
         error_detail = traceback.format_exc()
-        print(f"❌ CRITICAL ERROR in process_images_thread: {e}\n{error_detail}")
+        print(f"❌ ERROR in process_images_thread: {e}\n{error_detail}")
         
         error_msg = f"❌ เกิดข้อผิดพลาดในการประมวลผล:\n{str(e)}"
-        final_messages.append(TextMessage(text=error_msg))
+        final_messages_err = [TextMessage(text=error_msg)]
         if messaging_api:
             try:
                 messaging_api.reply_message(
                      ReplyMessageRequest(
                           replyToken=reply_token,
-                          messages=final_messages
+                          messages=final_messages_err
                      )
-                 )
+                )
             except Exception as reply_err:
                 print(f"DEBUG: Failed to send error message via reply: {reply_err}")
+                try:
+                    messaging_api.push_message(
+                        PushMessageRequest(
+                            to=user_id,
+                            messages=final_messages_err
+                        )
+                    )
+                except Exception as push_err:
+                    print(f"❌ Failed to send error message via push: {push_err}")
     finally:
         # Cleanup temp files
         try:
