@@ -147,17 +147,25 @@ def callback():
 
     # get request body as text
     body = request.get_data(as_text=True)
-    current_app.logger.info("Request body: " + body)
+    print(f"DEBUG: Webhook Callback Received. Body length: {len(body)}")
 
     # handle webhook body
     try:
         if handler:
+            print("DEBUG: Passing body to handler...")
             handler.handle(body, signature)
+            print("DEBUG: Handler complete")
         else:
+            print("WARNING: Webhook received but handler is not initialized (check LINE credentials)")
             current_app.logger.warning("Webhook received but handler is not initialized")
     except InvalidSignatureError:
+        print("❌ Invalid Signature Error")
         current_app.logger.error("Invalid signature. Please check your channel access token/channel secret.")
         abort(400)
+    except Exception as e:
+        print(f"❌ Webhook Handle Error: {e}")
+        import traceback
+        traceback.print_exc()
 
     return 'OK'
 

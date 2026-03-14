@@ -270,6 +270,9 @@ def auth_debug():
     ojson = os.getenv('GOOGLE_OAUTH_JSON', '').strip()
     sheet_id = os.getenv('GOOGLE_SHEET_ID', '').strip()
     
+    line_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', '').strip()
+    line_secret = os.getenv('LINE_CHANNEL_SECRET', '').strip()
+    
     # Check for files
     token_exists = os.path.exists('token.json')
     token_size = os.path.getsize('token.json') if token_exists else 0
@@ -277,24 +280,30 @@ def auth_debug():
     creds_json_exists = os.path.exists('credentials.json')
     client_secret_exists = os.path.exists('client_secret.json')
     
+    # Check if blueprint is registered
+    blueprints = list(app.blueprints.keys())
+    
     return jsonify({
-        "client_id_starts": cid[:15] + "..." if cid else "NONE",
-        "client_id_len": len(cid),
-        "client_secret_len": len(csec),
-        "oauth_json_detected": "YES" if ojson.startswith('{') else "NO",
-        "oauth_json_len": len(ojson),
-        "sheet_id": sheet_id[:10] + "..." if sheet_id else "MISSING",
-        "files": {
-            "token.json": f"EXISTS ({token_size} bytes)" if token_exists else "MISSING",
-            "credentials.json": "EXISTS" if creds_json_exists else "MISSING",
-            "client_secret.json": "EXISTS" if client_secret_exists else "MISSING"
+        "timestamp": time.time(),
+        "blueprints_registered": blueprints,
+        "line_bot": {
+            "token_set": "YES" if line_token else "NO",
+            "token_starts": line_token[:10] + "..." if line_token else "NONE",
+            "secret_set": "YES" if line_secret else "NO"
+        },
+        "google_auth": {
+            "client_id_starts": cid[:15] + "..." if cid else "NONE",
+            "oauth_json_detected": "YES" if ojson.startswith('{') else "NO",
+            "sheet_id": sheet_id[:10] + "..." if sheet_id else "MISSING",
+            "token_file": f"EXISTS ({token_size} bytes)" if token_exists else "MISSING"
         },
         "env_check": {
             "GOOGLE_CLIENT_ID": "SET" if cid else "MISSING",
             "GOOGLE_CLIENT_SECRET": "SET" if csec else "MISSING",
             "GOOGLE_OAUTH_JSON": "SET" if ojson else "MISSING",
             "GOOGLE_SHEET_ID": "SET" if sheet_id else "MISSING",
-            "FLASK_SECRET_KEY": "SET" if os.getenv('FLASK_SECRET_KEY') else "DEFAULT_USED"
+            "LINE_CHANNEL_ACCESS_TOKEN": "SET" if line_token else "MISSING",
+            "LINE_CHANNEL_SECRET": "SET" if line_secret else "MISSING"
         }
     })
 
