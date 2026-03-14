@@ -261,6 +261,23 @@ def oauth2callback():
 def health():
     return "OK", 200
 
+@app.route('/debug/auth')
+def auth_debug():
+    """Diagnostic route to verify env vars (masked for safety)."""
+    cid = os.getenv('GOOGLE_CLIENT_ID', '').strip()
+    csec = os.getenv('GOOGLE_CLIENT_SECRET', '').strip()
+    return jsonify({
+        "client_id_starts": cid[:15] + "...",
+        "client_id_ends": "..." + cid[-15:],
+        "client_id_len": len(cid),
+        "client_secret_starts": csec[:5] + "...",
+        "client_secret_len": len(csec),
+        "env_check": {
+            "GOOGLE_CLIENT_ID": "SET" if os.getenv('GOOGLE_CLIENT_ID') else "MISSING",
+            "GOOGLE_CLIENT_SECRET": "SET" if os.getenv('GOOGLE_CLIENT_SECRET') else "MISSING"
+        }
+    })
+
 @app.route('/v2')
 def index_v2():
     return render_template('index_v2.html')
